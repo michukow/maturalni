@@ -1,0 +1,30 @@
+# Publikuje stronę z gałęzi main na GitHub Pages po każdym pushu,
+# niezależnie od tego, który współpracownik go zrobił.
+name: Wdrożenie strony
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: pages-deploy
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Publikuj na gałąź gh-pages
+        uses: JamesIves/github-pages-deploy-action@v4
+        with:
+          folder: .
+          branch: gh-pages
+          # Nie usuwaj podglądów pull requestów przy wdrożeniu main
+          clean-exclude: pr-preview/
+          force: false

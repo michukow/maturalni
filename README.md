@@ -26,3 +26,19 @@ Wszystko jest w `index.html`, w sekcji `<script>`:
 Status danych rekrutacyjnych przy uczelni (`s`): `v` – zasady 2027/28 z uchwały, `p` – projekt 2027/28, `o` – zasady 2026/27, `x` – do sprawdzenia.
 
 Odpowiedzi ucznia zapisują się tylko w jego przeglądarce (localStorage).
+
+## Podgląd zmian dla zespołu
+
+Strona wdraża się automatycznie przez GitHub Actions, niezależnie od tego, kto zrobił commit.
+
+- **Wersja główna** (gałąź `main`): https://michukow.github.io/maturalni/ – aktualizuje się ok. minutę po każdym pushu.
+- **Podgląd pull requesta**: https://michukow.github.io/maturalni/pr-preview/pr-NUMER/ – link pojawia się sam w komentarzu w PR i odświeża przy każdym nowym commicie. Po zamknięciu PR podgląd znika.
+
+Jak pracować:
+
+1. Utwórz gałąź w tym repozytorium (nie w forku), np. `diagnoza-matematyka`.
+2. Wypchnij zmiany i otwórz pull request.
+3. Otwórz link z komentarza bota i przetestuj zmianę.
+4. Po akceptacji scal PR do `main`.
+
+Postęp wdrożeń widać w zakładce **Actions**. Jeśli zmiana nie jest widoczna, odśwież stronę z pominięciem pamięci podręcznej (Ctrl+Shift+R).

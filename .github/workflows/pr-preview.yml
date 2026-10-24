@@ -1,0 +1,30 @@
+# Każdy pull request dostaje własny podgląd pod adresem
+# https://<konto>.github.io/<repo>/pr-preview/pr-<numer>/
+# Link pojawia się automatycznie w komentarzu w PR i odświeża przy każdym commicie.
+# Po zamknięciu PR podgląd jest usuwany.
+name: Podgląd pull requesta
+
+on:
+  pull_request:
+    types: [opened, reopened, synchronize, closed]
+
+permissions:
+  contents: write
+  pull-requests: write
+
+concurrency:
+  group: preview-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  preview:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Wdróż podgląd
+        uses: rossjrw/pr-preview-action@v1
+        with:
+          source-dir: .
+          preview-branch: gh-pages
+          umbrella-dir: pr-preview
