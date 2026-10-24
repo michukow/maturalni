@@ -1,16 +1,22 @@
+<!doctype html>
+<html lang="pl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Maturalni Plus</title>
+<meta name="description" content="Sprawdź w 5 minut, jaki kierunek studiów do Ciebie pasuje i jakie przedmioty zdawać na maturze.">
 <meta name="claude:viewport-fit-sides" content="cover">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700&family=Atkinson+Hyperlegible:ital,wght@0,400;0,700;1,400&family=JetBrains+Mono:wght@500&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700&family=Atkinson+Hyperlegible:ital,wght@0,400;0,700;1,400&display=swap">
 <style>
-/* Layout: one narrow column like a school worksheet; the test is one question per screen, the result is a stacked report card. */
+/* Layout: jedna wąska kolumna; test to jedno pytanie na ekran z listą odpowiedzi, wynik to karta planu z zakładkami A/B. */
 :root{
   --bg:#F3F6F5; --surface:#FFFFFF; --ink:#14201C; --muted:#56655F; --line:#D5DFDB;
   --accent:#1E6B57; --accent-soft:#DCEDE6; --mark:#B97A12; --mark-soft:#F6E8CC;
   --display:"Bricolage Grotesque", "Segoe UI", system-ui, sans-serif;
   --body:"Atkinson Hyperlegible", "Segoe UI", system-ui, sans-serif;
-  --mono:"JetBrains Mono", ui-monospace, "SFMono-Regular", Menlo, monospace;
+  color-scheme:light;
 }
 @media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
   --bg:#0E1412; --surface:#161F1C; --ink:#E5EDEA; --muted:#93A49D; --line:#2B3934;
@@ -20,145 +26,120 @@
   --accent:#55C2A0; --accent-soft:#1B3A31; --mark:#E2A847; --mark-soft:#3A2E17; color-scheme:dark}
 
 *{box-sizing:border-box}
-body{background:var(--bg);color:var(--ink);font-family:var(--body);font-size:16px;line-height:1.55;
-  padding-left:max(16px, env(safe-area-inset-left, 0px));padding-right:max(16px, env(safe-area-inset-right, 0px));padding-block:28px 56px}
-.wrap{max-width:760px;margin:0 auto;display:flex;flex-direction:column;gap:28px}
+html{-webkit-text-size-adjust:100%}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--body);font-size:17px;line-height:1.55;
+  padding-left:max(16px, env(safe-area-inset-left, 0px));padding-right:max(16px, env(safe-area-inset-right, 0px));
+  padding-block:calc(24px + env(safe-area-inset-top, 0px)) calc(56px + env(safe-area-inset-bottom, 0px))}
+[hidden]{display:none!important}
+.wrap{max-width:640px;margin:0 auto;display:flex;flex-direction:column;gap:24px}
 h1,h2,h3{font-family:var(--display);text-wrap:balance;margin:0;line-height:1.15}
-h1{font-size:clamp(2rem,6vw,3rem);font-weight:700;letter-spacing:-0.02em}
-h2{font-size:1.45rem;font-weight:700}
-h3{font-size:1.1rem;font-weight:700}
-p{margin:0;max-width:65ch}
+h1{font-size:clamp(1.9rem,6.5vw,2.6rem);font-weight:700;letter-spacing:-0.02em}
+h2{font-size:1.35rem;font-weight:700}
+h3{font-size:1.02rem;font-weight:700}
+h1:focus,h2:focus{outline:none}
+p{margin:0;max-width:62ch}
 a{color:var(--accent)}
 .eyebrow{font-size:.75rem;text-transform:uppercase;letter-spacing:.09em;color:var(--muted);font-weight:700}
 .muted{color:var(--muted)}
-.num{font-family:var(--mono);font-variant-numeric:tabular-nums}
-button{font:inherit;cursor:pointer}
+.small{font-size:.88rem}
+button{font:inherit;cursor:pointer;color:inherit}
 button:focus-visible,a:focus-visible,summary:focus-visible{outline:3px solid var(--mark);outline-offset:2px}
-.btn{border:0;border-radius:10px;padding:12px 20px;font-weight:700;background:var(--accent);color:var(--bg)}
+.btn{border:0;border-radius:12px;padding:15px 22px;font-weight:700;background:var(--accent);color:var(--bg);min-height:52px}
+.btn.wide{width:100%}
 .btn.ghost{background:transparent;color:var(--ink);border:1.5px solid var(--line)}
-.btn.link{background:none;border:0;padding:6px 0;color:var(--muted);text-decoration:underline;text-underline-offset:3px;font-weight:400}
+.btn.link{background:none;border:0;padding:8px 0;color:var(--muted);text-decoration:underline;text-underline-offset:3px;font-weight:400;min-height:0}
+.stack{display:flex;flex-direction:column;gap:12px}
 .row{display:flex;flex-wrap:wrap;gap:12px;align-items:center}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:16px;padding:22px;display:flex;flex-direction:column;gap:18px}
+.chips{display:flex;flex-wrap:wrap;gap:6px}
+.chip{font-size:.88rem;padding:4px 11px;border-radius:20px;border:1px solid var(--line);background:var(--surface)}
+.chip.req{border:2px solid var(--accent);color:var(--accent);font-weight:700}
+.note{font-size:.88rem;color:var(--muted);border-left:3px solid var(--line);padding-left:12px}
 
-/* intro */
-.intro{display:flex;flex-direction:column;gap:20px}
-.intro .lead{font-size:1.12rem}
-.stages{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin:0;padding:0;list-style:none}
-.stages li{border-top:3px solid var(--accent);padding-top:10px;display:flex;flex-direction:column;gap:4px;min-width:0}
-.stages li.s2{border-top-color:var(--mark)}
-.stages b{font-family:var(--display);font-size:1.05rem}
-.note{font-size:.9rem;color:var(--muted);border-left:3px solid var(--line);padding-left:12px}
+/* start */
+.facts{display:flex;flex-wrap:wrap;gap:8px;margin:0;padding:0;list-style:none}
+.facts li{font-size:.88rem;padding:5px 12px;border-radius:20px;background:var(--accent-soft);color:var(--accent);font-weight:700}
+.lead{font-size:1.15rem}
 
-/* quiz */
-.progress{display:flex;flex-direction:column;gap:8px}
+/* pytania */
+.qtop{display:flex;align-items:center;justify-content:space-between;gap:12px}
+.qback{background:none;border:0;padding:8px 0;color:var(--muted);font-weight:700;min-height:44px}
+.qback:disabled{visibility:hidden}
+.qcount{font-size:.88rem;color:var(--muted);font-variant-numeric:tabular-nums}
 .track{height:6px;background:var(--line);border-radius:3px;overflow:hidden}
 .track i{display:block;height:100%;background:var(--accent);transition:width .25s}
-.qcard{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:28px 24px;display:flex;flex-direction:column;gap:26px}
-.qtext{font-family:var(--display);font-size:clamp(1.3rem,4.2vw,1.75rem);font-weight:500;line-height:1.25;text-wrap:balance}
-.qtext .stem{display:block;font-size:.95rem;color:var(--muted);font-family:var(--body);margin-bottom:6px}
-.scale{display:grid;grid-template-columns:repeat(5,1fr);gap:8px}
-.opt{border:1.5px solid var(--line);background:var(--bg);color:var(--ink);border-radius:10px;padding:14px 4px;display:flex;flex-direction:column;align-items:center;gap:2px}
-.opt .n{font-family:var(--mono);font-size:1.2rem}
-.opt .l{font-size:.72rem;color:var(--muted);text-align:center;line-height:1.2;min-height:2.4em}
-.opt:hover{border-color:var(--accent)}
-.opt[aria-pressed="true"]{background:var(--accent);border-color:var(--accent);color:var(--bg)}
-.opt[aria-pressed="true"] .l{color:var(--bg)}
-.qnav{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap}
-.kbd{font-size:.8rem;color:var(--muted)}
+.qtext{font-family:var(--display);font-size:clamp(1.4rem,5vw,1.8rem);font-weight:500;line-height:1.25;text-wrap:balance}
+.answers{display:flex;flex-direction:column;gap:8px}
+.ans{display:flex;align-items:center;gap:14px;text-align:left;width:100%;border:1.5px solid var(--line);background:var(--surface);border-radius:12px;padding:14px 16px;min-height:56px;transition:border-color .15s, background .15s}
+.ans .dot{flex:none;width:22px;height:22px;border-radius:50%;border:2px solid var(--line);display:grid;place-items:center}
+.ans:hover{border-color:var(--accent)}
+.ans[aria-checked="true"]{border-color:var(--accent);background:var(--accent-soft)}
+.ans[aria-checked="true"] .dot{border-color:var(--accent);background:var(--accent);box-shadow:inset 0 0 0 4px var(--accent-soft)}
+.hint{font-size:.82rem;color:var(--muted)}
 
-/* results */
-.section{display:flex;flex-direction:column;gap:16px}
-.bars{display:flex;flex-direction:column;gap:14px}
-.bar{display:grid;grid-template-columns:minmax(0,1fr);gap:6px}
-.bar .top{display:flex;justify-content:space-between;gap:12px;align-items:baseline}
-.bar .name{font-weight:700}
-.bar .lvl{font-size:.85rem;color:var(--muted)}
-.scaletrack{position:relative;height:10px;background:var(--line);border-radius:5px}
-.scaletrack .fill{position:absolute;left:0;top:0;bottom:0;border-radius:5px;background:var(--accent)}
-.scaletrack .zone{position:absolute;top:-3px;bottom:-3px;width:2px;background:var(--bg)}
-.bar .desc{font-size:.92rem;color:var(--muted)}
-.riasec{display:grid;grid-template-columns:repeat(6,1fr);gap:8px;align-items:end}
-.rcol{display:flex;flex-direction:column;align-items:center;gap:6px;min-width:0}
-.rcol .colbox{width:100%;height:120px;background:var(--surface);border:1px solid var(--line);border-radius:8px;display:flex;align-items:flex-end;overflow:hidden}
-.rcol .colfill{width:100%;background:var(--line)}
-.rcol.top .colfill{background:var(--mark)}
-.rcol .letter{font-family:var(--display);font-weight:700;font-size:1.3rem}
-.rcol.top .letter{color:var(--mark)}
-.rcol .rname{font-size:.72rem;color:var(--muted);text-align:center;line-height:1.2}
-.code{display:inline-flex;gap:4px;font-family:var(--mono);background:var(--mark-soft);color:var(--ink);padding:2px 10px;border-radius:6px}
-
-.path{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:24px;display:flex;flex-direction:column;gap:20px}
-.path.primary{border:2px solid var(--accent)}
-.pathhead{display:flex;flex-direction:column;gap:6px}
-.tag{align-self:flex-start;font-size:.72rem;font-weight:700;letter-spacing:.08em;text-transform:uppercase;padding:3px 8px;border-radius:5px;background:var(--accent-soft);color:var(--accent)}
-.grid2{display:grid;grid-template-columns:1fr 1fr;gap:20px}
-.grid2>div{min-width:0;display:flex;flex-direction:column;gap:8px}
-ul.clean{margin:0;padding-left:1.1em;display:flex;flex-direction:column;gap:3px}
-.roles{display:flex;flex-direction:column;gap:10px}
-.role{border-left:3px solid var(--mark);padding:2px 0 2px 12px;display:flex;flex-direction:column;gap:2px}
-.role.second{border-left-color:var(--line)}
-.role .rh{display:flex;justify-content:space-between;gap:10px;align-items:baseline}
-.role b{font-family:var(--display);font-size:1.02rem}
-.role .fit{font-family:var(--mono);font-size:.78rem;color:var(--muted);white-space:nowrap}
-.role span.w{font-size:.9rem;color:var(--muted)}
-.chips{display:flex;flex-wrap:wrap;gap:6px}
-.chip{font-size:.85rem;padding:3px 10px;border-radius:20px;border:1px solid var(--line);background:var(--surface)}
-.chip.req{border-color:var(--accent);color:var(--accent);font-weight:700}
-.warn{font-size:.85rem;color:var(--muted)}
-
-.offers{display:flex;flex-direction:column;border:1px solid var(--line);border-radius:10px;overflow:hidden}
-.offer{display:flex;flex-direction:column;gap:6px;padding:12px 14px;background:var(--bg)}
+/* wynik */
+.tabs{display:grid;grid-template-columns:1fr 1fr;gap:6px;background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:5px}
+.tab{border:0;background:transparent;border-radius:10px;padding:10px 12px;text-align:left;display:flex;flex-direction:column;gap:2px;min-height:56px;min-width:0}
+.tab small{font-size:.72rem;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--muted)}
+.tab span{font-weight:700;line-height:1.2;overflow-wrap:anywhere}
+.tab[aria-selected="true"]{background:var(--accent);color:var(--bg)}
+.tab[aria-selected="true"] small{color:var(--bg);opacity:.85}
+.role{border-left:4px solid var(--mark);padding:2px 0 2px 14px;display:flex;flex-direction:column;gap:4px}
+.role b{font-family:var(--display);font-size:1.25rem;line-height:1.2}
+.fit{display:inline-block;font-size:.8rem;font-weight:700;color:var(--mark);font-variant-numeric:tabular-nums}
+.offers{display:flex;flex-direction:column;border:1px solid var(--line);border-radius:12px;overflow:hidden}
+.offer{background:var(--bg)}
 .offer+.offer{border-top:1px solid var(--line)}
-.offer .oh{display:flex;flex-wrap:wrap;justify-content:space-between;gap:6px 12px;align-items:baseline}
-.offer .who{font-weight:700}
-.offer .who span{font-weight:400;color:var(--muted)}
-.offer p{font-size:.92rem}
-.offer .src{font-size:.82rem}
-.st{font-size:.7rem;font-weight:700;letter-spacing:.06em;text-transform:uppercase;padding:2px 7px;border-radius:4px;white-space:nowrap}
+.offer summary{list-style:none;cursor:pointer;padding:12px 14px;display:flex;justify-content:space-between;align-items:center;gap:10px;min-height:52px}
+.offer summary::-webkit-details-marker{display:none}
+.offer summary .who{display:flex;flex-direction:column;min-width:0}
+.offer summary .who b{line-height:1.25}
+.offer summary .who span{font-size:.85rem;color:var(--muted)}
+.offer summary::after{content:"+";font-size:1.3rem;color:var(--muted);flex:none}
+.offer[open] summary::after{content:"–"}
+.offer .body{padding:0 14px 14px;display:flex;flex-direction:column;gap:8px;font-size:.92rem}
+.st{align-self:flex-start;font-size:.7rem;font-weight:700;letter-spacing:.05em;text-transform:uppercase;padding:2px 7px;border-radius:4px}
 .st.v{background:var(--accent);color:var(--bg)}
 .st.p{background:var(--accent-soft);color:var(--accent)}
 .st.o{background:var(--mark-soft);color:var(--ink)}
-.st.x{background:transparent;color:var(--muted);border:1px solid var(--line)}
+.st.x{color:var(--muted);border:1px solid var(--line)}
+.traits{display:flex;flex-direction:column;gap:12px;margin:0;padding:0;list-style:none}
+.traits li{display:flex;flex-direction:column;gap:2px}
+.traits .th{display:flex;justify-content:space-between;gap:10px;align-items:center}
+.lvl{display:inline-flex;gap:3px}
+.lvl i{width:18px;height:6px;border-radius:3px;background:var(--line)}
+.lvl i.on{background:var(--accent)}
+details.more{border-top:1px solid var(--line);padding-top:14px}
+details.more summary{cursor:pointer;font-weight:700;min-height:32px}
+details.more .body{display:flex;flex-direction:column;gap:10px;padding-top:10px;font-size:.92rem}
+.formula{font-family:ui-monospace,Menlo,monospace;font-size:.82rem;background:var(--bg);padding:8px 10px;border-radius:6px;overflow-x:auto}
 
-details.method{border:1px solid var(--line);border-radius:10px;padding:12px 16px;background:var(--surface)}
-details.method summary{cursor:pointer;font-weight:700}
-details.method[open] summary{margin-bottom:10px}
-details.method .mbody{display:flex;flex-direction:column;gap:10px;font-size:.92rem}
-.formula{font-family:var(--mono);font-size:.85rem;background:var(--bg);padding:8px 10px;border-radius:6px;overflow-x:auto}
-
-/* subjects */
-.stage2{display:flex;flex-direction:column;gap:16px;border-top:3px solid var(--mark);padding-top:18px}
+/* przedmioty */
 .subjects{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:10px}
-.subj{position:relative;text-align:left;border:1.5px solid var(--line);background:var(--surface);color:var(--ink);border-radius:10px;padding:14px;display:flex;flex-direction:column;gap:4px;min-height:84px}
-.subj b{font-family:var(--display);font-size:1rem;line-height:1.2}
+.subj{text-align:left;border:1.5px solid var(--line);background:var(--surface);border-radius:12px;padding:14px;display:flex;flex-direction:column;gap:4px;min-height:84px}
+.subj b{font-family:var(--display);line-height:1.2}
 .subj small{font-size:.75rem;color:var(--muted)}
 .subj.on{border-color:var(--accent);border-width:2px}
 .subj.on:hover{background:var(--accent-soft)}
 .subj.on small{color:var(--accent);font-weight:700}
 .subj:disabled{cursor:not-allowed;opacity:.55;background:var(--bg)}
-.subj.rec{border:2.5px solid var(--mark);box-shadow:inset 0 0 0 1px var(--mark-soft)}
+.subj.rec{border:2.5px solid var(--mark)}
 .subj.rec:disabled{opacity:.8}
-.subj .rectag{align-self:flex-start;font-size:.66rem;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--mark)}
+.subj .rectag{font-size:.66rem;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--mark)}
 .legend{display:flex;align-items:center;gap:8px;font-size:.82rem;color:var(--muted)}
 .legend i{display:inline-block;width:18px;height:12px;border-radius:3px;border:2.5px solid var(--mark)}
+.placeholder{border:2px dashed var(--line);border-radius:16px;padding:28px 22px;display:flex;flex-direction:column;gap:10px}
+.copyfallback{width:100%;min-height:160px;font-family:ui-monospace,Menlo,monospace;font-size:.8rem;background:var(--surface);color:var(--ink);border:1px solid var(--line);border-radius:8px;padding:10px}
 
-.placeholder{background:var(--surface);border:2px dashed var(--line);border-radius:14px;padding:32px 24px;display:flex;flex-direction:column;gap:12px;align-items:flex-start}
-.copyfallback{width:100%;min-height:160px;font-family:var(--mono);font-size:.8rem;background:var(--surface);color:var(--ink);border:1px solid var(--line);border-radius:8px;padding:10px}
-hr{border:0;border-top:1px solid var(--line);margin:0}
-
-@media (max-width:560px){
-  .stages{grid-template-columns:1fr}
-  .grid2{grid-template-columns:1fr}
-  .qcard{padding:22px 16px}
-  .scale{gap:5px}
-  .opt .l{font-size:.64rem}
-  .rcol .rname{display:none}
-  .path{padding:18px}
+@media (max-width:480px){
+  .card{padding:18px}
   .subjects{grid-template-columns:1fr 1fr}
 }
 @media (prefers-reduced-motion:reduce){*{transition:none!important}}
 </style>
-
-<div class="wrap" id="app"></div>
+</head>
+<body>
+<main class="wrap" id="app" aria-live="polite"></main>
 
 <script>
 /* ===================== DANE ===================== */
@@ -399,17 +380,6 @@ const PATHS = {
 const PAIRS = {RI:"tech",RA:"proj",RS:"zdrowie",RE:"biz",RC:"tech",IA:"proj",IS:"med",IE:"fin",IC:"fin",AS:"spol",AE:"media",AC:"proj",SE:"biz",SC:"prawo",EC:"fin"};
 const SAMPLE = [2,4,4,2,5,1,4,2,4,3, 2,2,5,5,2,3,3,2,3,3,5,4];
 
-/* ===================== STAN ===================== */
-let answers = load() || Array(Q.length).fill(null);
-let idx = 0, screen = "intro", isSample = false, subject = null, from = "intro";
-
-function load(){try{const a=JSON.parse(localStorage.getItem("kompas-answers"));return Array.isArray(a)&&a.length===Q.length?a:null}catch(e){return null}}
-function save(){try{localStorage.setItem("kompas-answers",JSON.stringify(answers))}catch(e){}}
-const app = document.getElementById("app");
-const esc = s => String(s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
-const lvlIdx = v => v<=4?0:v<=7?1:2;
-const LVL = ["niski","średni","wysoki"];
-
 /* ===================== LOGIKA ===================== */
 function score(a){
   const t={EX:0,UG:0,SU:0,ST:0,OT:0}, r={R:0,I:0,A:0,S:0,E:0,C:0};
@@ -450,244 +420,240 @@ function rankRoles(path,t){
   }).sort((a,b)=>b.fit-a.fit);
 }
 
+
 /* ===================== WIDOKI ===================== */
-function render(){
-  ({intro:renderIntro,quiz:renderQuiz,result:renderResult,subjects:renderSubjects,subject:renderSubject})[screen]();
-}
-function go(s){screen=s;render();window.scrollTo(0,0)}
+const FRIENDLY = {
+  R:"technika i praca rękami", I:"analiza i rozwiązywanie problemów", A:"tworzenie i nowe pomysły",
+  S:"pomaganie ludziom", E:"przekonywanie i kierowanie", C:"porządek i praca z danymi"
+};
+const ANSWERS = ["Zdecydowanie nie","Raczej nie","Nie wiem","Raczej tak","Zdecydowanie tak"];
 
-function renderIntro(){
-  const started = answers.some(v=>v!==null);
+let answers = load() || Array(Q.length).fill(null);
+let idx = 0, screen = "start", isSample = false, subject = null, from = "start", plan = 0, busy = false;
+
+function load(){try{const a=JSON.parse(localStorage.getItem("maturalni-answers"));return Array.isArray(a)&&a.length===Q.length?a:null}catch(e){return null}}
+function save(){try{localStorage.setItem("maturalni-answers",JSON.stringify(answers))}catch(e){}}
+const app = document.getElementById("app");
+const esc = s => String(s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+const lvlIdx = v => v<=4?0:v<=7?1:2;
+const LVL = ["niska","średnia","wysoka"];
+const $ = id => document.getElementById(id);
+
+function go(s){screen=s;render();window.scrollTo(0,0);const h=app.querySelector("h1,h2");if(h){h.setAttribute("tabindex","-1");h.focus({preventScroll:true})}}
+function render(){({start:viewStart,quiz:viewQuiz,result:viewResult,subjects:viewSubjects,subject:viewSubject})[screen]()}
+function startTest(){isSample=false;idx=answers.includes(null)?answers.indexOf(null):0;if(!answers.includes(null)){go("result")}else go("quiz")}
+
+/* ---------- start ---------- */
+function viewStart(){
+  const n = answers.filter(v=>v!==null).length;
+  const resume = n>0 && n<Q.length, done = n===Q.length;
   app.innerHTML=`
-  <section class="intro">
-    <span class="eyebrow">Dla uczniów szkół średnich</span>
-    <h1>Maturalni Plus</h1>
-    <p class="lead">Dwa etapy: najpierw sprawdzasz, jaka ścieżka zawodowa do Ciebie pasuje, potem diagnozujesz swoją wiedzę z przedmiotu maturalnego.</p>
-    <ul class="stages">
-      <li><b>Etap 1 · Diagnoza zawodowa i osobowościowa</b><span class="muted">22 pytania, ok. 5 minut. Wynik: ścieżka, rola dopasowana do osobowości, kierunki studiów, uczelnie i przedmioty maturalne.</span></li>
-      <li class="s2"><b>Etap 2 · Diagnoza przedmiotowa</b><span class="muted">Sprawdzenie stanu wiedzy z wybranego przedmiotu maturalnego. Na start dostępna matematyka.</span></li>
-    </ul>
-    <div class="row">
-      <button class="btn" id="start">${started?"Kontynuuj test":"Rozpocznij test"}</button>
-      <button class="btn ghost" id="sample">Zobacz przykładowy wynik</button>
+  <span class="eyebrow">Dla maturzystów</span>
+  <h1>Maturalni Plus</h1>
+  <p class="lead">Sprawdź w 5 minut, jaki kierunek studiów do Ciebie pasuje i jakie przedmioty zdawać na maturze.</p>
+  <ul class="facts"><li>22 krótkie pytania</li><li>ok. 5 minut</li><li>bez logowania</li></ul>
+  <div class="stack">
+    <button class="btn wide" id="go">${done?"Zobacz swój wynik":resume?`Kontynuuj (pytanie ${n+1} z ${Q.length})`:"Zaczynam"}</button>
+    <div class="row" style="justify-content:space-between">
+      <button class="btn link" id="sample">Pokaż przykładowy wynik</button>
+      <button class="btn link" id="skip">Pomiń test, przejdź do przedmiotów</button>
     </div>
-    <div class="row">
-      <button class="btn link" id="skip">Nie chcę rozwiązywać testu diagnostycznego</button>
-      ${started?'<button class="btn link" id="reset">Zacznij test od nowa</button>':""}
-    </div>
-    <p class="note">Etap 1 to narzędzie orientacyjne, nie diagnoza psychologiczna. Nie ma dobrych ani złych odpowiedzi. Wynik traktuj jako punkt wyjścia do rozmowy z doradcą zawodowym.</p>
-  </section>`;
-  document.getElementById("start").onclick=()=>{isSample=false;if(answers.every(v=>v!==null)){go("result")}else{idx=Math.max(0,answers.indexOf(null));go("quiz")}};
-  document.getElementById("sample").onclick=()=>{isSample=true;go("result")};
-  document.getElementById("skip").onclick=()=>{from="intro";go("subjects")};
-  const rs=document.getElementById("reset");if(rs)rs.onclick=()=>{answers=Array(Q.length).fill(null);save();idx=0;isSample=false;go("quiz")};
+    ${n?'<button class="btn link" id="reset" style="align-self:flex-start">Zacznij od nowa</button>':""}
+  </div>
+  <p class="note">Nie ma dobrych ani złych odpowiedzi. Wynik to podpowiedź na start, nie wyrok. Warto o nim porozmawiać z doradcą zawodowym.</p>`;
+  $("go").onclick=startTest;
+  $("sample").onclick=()=>{isSample=true;plan=0;go("result")};
+  $("skip").onclick=()=>{from="start";go("subjects")};
+  if($("reset"))$("reset").onclick=()=>{answers=Array(Q.length).fill(null);save();startTest()};
 }
 
-function renderQuiz(){
-  const q=Q[idx], partA=idx<10, labels=partA?LABELS_A:LABELS_B;
-  const pos=partA?`${idx+1} z 10`:`${idx-9} z 12`;
-  const done=answers.filter(v=>v!==null).length;
+/* ---------- pytania ---------- */
+function viewQuiz(){
+  const q=Q[idx], partA=idx<10;
+  const text = partA ? q.t : q.t.charAt(0).toUpperCase()+q.t.slice(1)+".";
   app.innerHTML=`
-  <div class="progress">
-    <div class="row" style="justify-content:space-between"><span class="eyebrow">${partA?"Część A · Osobowość":"Część B · Zainteresowania"} · ${pos}</span><span class="num muted" style="font-size:.85rem">${done}/${Q.length}</span></div>
-    <div class="track"><i style="width:${done/Q.length*100}%"></i></div>
-  </div>
-  <div class="qcard">
-    <div class="qtext" id="qt">${partA?"":'<span class="stem">Chętnie bym…</span>'}${esc(partA?q.t:"…"+q.t)}</div>
-    <div class="scale" role="group" aria-labelledby="qt">
-      ${labels.map((l,i)=>`<button class="opt" id="opt${i+1}" data-v="${i+1}" aria-pressed="${answers[idx]===i+1}"><span class="n">${i+1}</span><span class="l">${l}</span></button>`).join("")}
+  <div class="stack" style="gap:8px">
+    <div class="qtop">
+      <button class="qback" id="back">← ${idx===0?"Start":"Wstecz"}</button>
+      <span class="qcount">Pytanie ${idx+1} z ${Q.length}</span>
     </div>
+    <div class="track" role="progressbar" aria-valuemin="0" aria-valuemax="${Q.length}" aria-valuenow="${idx}" aria-label="Postęp testu"><i style="width:${idx/Q.length*100}%"></i></div>
   </div>
-  <div class="qnav">
-    <button class="btn ghost" id="back">${idx===0?"Wróć do opisu":"Poprzednie pytanie"}</button>
-    <span class="kbd">Możesz odpowiadać klawiszami 1–5</span>
-  </div>`;
-  app.querySelectorAll(".opt").forEach(b=>b.onclick=()=>answer(+b.dataset.v));
-  document.getElementById("back").onclick=back;
+  <span class="eyebrow">${partA?"O Tobie":"Czy to coś dla Ciebie?"}</span>
+  <h2 class="qtext" id="qt">${esc(text)}</h2>
+  <div class="answers" role="radiogroup" aria-labelledby="qt">
+    ${ANSWERS.map((l,i)=>`<button class="ans" role="radio" id="a${i+1}" data-v="${i+1}" aria-checked="${answers[idx]===i+1}"><span class="dot"></span>${l}</button>`).join("")}
+  </div>
+  <p class="hint">Na komputerze możesz odpowiadać klawiszami 1–5.</p>`;
+  app.querySelectorAll(".ans").forEach(b=>b.onclick=()=>answer(+b.dataset.v));
+  $("back").onclick=back;
 }
 function answer(v){
+  if(busy)return;busy=true;
   answers[idx]=v;save();
-  if(idx<Q.length-1){idx++;render()}
-  else go("result");
+  app.querySelectorAll(".ans").forEach(b=>b.setAttribute("aria-checked",+b.dataset.v===v));
+  setTimeout(()=>{busy=false;
+    if(idx<Q.length-1){idx++;render();const h=$("qt");h.setAttribute("tabindex","-1");h.focus({preventScroll:true})}
+    else{isSample=false;plan=0;go("result")}
+  },180);
 }
-function back(){if(idx===0){go("intro")}else{idx--;render()}}
+function back(){if(idx===0)go("start");else{idx--;render()}}
 document.addEventListener("keydown",e=>{
   if(screen!=="quiz"||e.metaKey||e.ctrlKey||e.altKey)return;
   if(/^[1-5]$/.test(e.key)){e.preventDefault();answer(+e.key)}
   else if(e.key==="ArrowLeft"){e.preventDefault();back()}
 });
 
-function subjectGrid(relevant){
-  return `<div class="subjects">${SUBJECTS.map(s=>`
-    <button class="subj ${s.active?"on":""} ${relevant.includes(s.id)?"rec":""}" id="subj-${s.id}" data-id="${s.id}" ${s.active?"":"disabled"} aria-label="${s.n}${relevant.includes(s.id)?", rekomendowany":""}${s.active?"":" – niedostępne"}">
-      ${relevant.includes(s.id)?'<span class="rectag">Rekomendowany</span>':""}
-      <b>${s.n}</b><small>${s.active?"Rozpocznij diagnozę":"Wkrótce"}</small>
-    </button>`).join("")}</div>`;
+/* ---------- wynik ---------- */
+function subjectGrid(rec){
+  return `<div class="subjects">${SUBJECTS.map(s=>{const r=rec.includes(s.id);return `
+    <button class="subj ${s.active?"on":""} ${r?"rec":""}" data-id="${s.id}" ${s.active?"":"disabled"} aria-label="${s.n}${r?", rekomendowany":""}${s.active?"":", wkrótce"}">
+      ${r?'<span class="rectag">Rekomendowany</span>':""}
+      <b>${s.n}</b><small>${s.active?"Sprawdź wiedzę →":"Wkrótce"}</small>
+    </button>`}).join("")}</div>`;
 }
-function bindSubjects(){
-  app.querySelectorAll(".subj.on").forEach(b=>b.onclick=()=>{subject=b.dataset.id;go("subject")});
+function bindSubjects(){app.querySelectorAll(".subj.on").forEach(b=>b.onclick=()=>{subject=b.dataset.id;go("subject")})}
+
+function planCard(p,t){
+  const P=PATHS[p.id], roles=rankRoles(P,t), top=roles[0], alt=roles[1];
+  const why=w=>w.length?"Pasuje do Twojego profilu: "+w.join(", ")+".":"Najbliższe dopasowanie przy Twoim profilu.";
+  return `
+  <div class="card" id="plan-panel" role="tabpanel">
+    <p class="muted">${P.opis}</p>
+    <div class="stack" style="gap:8px">
+      <h3>Rola, która do Ciebie pasuje</h3>
+      <div class="role"><span class="fit">dopasowanie ${top.pct}%</span><b>${top.n}</b><span class="muted small">${why(top.why)}</span></div>
+      <p class="small muted">Inna opcja: <b style="color:var(--ink)">${alt.n}</b> (${alt.pct}%)</p>
+    </div>
+    <div class="stack" style="gap:8px">
+      <h3>Kierunki studiów</h3>
+      <div class="chips">${P.kierunki.map(k=>`<span class="chip">${k}</span>`).join("")}</div>
+    </div>
+    <div class="stack" style="gap:8px">
+      <h3>Co zdawać na maturze</h3>
+      <div class="chips">${P.req.map(s=>`<span class="chip req">${s}</span>`).join("")}${P.opt.map(s=>`<span class="chip">${s}</span>`).join("")}</div>
+      <p class="small muted">${P.req.length?"Pogrubione: najczęściej wymagane. Reszta: do wyboru, zależnie od uczelni.":"Do wyboru, zależnie od uczelni."}</p>
+    </div>
+    <div class="stack" style="gap:8px">
+      <h3>Gdzie studiować</h3>
+      <div class="offers">${P.oferty.map(o=>`
+        <details class="offer"><summary><span class="who"><b>${o.u}</b><span>${o.k}</span></span></summary>
+          <div class="body"><span class="st ${o.s}">${STATUS[o.s]}</span><p>${o.m}</p>${o.src?`<a href="${o.src}" target="_blank" rel="noopener">Zobacz źródło</a>`:""}</div>
+        </details>`).join("")}</div>
+      <p class="small muted">Kliknij uczelnię, żeby zobaczyć zasady rekrutacji.</p>
+    </div>
+  </div>`;
 }
 
-function renderResult(){
+function viewResult(){
   const a=isSample?SAMPLE:answers;
   const {t,r}=score(a);
   const {paths,topLetters}=pickPaths(r);
-  const maxR=Math.max(...Object.values(r));
-  const code=topLetters.slice(0,3).join("");
-  const relevant=[...new Set(paths.flatMap(p=>PATHS[p.id].key))];
-
-  const traitBars=Object.keys(TRAITS).map(k=>{const v=t[k],li=lvlIdx(v);return `
-    <div class="bar">
-      <div class="top"><span class="name">${TRAITS[k].name}</span><span class="lvl"><span class="num">${v}</span>/10 · ${LVL[li]}</span></div>
-      <div class="scaletrack" aria-hidden="true"><div class="fill" style="width:${(v-2)/8*100}%"></div><div class="zone" style="left:${2.5/8*100}%"></div><div class="zone" style="left:${5.5/8*100}%"></div></div>
-      <span class="desc">${TRAITS[k].d[li]}</span>
-    </div>`}).join("");
-
-  const cols=ORDER.map(k=>`
-    <div class="rcol ${topLetters.includes(k)?"top":""}">
-      <span class="num" style="font-size:.85rem">${r[k]}</span>
-      <div class="colbox"><div class="colfill" style="height:${r[k]/10*100}%"></div></div>
-      <span class="letter">${k}</span><span class="rname">${RIASEC[k].name}</span>
-    </div>`).join("");
-
-  const pathCards=paths.map((p,i)=>{
-    const P=PATHS[p.id], roles=rankRoles(P,t);
-    const why=w=>w.length?"Pasuje, bo: "+w.join(", ")+".":"Najbliższe dopasowanie przy Twoim profilu.";
-    return `
-    <article class="path ${i===0?"primary":""}">
-      <div class="pathhead">
-        <span class="tag">${i===0?"Plan A · ścieżka główna":"Plan B · ścieżka alternatywna"} · kod ${p.code}</span>
-        <h2>${P.name}</h2>
-        <p class="muted">${P.opis}</p>
-      </div>
-      <div class="grid2">
-        <div><h3>Kierunki studiów</h3><ul class="clean">${P.kierunki.map(k=>`<li>${k}</li>`).join("")}</ul></div>
-        <div><h3>Rola dopasowana do osobowości</h3>
-          <div class="roles">
-            ${roles.slice(0,2).map((ro,j)=>`<div class="role ${j?"second":""}"><div class="rh"><b>${ro.n}</b><span class="fit">${ro.pct}%</span></div><span class="w">${j?"Druga opcja. ":""}${why(ro.why)}</span></div>`).join("")}
-          </div>
-        </div>
-      </div>
-      <div class="section" style="gap:10px">
-        <h3>Przedmioty maturalne</h3>
-        <div class="chips">
-          ${P.req.map(s=>`<span class="chip req">${s}</span>`).join("")}
-          ${P.opt.map(s=>`<span class="chip">${s}</span>`).join("")}
-        </div>
-        <p class="warn">${P.req.length?"Wyróżnione: najczęściej wymagane. Pozostałe: do wyboru, zależnie od uczelni.":"Przedmioty do wyboru, zależnie od uczelni."}</p>
-      </div>
-      <div class="section" style="gap:10px">
-        <h3>Gdzie studiować i co zdawać</h3>
-        <div class="offers">${P.oferty.map(o=>`
-          <div class="offer">
-            <div class="oh"><span class="who">${o.u} <span>· ${o.k}</span></span><span class="st ${o.s}">${STATUS[o.s]}</span></div>
-            <p>${o.m}</p>
-            ${o.src?`<a class="src" href="${o.src}" target="_blank" rel="noopener">Źródło</a>`:""}
-          </div>`).join("")}</div>
-      </div>
-    </article>`}).join("");
+  const P0=PATHS[paths[0].id];
+  const rec=[...new Set(paths.flatMap(p=>PATHS[p.id].key))];
+  const topInt=ORDER.slice().sort((x,y)=>r[y]-r[x]).slice(0,2);
 
   app.innerHTML=`
-  <header class="section">
-    <span class="eyebrow">${isSample?"Przykładowy wynik (dane demonstracyjne)":"Etap 1 · Twój wynik"}</span>
-    <h1>${PATHS[paths[0].id].name}</h1>
-    <p>Twój kod zainteresowań to <span class="code">${code}</span>. Plan A to ścieżka najlepiej dopasowana do Twoich zainteresowań. Plan B to ${PATHS[paths[1].id].name.toLowerCase()}: druga w kolejności, warta rozważenia równolegle.</p>
-    ${maxR<=5?'<p class="note">Wszystkie Twoje zainteresowania wyszły nisko, więc ścieżka jest mało wyrazista. Warto wrócić do testu za jakiś czas albo porozmawiać z doradcą.</p>':""}
-  </header>
-  <section class="section">
-    <h2>Zainteresowania</h2>
-    <div class="riasec">${cols}</div>
-    <p class="muted" style="font-size:.9rem">${topLetters.map(k=>`<b>${k} – ${RIASEC[k].name}:</b> ${RIASEC[k].d}`).join(". ")}.</p>
-  </section>
-  ${pathCards}
-  <section class="section">
-    <h2>Osobowość</h2>
-    <div class="bars">${traitBars}</div>
-  </section>
-  <details class="method" id="method">
-    <summary>Jak liczymy wynik</summary>
-    <div class="mbody">
-      <p><b>Plan A</b> wynika z dwóch najwyższych wyników zainteresowań (model RIASEC Hollanda). Każda para liter ma przypisaną jedną ścieżkę. <b>Plan B</b> to następna para liter o najwyższej sumie wyników, która prowadzi do innej ścieżki. Przy remisie Plan B pochodzi z pary remisowej.</p>
-      <p><b>Rola w ścieżce</b> wynika z osobowości (Wielka Piątka). Każda rola ma wagi cech. Dopasowanie to średnia ważona odchyleń Twoich cech od środka skali:</p>
-      <div class="formula">dopasowanie = Σ waga × (cecha − 6) / Σ |waga|  →  przeliczone na 0–100%</div>
-      <p>Dzięki dzieleniu przez sumę wag rola opisana trzema cechami nie ma przewagi nad rolą opisaną dwiema. Wagi oparliśmy na badaniach: sumienność sprzyja wynikom w prawie każdym zawodzie, a ekstrawersja pomaga zwłaszcza w sprzedaży i zarządzaniu (Barrick i Mount, 1991). Wagę ekstrawersji w sprzedaży obniżyliśmy, bo najlepsi sprzedawcy to często ambiwertycy, a nie skrajni ekstrawertycy (Grant, 2013). Wagi są założeniem eksperckim i zostaną dostrojone po pilotażu.</p>
-    </div>
-  </details>
-  <section class="stage2">
-    <span class="eyebrow">Etap 2</span>
-    <h2>Diagnoza przedmiotowa</h2>
-    <p class="muted">Wybierz przedmiot maturalny, z którego chcesz sprawdzić swój stan wiedzy.</p>
-    <span class="legend"><i></i> rekomendowany dla Twojego Planu A lub B</span>
-    ${subjectGrid(relevant)}
-  </section>
-  <hr>
-  <p class="warn">Wymagania rekrutacyjne sprawdziliśmy w uchwałach uczelni na rok 2027/28 tam, gdzie były dostępne. Pozycje oznaczone „Zasady 2026/27” lub „Do sprawdzenia” wymagają potwierdzenia. Wynik to punkt wyjścia do rozmowy z doradcą zawodowym, nie diagnoza.</p>
-  <div class="row">
-    <button class="btn" id="copy">Kopiuj wynik</button>
-    <button class="btn ghost" id="again">${isSample?"Zrób własny test":"Zrób test ponownie"}</button>
-    <span id="copymsg" class="muted" role="status"></span>
-  </div>
-  <div id="fallback"></div>`;
+  <span class="eyebrow">${isSample?"Przykładowy wynik":"Twój wynik"}</span>
+  <h1>Pasuje do Ciebie ścieżka ${P0.name.toLowerCase()}</h1>
+  <p>Najbardziej ciekawi Cię ${FRIENDLY[topInt[0]]} oraz ${FRIENDLY[topInt[1]]}. Masz dwa plany do porównania.</p>
+  ${Math.max(...Object.values(r))<=5?'<p class="note">Twoje odpowiedzi o zainteresowaniach wyszły dość niskie, więc wynik jest mniej pewny. Warto wrócić do testu za jakiś czas.</p>':""}
 
+  <div class="tabs" role="tablist" aria-label="Plany">
+    ${paths.map((p,i)=>`<button class="tab" role="tab" id="tab${i}" aria-selected="${plan===i}" aria-controls="plan-panel"><small>Plan ${i?"B":"A"}</small><span>${PATHS[p.id].name}</span></button>`).join("")}
+  </div>
+  <div id="plan">${planCard(paths[plan],t)}</div>
+
+  <section class="card">
+    <h2>Twój profil</h2>
+    <div class="stack" style="gap:8px">
+      <h3>Co Cię ciekawi</h3>
+      <div class="chips">${ORDER.slice().sort((x,y)=>r[y]-r[x]).slice(0,3).map((k,i)=>`<span class="chip ${i<2?"req":""}">${FRIENDLY[k]}</span>`).join("")}</div>
+    </div>
+    <div class="stack" style="gap:10px">
+      <h3>Jak działasz</h3>
+      <ul class="traits">${Object.keys(TRAITS).map(k=>{const li=lvlIdx(t[k]);return `
+        <li><div class="th"><b>${TRAITS[k].name}</b><span class="lvl" aria-label="${LVL[li]}">${[0,1,2].map(j=>`<i class="${j<=li?"on":""}"></i>`).join("")}</span></div>
+        <span class="muted small">${TRAITS[k].d[li]}</span></li>`}).join("")}</ul>
+    </div>
+  </section>
+
+  <section class="stack">
+    <span class="eyebrow">Krok 2</span>
+    <h2>Sprawdź swoją wiedzę z matury</h2>
+    <span class="legend"><i></i> rekomendowane dla Twoich planów</span>
+    ${subjectGrid(rec)}
+  </section>
+
+  <div class="row">
+    <button class="btn ghost" id="copy">Kopiuj wynik</button>
+    <button class="btn link" id="again">${isSample?"Zrób własny test":"Zrób test od nowa"}</button>
+    <span id="copymsg" class="muted small" role="status"></span>
+  </div>
+  <div id="fallback"></div>
+
+  <details class="more">
+    <summary>Jak liczymy wynik</summary>
+    <div class="body">
+      <p><b>Plan A</b> wynika z dwóch Twoich najmocniejszych zainteresowań (model RIASEC Hollanda). <b>Plan B</b> to kolejna najmocniejsza para, która prowadzi do innej ścieżki.</p>
+      <p><b>Rola</b> wynika z cech osobowości (Wielka Piątka). Każda rola ma wagi cech, a dopasowanie to średnia ważona:</p>
+      <div class="formula">dopasowanie = Σ waga × (cecha − 6) / Σ |waga|  →  0–100%</div>
+      <p>Wagi oparliśmy na badaniach (Barrick i Mount, 1991; Grant, 2013). To założenia eksperckie, które dostroimy po pilotażu.</p>
+      <p>Zasady rekrutacji sprawdziliśmy w uchwałach uczelni na rok 2027/28 tam, gdzie były dostępne. Etykieta przy uczelni mówi, czy dane są aktualne.</p>
+    </div>
+  </details>`;
+
+  paths.forEach((p,i)=>$("tab"+i).onclick=()=>{plan=i;app.querySelectorAll(".tab").forEach((b,j)=>b.setAttribute("aria-selected",j===i));$("plan").innerHTML=planCard(paths[i],t)});
   bindSubjects();
-  document.getElementById("again").onclick=()=>{isSample=false;answers=Array(Q.length).fill(null);save();idx=0;go("quiz")};
-  document.getElementById("copy").onclick=()=>{
-    const txt=summary(t,r,paths,code);
-    const msg=document.getElementById("copymsg");
-    const fb=()=>{document.getElementById("fallback").innerHTML=`<textarea class="copyfallback" id="fbt" readonly>${esc(txt)}</textarea>`;const ta=document.getElementById("fbt");ta.focus();ta.select();msg.textContent="Zaznaczono tekst. Skopiuj go skrótem klawiszowym."};
+  $("again").onclick=()=>{answers=Array(Q.length).fill(null);save();startTest()};
+  $("copy").onclick=()=>{
+    const txt=summary(t,r,paths,topLetters.slice(0,3).join("")), msg=$("copymsg");
+    const fb=()=>{$("fallback").innerHTML=`<textarea class="copyfallback" id="fbt" readonly>${esc(txt)}</textarea>`;$("fbt").focus();$("fbt").select();msg.textContent="Zaznaczono tekst, skopiuj go skrótem klawiszowym."};
     try{navigator.clipboard.writeText(txt).then(()=>{msg.textContent="Skopiowano"},fb)}catch(e){fb()}
   };
   from="result";
 }
 
-function renderSubjects(){
+/* ---------- przedmioty ---------- */
+function viewSubjects(){
   app.innerHTML=`
-  <section class="section">
-    <span class="eyebrow">Etap 2</span>
-    <h1>Diagnoza przedmiotowa</h1>
-    <p>Wybierz przedmiot maturalny, z którego chcesz sprawdzić swój stan wiedzy. Na razie dostępna jest matematyka. Kolejne przedmioty dodamy wkrótce.</p>
-    ${subjectGrid([])}
-    <div class="row">
-      <button class="btn ghost" id="toTest">Jednak rozwiąż test diagnostyczny</button>
-      <button class="btn link" id="toIntro">Wróć na początek</button>
-    </div>
-  </section>`;
+  <span class="eyebrow">Krok 2</span>
+  <h1>Sprawdź swoją wiedzę z matury</h1>
+  <p>Wybierz przedmiot. Na razie dostępna jest matematyka, kolejne dodamy wkrótce.</p>
+  ${subjectGrid([])}
+  <div class="stack">
+    <button class="btn ghost wide" id="toTest">Jednak zrób test predyspozycji</button>
+    <button class="btn link" id="toStart" style="align-self:flex-start">← Wróć na start</button>
+  </div>`;
   bindSubjects();
-  document.getElementById("toTest").onclick=()=>{isSample=false;idx=Math.max(0,answers.indexOf(null));go("quiz")};
-  document.getElementById("toIntro").onclick=()=>go("intro");
+  $("toTest").onclick=startTest;
+  $("toStart").onclick=()=>go("start");
   from="subjects";
 }
-
-function renderSubject(){
+function viewSubject(){
   const s=SUBJECTS.find(x=>x.id===subject);
   app.innerHTML=`
-  <section class="section">
-    <span class="eyebrow">Etap 2 · Diagnoza przedmiotowa</span>
-    <h1>${s.n}</h1>
-    <div class="placeholder" id="subject-module" data-subject="${s.id}">
-      <h3>Moduł diagnozy w przygotowaniu</h3>
-      <p class="muted">Tutaj pojawi się test sprawdzający stan wiedzy z przedmiotu ${s.n.toLowerCase()}.</p>
-    </div>
-    <div class="row">
-      <button class="btn ghost" id="backSubj">${from==="result"?"Wróć do wyniku":"Wróć do listy przedmiotów"}</button>
-    </div>
-  </section>`;
-  document.getElementById("backSubj").onclick=()=>go(from==="result"?"result":"subjects");
+  <button class="btn link" id="backSubj" style="align-self:flex-start">← ${from==="result"?"Wróć do wyniku":"Wróć do przedmiotów"}</button>
+  <span class="eyebrow">Diagnoza przedmiotowa</span>
+  <h1>${s.n}</h1>
+  <div class="placeholder" id="subject-module" data-subject="${s.id}">
+    <h3>Moduł w przygotowaniu</h3>
+    <p class="muted">Tutaj pojawi się test sprawdzający Twój stan wiedzy.</p>
+  </div>`;
+  $("backSubj").onclick=()=>go(from==="result"?"result":"subjects");
 }
 
 function summary(t,r,paths,code){
-  const L=[];
-  L.push("KOMPAS MATURZYSTY – wynik etapu 1");
-  L.push("Kod zainteresowań: "+code);
-  L.push("Zainteresowania: "+ORDER.map(k=>`${k} ${r[k]}`).join(", "));
-  L.push("Osobowość: "+Object.keys(TRAITS).map(k=>`${TRAITS[k].name} ${t[k]}/10 (${LVL[lvlIdx(t[k])]})`).join("; "));
+  const L=["MATURALNI PLUS – wynik","Kod zainteresowań: "+code,
+    "Zainteresowania: "+ORDER.map(k=>`${k} ${r[k]}`).join(", "),
+    "Osobowość: "+Object.keys(TRAITS).map(k=>`${TRAITS[k].name} ${t[k]}/10`).join("; ")];
   paths.forEach((p,i)=>{const P=PATHS[p.id],ro=rankRoles(P,t);
-    L.push("");L.push((i===0?"Plan A (ścieżka główna): ":"Plan B (ścieżka alternatywna): ")+P.name);
-    L.push(`Rola: ${ro[0].n} (${ro[0].pct}%), druga opcja: ${ro[1].n} (${ro[1].pct}%)`);
-    L.push("Kierunki: "+P.kierunki.join(", "));
-    L.push("Matura: "+[...P.req,...P.opt].join(", "));
+    L.push("",`Plan ${i?"B":"A"}: ${P.name}`,`Rola: ${ro[0].n} (${ro[0].pct}%), inna opcja: ${ro[1].n} (${ro[1].pct}%)`,
+      "Kierunki: "+P.kierunki.join(", "),"Matura: "+[...P.req,...P.opt].join(", "));
     P.oferty.forEach(o=>L.push(`- ${o.u}, ${o.k} [${STATUS[o.s]}]: ${o.m}`));});
   return L.join("\n");
 }
 render();
 </script>
+</body>
+</html>
