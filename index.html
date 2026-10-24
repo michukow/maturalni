@@ -1,0 +1,659 @@
+<!doctype html>
+<html lang="pl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Kompas Maturalni</title>
+<meta name="description" content="Sprawdź w 5 minut, jaki kierunek studiów do Ciebie pasuje i jakie przedmioty zdawać na maturze.">
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700&family=Atkinson+Hyperlegible:ital,wght@0,400;0,700;1,400&display=swap">
+<style>
+/* Layout: jedna wąska kolumna; test to jedno pytanie na ekran z listą odpowiedzi, wynik to karta planu z zakładkami A/B. */
+:root{
+  --bg:#F3F6F5; --surface:#FFFFFF; --ink:#14201C; --muted:#56655F; --line:#D5DFDB;
+  --accent:#1E6B57; --accent-soft:#DCEDE6; --mark:#B97A12; --mark-soft:#F6E8CC;
+  --display:"Bricolage Grotesque", "Segoe UI", system-ui, sans-serif;
+  --body:"Atkinson Hyperlegible", "Segoe UI", system-ui, sans-serif;
+  color-scheme:light;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#0E1412; --surface:#161F1C; --ink:#E5EDEA; --muted:#93A49D; --line:#2B3934;
+  --accent:#55C2A0; --accent-soft:#1B3A31; --mark:#E2A847; --mark-soft:#3A2E17; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#0E1412; --surface:#161F1C; --ink:#E5EDEA; --muted:#93A49D; --line:#2B3934;
+  --accent:#55C2A0; --accent-soft:#1B3A31; --mark:#E2A847; --mark-soft:#3A2E17; color-scheme:dark}
+
+*{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--body);font-size:17px;line-height:1.55;
+  padding-left:max(16px, env(safe-area-inset-left, 0px));padding-right:max(16px, env(safe-area-inset-right, 0px));
+  padding-block:calc(24px + env(safe-area-inset-top, 0px)) calc(56px + env(safe-area-inset-bottom, 0px))}
+[hidden]{display:none!important}
+.wrap{max-width:640px;margin:0 auto;display:flex;flex-direction:column;gap:24px}
+h1,h2,h3{font-family:var(--display);text-wrap:balance;margin:0;line-height:1.15}
+h1{font-size:clamp(1.9rem,6.5vw,2.6rem);font-weight:700;letter-spacing:-0.02em}
+h2{font-size:1.35rem;font-weight:700}
+h3{font-size:1.02rem;font-weight:700}
+h1:focus,h2:focus{outline:none}
+p{margin:0;max-width:62ch}
+a{color:var(--accent)}
+.eyebrow{font-size:.75rem;text-transform:uppercase;letter-spacing:.09em;color:var(--muted);font-weight:700}
+.muted{color:var(--muted)}
+.small{font-size:.88rem}
+button{font:inherit;cursor:pointer;color:inherit}
+button:focus-visible,a:focus-visible,summary:focus-visible{outline:3px solid var(--mark);outline-offset:2px}
+.btn{border:0;border-radius:12px;padding:15px 22px;font-weight:700;background:var(--accent);color:var(--bg);min-height:52px}
+.btn.wide{width:100%}
+.btn.ghost{background:transparent;color:var(--ink);border:1.5px solid var(--line)}
+.btn.link{background:none;border:0;padding:8px 0;color:var(--muted);text-decoration:underline;text-underline-offset:3px;font-weight:400;min-height:0}
+.stack{display:flex;flex-direction:column;gap:12px}
+.row{display:flex;flex-wrap:wrap;gap:12px;align-items:center}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:16px;padding:22px;display:flex;flex-direction:column;gap:18px}
+.chips{display:flex;flex-wrap:wrap;gap:6px}
+.chip{font-size:.88rem;padding:4px 11px;border-radius:20px;border:1px solid var(--line);background:var(--surface)}
+.chip.req{border:2px solid var(--accent);color:var(--accent);font-weight:700}
+.note{font-size:.88rem;color:var(--muted);border-left:3px solid var(--line);padding-left:12px}
+
+/* start */
+.facts{display:flex;flex-wrap:wrap;gap:8px;margin:0;padding:0;list-style:none}
+.facts li{font-size:.88rem;padding:5px 12px;border-radius:20px;background:var(--accent-soft);color:var(--accent);font-weight:700}
+.lead{font-size:1.15rem}
+
+/* pytania */
+.qtop{display:flex;align-items:center;justify-content:space-between;gap:12px}
+.qback{background:none;border:0;padding:8px 0;color:var(--muted);font-weight:700;min-height:44px}
+.qback:disabled{visibility:hidden}
+.qcount{font-size:.88rem;color:var(--muted);font-variant-numeric:tabular-nums}
+.track{height:6px;background:var(--line);border-radius:3px;overflow:hidden}
+.track i{display:block;height:100%;background:var(--accent);transition:width .25s}
+.qtext{font-family:var(--display);font-size:clamp(1.4rem,5vw,1.8rem);font-weight:500;line-height:1.25;text-wrap:balance}
+.answers{display:flex;flex-direction:column;gap:8px}
+.ans{display:flex;align-items:center;gap:14px;text-align:left;width:100%;border:1.5px solid var(--line);background:var(--surface);border-radius:12px;padding:14px 16px;min-height:56px;transition:border-color .15s, background .15s}
+.ans .dot{flex:none;width:22px;height:22px;border-radius:50%;border:2px solid var(--line);display:grid;place-items:center}
+.ans:hover{border-color:var(--accent)}
+.ans[aria-checked="true"]{border-color:var(--accent);background:var(--accent-soft)}
+.ans[aria-checked="true"] .dot{border-color:var(--accent);background:var(--accent);box-shadow:inset 0 0 0 4px var(--accent-soft)}
+.hint{font-size:.82rem;color:var(--muted)}
+
+/* wynik */
+.tabs{display:grid;grid-template-columns:1fr 1fr;gap:6px;background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:5px}
+.tab{border:0;background:transparent;border-radius:10px;padding:10px 12px;text-align:left;display:flex;flex-direction:column;gap:2px;min-height:56px;min-width:0}
+.tab small{font-size:.72rem;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--muted)}
+.tab span{font-weight:700;line-height:1.2;overflow-wrap:anywhere}
+.tab[aria-selected="true"]{background:var(--accent);color:var(--bg)}
+.tab[aria-selected="true"] small{color:var(--bg);opacity:.85}
+.role{border-left:4px solid var(--mark);padding:2px 0 2px 14px;display:flex;flex-direction:column;gap:4px}
+.role b{font-family:var(--display);font-size:1.25rem;line-height:1.2}
+.fit{display:inline-block;font-size:.8rem;font-weight:700;color:var(--mark);font-variant-numeric:tabular-nums}
+.offers{display:flex;flex-direction:column;border:1px solid var(--line);border-radius:12px;overflow:hidden}
+.offer{background:var(--bg)}
+.offer+.offer{border-top:1px solid var(--line)}
+.offer summary{list-style:none;cursor:pointer;padding:12px 14px;display:flex;justify-content:space-between;align-items:center;gap:10px;min-height:52px}
+.offer summary::-webkit-details-marker{display:none}
+.offer summary .who{display:flex;flex-direction:column;min-width:0}
+.offer summary .who b{line-height:1.25}
+.offer summary .who span{font-size:.85rem;color:var(--muted)}
+.offer summary::after{content:"+";font-size:1.3rem;color:var(--muted);flex:none}
+.offer[open] summary::after{content:"–"}
+.offer .body{padding:0 14px 14px;display:flex;flex-direction:column;gap:8px;font-size:.92rem}
+.st{align-self:flex-start;font-size:.7rem;font-weight:700;letter-spacing:.05em;text-transform:uppercase;padding:2px 7px;border-radius:4px}
+.st.v{background:var(--accent);color:var(--bg)}
+.st.p{background:var(--accent-soft);color:var(--accent)}
+.st.o{background:var(--mark-soft);color:var(--ink)}
+.st.x{color:var(--muted);border:1px solid var(--line)}
+.traits{display:flex;flex-direction:column;gap:12px;margin:0;padding:0;list-style:none}
+.traits li{display:flex;flex-direction:column;gap:2px}
+.traits .th{display:flex;justify-content:space-between;gap:10px;align-items:center}
+.lvl{display:inline-flex;gap:3px}
+.lvl i{width:18px;height:6px;border-radius:3px;background:var(--line)}
+.lvl i.on{background:var(--accent)}
+details.more{border-top:1px solid var(--line);padding-top:14px}
+details.more summary{cursor:pointer;font-weight:700;min-height:32px}
+details.more .body{display:flex;flex-direction:column;gap:10px;padding-top:10px;font-size:.92rem}
+.formula{font-family:ui-monospace,Menlo,monospace;font-size:.82rem;background:var(--bg);padding:8px 10px;border-radius:6px;overflow-x:auto}
+
+/* przedmioty */
+.subjects{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:10px}
+.subj{text-align:left;border:1.5px solid var(--line);background:var(--surface);border-radius:12px;padding:14px;display:flex;flex-direction:column;gap:4px;min-height:84px}
+.subj b{font-family:var(--display);line-height:1.2}
+.subj small{font-size:.75rem;color:var(--muted)}
+.subj.on{border-color:var(--accent);border-width:2px}
+.subj.on:hover{background:var(--accent-soft)}
+.subj.on small{color:var(--accent);font-weight:700}
+.subj:disabled{cursor:not-allowed;opacity:.55;background:var(--bg)}
+.subj.rec{border:2.5px solid var(--mark)}
+.subj.rec:disabled{opacity:.8}
+.subj .rectag{font-size:.66rem;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--mark)}
+.legend{display:flex;align-items:center;gap:8px;font-size:.82rem;color:var(--muted)}
+.legend i{display:inline-block;width:18px;height:12px;border-radius:3px;border:2.5px solid var(--mark)}
+.placeholder{border:2px dashed var(--line);border-radius:16px;padding:28px 22px;display:flex;flex-direction:column;gap:10px}
+.copyfallback{width:100%;min-height:160px;font-family:ui-monospace,Menlo,monospace;font-size:.8rem;background:var(--surface);color:var(--ink);border:1px solid var(--line);border-radius:8px;padding:10px}
+
+@media (max-width:480px){
+  .card{padding:18px}
+  .subjects{grid-template-columns:1fr 1fr}
+}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+</style>
+</head>
+<body>
+<main class="wrap" id="app" aria-live="polite"></main>
+
+<script>
+/* ===================== DANE ===================== */
+const TRAITS = {
+  EX:{name:"Ekstrawersja", d:["Czerpiesz energię z pracy w skupieniu i w małym gronie.","Odnajdziesz się zarówno w pracy z ludźmi, jak i samodzielnej.","Dodaje Ci energii kontakt z ludźmi, rozmowy i wystąpienia."]},
+  UG:{name:"Ugodowość", d:["Mówisz wprost i nie unikasz sporu. Przydaje się w negocjacjach.","Umiesz współpracować, ale bronisz swojego zdania.","Dbasz o relacje i dobrą atmosferę w zespole."]},
+  SU:{name:"Sumienność", d:["Wolisz elastyczność niż sztywny plan. Pomaga Ci struktura z zewnątrz.","Jesteś zorganizowany(-a), gdy zadanie Cię angażuje.","Planujesz, dotrzymujesz terminów i pilnujesz szczegółów."]},
+  ST:{name:"Stabilność emocjonalna", d:["Mocno odczuwasz stres. Role pod stałą presją będą dla Ciebie kosztowne.","Zwykle radzisz sobie z presją, choć czasem ją odczuwasz.","Zachowujesz spokój, gdy robi się nerwowo."]},
+  OT:{name:"Otwartość na doświadczenia", d:["Cenisz sprawdzone metody i konkret.","Łączysz ciekawość nowego z praktycznym podejściem.","Ciekawią Cię idee, teorie i nowe rozwiązania."]}
+};
+const RIASEC = {
+  R:{name:"Realistyczny", d:"technika, narzędzia, praca fizyczna"},
+  I:{name:"Badawczy", d:"analiza, logika, rozwiązywanie problemów"},
+  A:{name:"Artystyczny", d:"tworzenie, ekspresja, pomysły"},
+  S:{name:"Społeczny", d:"pomaganie, uczenie, opieka"},
+  E:{name:"Przedsiębiorczy", d:"przekonywanie, kierowanie, biznes"},
+  C:{name:"Konwencjonalny", d:"porządek, dane, procedury"}
+};
+const ORDER = "RIASEC".split("");
+
+const Q = [
+  {t:"Łatwo nawiązuję rozmowę z nieznajomymi.",k:"EX"},
+  {t:"Po dniu spędzonym wśród ludzi potrzebuję czasu w samotności.",k:"EX",r:1},
+  {t:"Zależy mi, żeby inni dobrze się czuli w moim towarzystwie.",k:"UG"},
+  {t:"W sporze bardziej zależy mi na wygranej niż na porozumieniu.",k:"UG",r:1},
+  {t:"Zadania kończę przed terminem, a nie na ostatnią chwilę.",k:"SU"},
+  {t:"Często zostawiam swoje rzeczy w nieładzie.",k:"SU",r:1},
+  {t:"Zachowuję spokój, gdy coś idzie nie po mojej myśli.",k:"ST"},
+  {t:"Bardzo stresuję się przed sprawdzianami i wystąpieniami.",k:"ST",r:1},
+  {t:"Lubię rozmyślać nad abstrakcyjnymi pomysłami i teoriami.",k:"OT"},
+  {t:"Wolę sprawdzone sposoby niż eksperymentowanie.",k:"OT",r:1},
+  {t:"naprawiać lub składać urządzenia i maszyny",k:"R"},
+  {t:"pracować w terenie, warsztacie lub laboratorium technicznym",k:"R"},
+  {t:"rozwiązywać trudne zadania matematyczne lub logiczne",k:"I"},
+  {t:"analizować dane i szukać przyczyn zjawisk",k:"I"},
+  {t:"tworzyć grafiki, teksty, muzykę lub filmy",k:"A"},
+  {t:"wymyślać coś nowego bez gotowej instrukcji",k:"A"},
+  {t:"uczyć innych lub pomagać im w problemach",k:"S"},
+  {t:"pracować z ludźmi, np. w szpitalu, szkole lub ośrodku",k:"S"},
+  {t:"przekonywać innych do swoich pomysłów lub sprzedawać produkt",k:"E"},
+  {t:"kierować zespołem lub prowadzić własną firmę",k:"E"},
+  {t:"porządkować dane, tabele i budżety oraz pilnować szczegółów",k:"C"},
+  {t:"pracować według jasnych zasad i procedur",k:"C"}
+];
+const LABELS_A = ["Zupełnie się nie zgadzam","Raczej nie","Trudno powiedzieć","Raczej tak","Całkowicie się zgadzam"];
+const LABELS_B = ["Wcale","Raczej nie","Obojętnie","Raczej chętnie","Bardzo chętnie"];
+
+/* Przedmioty maturalne. active: czy moduł diagnozy przedmiotowej jest dostępny. */
+const SUBJECTS = [
+  {id:"mat",n:"Matematyka",active:true},
+  {id:"pol",n:"Język polski"},
+  {id:"obcy",n:"Język obcy nowożytny"},
+  {id:"bio",n:"Biologia"},
+  {id:"chem",n:"Chemia"},
+  {id:"fiz",n:"Fizyka"},
+  {id:"inf",n:"Informatyka"},
+  {id:"geo",n:"Geografia"},
+  {id:"his",n:"Historia"},
+  {id:"wos",n:"Wiedza o społeczeństwie"},
+  {id:"biz",n:"Biznes i zarządzanie"},
+  {id:"hsz",n:"Historia sztuki"},
+  {id:"fil",n:"Filozofia"}
+];
+
+/* Status danych rekrutacyjnych:
+   v = zasady 2027/28 z uchwały, p = projekt zasad 2027/28,
+   o = zasady z cyklu 2026/27 (czeka na aktualizację), x = do sprawdzenia */
+const STATUS = {v:"Zasady 2027/28",p:"Projekt 2027/28",o:"Zasady 2026/27",x:"Do sprawdzenia"};
+const SRC = {
+  uek:"https://bip.uek.krakow.pl/attachments/8752/download/T.0022.71.2026",
+  sgh:"https://www.otouczelnie.pl/uczelnia_dzial/11467/Zasady-rekrutacji-na-SGH-20272028",
+  agh:"https://rekrutacja.agh.edu.pl/wp-content/uploads/2026/06/uchwala_2027_2028_warunki_rekrutacji.pdf",
+  polsl:"https://rekrutacja.polsl.pl/wp-content/uploads/2026/06/uchwala_rekrutacyjna_2027-2028.pdf",
+  ujlek:"https://www.radiokrakow.pl/aktualnosci/krakow/uj-zmienia-rekrutacje-na-lekarski-liczyc-sie-beda-dwa-przedmioty/",
+  wum:"https://rekrutacja-info.wum.edu.pl/sites/rekrutacja-info.wum.edu.pl/files/uchwala_senatu_42-2026.pdf",
+  umw:"https://www.umw.edu.pl/sites/default/files/2026-05/2918.pdf",
+  ujpsy:"https://irk.uj.edu.pl/pl/IiJM_P/?next=%2Fpl%2Foffer%2Fprogramme%2Fpsycho_wfilz_sjm_P%2F",
+  uw:"https://www.otouczelnie.pl/uczelnia_dzial/11465/Zasady-rekrutacji-na-UW-20272028",
+  uwkult:"https://polon.uw.edu.pl/urd-067-2026/",
+  pkarch:"https://www.otouczelnie.pl/miasto_dzial/1167/Architektura-Krakow/Przedmioty-maturalne",
+  akf:"https://www.otouczelnie.pl/uczelnia_dzial/11477/Zasady-rekrutacji-na-AWF-w-Krakowie-20272028",
+  ujprawo:"https://irk.uj.edu.pl/pl/offer/IiJM_P_26/programme/prawo_sjm_P/?from=field%3Aprawo"
+};
+const AGH_F = "Wskaźnik = 2 × matematyka podstawowa + 6 × P1 + 2 × P2 (P1, P2 to różne przedmioty rozszerzone).";
+
+/* Wagi ról: dodatnia waga = wysoki wynik cechy pomaga, ujemna = niski wynik pomaga.
+   Wynik roli jest normalizowany przez sumę |wag|, więc liczba wag nie daje przewagi. */
+const PATHS = {
+  fin:{name:"Finansowo-ekonomiczna",
+    opis:"Praca z liczbami, rynkami i pieniędzmi: analiza, planowanie, doradztwo i inwestycje.",
+    kierunki:["Ekonomia","Finanse i rachunkowość","Informatyka i ekonometria","Analityka gospodarcza / Big Data"],
+    req:["matematyka"], opt:["język obcy","geografia","WOS","informatyka","historia","biznes i zarządzanie"], key:["mat","obcy","geo","wos","biz"],
+    oferty:[
+      {u:"Uniwersytet Ekonomiczny w Krakowie",k:"Ekonomia, Finanse i rachunkowość",s:"v",src:SRC.uek,
+       m:"Matematyka obowiązkowo, do tego jeden z: biznes i zarządzanie, fizyka, geografia, historia, informatyka, język obcy, język polski, WOS. Poziom podstawowy liczony × 0,6, rozszerzony × 1."},
+      {u:"Szkoła Główna Handlowa w Warszawie",k:"wszystkie kierunki I stopnia",s:"v",src:SRC.sgh,
+       m:"Matematyka, jeden z: biznes i zarządzanie, fizyka, geografia, historia, informatyka, WOS, oraz dwa języki obce. Na studiach stacjonarnych po polsku dochodzi test SGH (do 100 pkt)."},
+      {u:"AGH w Krakowie",k:"Informatyka i ekonometria",s:"v",src:SRC.agh,
+       m:AGH_F+" P1: matematyka, fizyka, chemia lub informatyka. P2: te same albo język obcy."}
+    ],
+    roles:[
+      {n:"Doradca finansowy, opiekun klienta",w:{EX:1.5,ST:1,UG:1}},
+      {n:"Analityk finansowy, controller",w:{SU:2,EX:-1,OT:0.5}},
+      {n:"Audytor, biegły rewident",w:{SU:2,ST:1,OT:-0.5}},
+      {n:"Inwestor, przedsiębiorca, praca w startupie",w:{OT:2,EX:1,ST:1}}
+    ]},
+  biz:{name:"Biznesowo-menedżerska",
+    opis:"Organizowanie ludzi, procesów i sprzedaży. Zarządzanie firmą lub jej częścią.",
+    kierunki:["Zarządzanie","Marketing i komunikacja rynkowa","Logistyka","Zarządzanie zasobami ludzkimi","Stosunki międzynarodowe"],
+    req:["język obcy"], opt:["matematyka","WOS","geografia","historia","biznes i zarządzanie"], key:["obcy","mat","biz","wos"],
+    oferty:[
+      {u:"Uniwersytet Ekonomiczny w Krakowie",k:"Zarządzanie",s:"v",src:SRC.uek,
+       m:"Język obcy obowiązkowo, do tego jeden z: biznes i zarządzanie, geografia, historia, informatyka, matematyka, WOS. Poziom podstawowy × 0,6."},
+      {u:"Szkoła Główna Handlowa w Warszawie",k:"Zarządzanie i inne kierunki I stopnia",s:"v",src:SRC.sgh,
+       m:"Matematyka, jeden z: biznes i zarządzanie, fizyka, geografia, historia, informatyka, WOS, oraz dwa języki obce. Plus test SGH."}
+    ],
+    roles:[
+      {n:"Sprzedaż i negocjacje",w:{EX:1.5,ST:1,UG:-0.5}},
+      {n:"Marketing i komunikacja",w:{OT:2,EX:1}},
+      {n:"Rekrutacja i HR",w:{UG:2,EX:1}},
+      {n:"Logistyka, planowanie operacyjne",w:{SU:2,ST:1,EX:-0.5}},
+      {n:"Kierownik projektu",w:{SU:1,EX:1,ST:1}}
+    ]},
+  tech:{name:"Techniczno-inżynierska",
+    opis:"Projektowanie, budowanie i naprawianie: maszyny, budynki, systemy i oprogramowanie.",
+    kierunki:["Informatyka","Automatyka i robotyka","Mechanika i budowa maszyn","Budownictwo","Elektronika","Energetyka"],
+    req:["matematyka (rozszerzona)"], opt:["fizyka","informatyka","chemia"], key:["mat","fiz","inf"],
+    oferty:[
+      {u:"AGH w Krakowie",k:"Informatyka",s:"v",src:SRC.agh,
+       m:AGH_F+" P1 i P2: matematyka, fizyka lub informatyka."},
+      {u:"AGH w Krakowie",k:"Automatyka i robotyka",s:"v",src:SRC.agh,
+       m:AGH_F+" P1: matematyka, fizyka lub informatyka. P2: te same albo język obcy."},
+      {u:"AGH w Krakowie",k:"Budownictwo",s:"v",src:SRC.agh,
+       m:AGH_F+" P1 i P2: matematyka, fizyka, chemia lub informatyka."},
+      {u:"Politechnika Śląska",k:"kierunki inżynierskie (grupa I)",s:"v",src:SRC.polsl,
+       m:"0,5 × matematyka podstawowa + jeden przedmiot dodatkowy: matematyka rozszerzona, fizyka, chemia, biologia lub informatyka (rozszerzony × 1, podstawowy × 0,5)."}
+    ],
+    roles:[
+      {n:"Programista, inżynier badań i rozwoju",w:{OT:1.5,SU:1,EX:-0.5}},
+      {n:"Inżynier projektu, kierownik budowy",w:{EX:1,ST:1.5,SU:1}},
+      {n:"Inżynier utrzymania ruchu, serwis techniczny",w:{ST:1.5,SU:1,OT:-0.5}},
+      {n:"Inżynier sprzedaży technicznej",w:{EX:1.5,UG:1}}
+    ]},
+  med:{name:"Medyczno-przyrodnicza",
+    opis:"Zdrowie człowieka i nauki o życiu: leczenie, leki, laboratorium.",
+    kierunki:["Kierunek lekarski","Lekarsko-dentystyczny","Farmacja","Biotechnologia","Analityka medyczna","Dietetyka"],
+    req:["biologia (rozszerzona)","chemia (rozszerzona)"], opt:["matematyka","fizyka"], key:["bio","chem","mat"],
+    oferty:[
+      {u:"UJ Collegium Medicum (Kraków)",k:"Kierunek lekarski",s:"v",src:SRC.ujlek,
+       m:"W latach 2027/28–2029/30 liczy się średnia ważona dwóch przedmiotów rozszerzonych: biologia i chemia, biologia i matematyka albo chemia i matematyka. Od 2030/31 tylko biologia i chemia."},
+      {u:"Warszawski Uniwersytet Medyczny",k:"Kierunek lekarski",s:"x",src:SRC.wum,
+       m:"Uchwała na 2027/28 jest opublikowana, ale przedmioty dla kierunku są w załącznikach. Sprawdź załącznik dla kierunku lekarskiego."},
+      {u:"Uniwersytet Medyczny we Wrocławiu",k:"Kierunek lekarski",s:"x",src:SRC.umw,
+       m:"Uchwała na 2027/28 jest opublikowana, przedmioty są w załączniku nr 1."}
+    ],
+    roles:[
+      {n:"Lekarz pracujący z pacjentem",w:{UG:1.5,ST:1.5,EX:0.5}},
+      {n:"Badacz, praca w laboratorium",w:{OT:1.5,SU:1.5,EX:-1}},
+      {n:"Farmaceuta",w:{SU:1.5,UG:1}},
+      {n:"Specjalizacje pod presją (chirurgia, medycyna ratunkowa)",w:{ST:2,SU:1}}
+    ]},
+  spol:{name:"Społeczno-humanistyczna",
+    opis:"Rozumienie ludzi i pomaganie im: psychologia, edukacja, wsparcie.",
+    kierunki:["Psychologia","Pedagogika","Socjologia","Logopedia","Praca socjalna","Filologie"],
+    req:[], opt:["język polski","biologia","matematyka","WOS","język obcy"], key:["pol","bio","mat","wos","obcy"],
+    oferty:[
+      {u:"Uniwersytet Jagielloński",k:"Psychologia",s:"x",src:SRC.ujpsy,
+       m:"Zasad na 2027/28 nie znaleźliśmy w uchwale. Przewodniki podają dwa przedmioty z listy (m.in. biologia, matematyka, język polski, WOS) i język angielski. Potwierdź w IRK UJ."},
+      {u:"Uniwersytet Warszawski",k:"Psychologia, Pedagogika, Socjologia",s:"x",src:SRC.uw,
+       m:"Na 2027/28 UW liczy średnią ważoną: język polski, matematyka, język obcy i do dwóch przedmiotów dodatkowych. Wagi dla kierunku są w załączniku do uchwały."}
+    ],
+    roles:[
+      {n:"Psycholog, terapeuta",w:{UG:2,ST:1.5}},
+      {n:"Nauczyciel, trener, edukator",w:{EX:1.5,UG:1,ST:0.5}},
+      {n:"Badacz społeczny, analityk",w:{OT:2,SU:1,EX:-0.5}}
+    ]},
+  media:{name:"Kreatywno-medialna",
+    opis:"Tworzenie treści i komunikacja: media, reklama, kultura.",
+    kierunki:["Dziennikarstwo i komunikacja społeczna","Kulturoznawstwo","Reklama i public relations","Kierunki filmowe i medialne"],
+    req:["język polski"], opt:["język obcy","WOS","historia","historia sztuki"], key:["pol","obcy","wos","hsz"],
+    oferty:[
+      {u:"Uniwersytet Warszawski",k:"Kulturoznawstwo – wiedza o kulturze",s:"p",src:SRC.uwkult,
+       m:"Język polski 40%, matematyka 15%, język obcy 15% oraz jeden przedmiot rozszerzony z listy (np. historia, historia sztuki, WOS, filozofia) 30%. Zasady czekają na zatwierdzenie przez Senat UW."},
+      {u:"Uniwersytet Jagielloński",k:"Dziennikarstwo i komunikacja społeczna",s:"x",src:null,
+       m:"Sprawdź zasady na 2027/28 w systemie IRK UJ."}
+    ],
+    roles:[
+      {n:"Dziennikarz, prowadzący, twórca wideo",w:{EX:2,ST:1}},
+      {n:"Copywriter, autor treści",w:{OT:2,EX:-0.5}},
+      {n:"Producent, specjalista PR",w:{EX:1,SU:1.5}}
+    ]},
+  proj:{name:"Architektoniczno-projektowa",
+    opis:"Projektowanie przestrzeni i przedmiotów, gdzie spotyka się estetyka i technika.",
+    kierunki:["Architektura","Architektura wnętrz","Wzornictwo (design)","Grafika","Architektura krajobrazu"],
+    req:["matematyka"], opt:["historia sztuki","historia","język polski","fizyka"], key:["mat","hsz"],
+    oferty:[
+      {u:"Politechnika Śląska",k:"Architektura, Architektura wnętrz",s:"v",src:SRC.polsl,
+       m:"Obowiązkowy sprawdzian uzdolnień artystycznych: dwie prace w różnych technikach, do 200 pkt. Do tego wyniki matury."},
+      {u:"Politechnika Krakowska",k:"Architektura",s:"o",src:SRC.pkarch,
+       m:"Matematyka oraz jeden z: historia, historia sztuki, język polski. Sprawdź, czy w 2027/28 obowiązuje egzamin z rysunku."}
+    ],
+    roles:[
+      {n:"Projektant koncepcyjny",w:{OT:2,EX:-0.5}},
+      {n:"Architekt prowadzący projekty",w:{SU:1.5,EX:1,ST:1}},
+      {n:"Projektant UX / produktu",w:{UG:1,OT:1,SU:0.5}}
+    ]},
+  zdrowie:{name:"Zdrowie i ruch",
+    opis:"Praktyczna pomoc w terenie i w gabinecie: rehabilitacja, ratownictwo, sport.",
+    kierunki:["Fizjoterapia","Ratownictwo medyczne","Pielęgniarstwo","Wychowanie fizyczne","Bezpieczeństwo wewnętrzne"],
+    req:["biologia"], opt:["chemia","fizyka","matematyka"], key:["bio","chem","fiz"],
+    oferty:[
+      {u:"Akademia Kultury Fizycznej w Krakowie (dawna AWF)",k:"Fizjoterapia",s:"v",src:SRC.akf,
+       m:"Jeden przedmiot z: biologia, fizyka, chemia, matematyka. Biologia rozszerzona daje 2 pkt za 1%, inne rozszerzone 1,5 pkt, poziom podstawowy 1 pkt."},
+      {u:"Akademia Kultury Fizycznej w Krakowie (dawna AWF)",k:"Wychowanie fizyczne",s:"v",src:SRC.akf,
+       m:"Trzy przedmioty z: język polski, język obcy, matematyka, fizyka, biologia, chemia, geografia, historia. Wariant „w służbach mundurowych” ma też egzamin sprawnościowy."}
+    ],
+    roles:[
+      {n:"Ratownik medyczny",w:{ST:2,EX:0.5}},
+      {n:"Fizjoterapeuta",w:{UG:1.5,SU:1}},
+      {n:"Trener, instruktor",w:{EX:1.5,ST:1}}
+    ]},
+  prawo:{name:"Prawno-administracyjna",
+    opis:"Przepisy, procedury i instytucje: prawo, urzędy, bezpieczeństwo państwa.",
+    kierunki:["Prawo","Administracja","Bezpieczeństwo narodowe","Politologia"],
+    req:[], opt:["WOS","historia","język polski","matematyka","język obcy"], key:["wos","his","pol","obcy"],
+    oferty:[
+      {u:"Uniwersytet Jagielloński",k:"Prawo",s:"o",src:SRC.ujprawo,
+       m:"Dwa przedmioty rozszerzone z: historia, język polski, matematyka, WOS (waga 35 każdy) oraz rozszerzony język obcy (waga 30). Poziom podstawowy się nie liczy."},
+      {u:"Uniwersytet Warszawski",k:"Prawo",s:"x",src:SRC.uw,
+       m:"Wagi przedmiotów dla prawa są w załączniku do uchwały UW na 2027/28."}
+    ],
+    roles:[
+      {n:"Adwokat, radca prawny (praca procesowa)",w:{EX:1.5,ST:1.5,UG:-0.5}},
+      {n:"Prawnik doradca, legislator",w:{SU:2,EX:-0.5,OT:0.5}},
+      {n:"Urzędnik, mediator",w:{UG:1.5,SU:1}}
+    ]}
+};
+const PAIRS = {RI:"tech",RA:"proj",RS:"zdrowie",RE:"biz",RC:"tech",IA:"proj",IS:"med",IE:"fin",IC:"fin",AS:"spol",AE:"media",AC:"proj",SE:"biz",SC:"prawo",EC:"fin"};
+const SAMPLE = [2,4,4,2,5,1,4,2,4,3, 2,2,5,5,2,3,3,2,3,3,5,4];
+
+/* ===================== LOGIKA ===================== */
+function score(a){
+  const t={EX:0,UG:0,SU:0,ST:0,OT:0}, r={R:0,I:0,A:0,S:0,E:0,C:0};
+  Q.forEach((q,i)=>{const v=q.r?6-a[i]:a[i]; (q.k in t?t:r)[q.k]+=v});
+  return {t,r};
+}
+function pairKey(x,y){return [x,y].sort((a,b)=>ORDER.indexOf(a)-ORDER.indexOf(b)).join("")}
+function pickPaths(r){
+  const sorted = ORDER.slice().sort((a,b)=>r[b]-r[a]||ORDER.indexOf(a)-ORDER.indexOf(b));
+  const max = r[sorted[0]], top = sorted.filter(k=>r[k]===max);
+  let pairs=[];
+  if(top.length>=2){for(let i=0;i<top.length;i++)for(let j=i+1;j<top.length;j++)pairs.push([top[i],top[j]])}
+  else{const s2=r[sorted[1]];sorted.slice(1).filter(k=>r[k]===s2).forEach(k=>pairs.push([top[0],k]))}
+  const out=[];
+  pairs.forEach(([a,b])=>{const p=PAIRS[pairKey(a,b)];if(!out.find(o=>o.id===p))out.push({id:p,code:a+b})});
+  /* Plan B: gdy remis nie dał drugiej ścieżki, bierzemy następną parę liter
+     o najwyższej sumie wyników, która prowadzi do innej ścieżki. */
+  if(out.length<2){
+    const cand=[];
+    for(let i=0;i<6;i++)for(let j=i+1;j<6;j++){const a=ORDER[i],b=ORDER[j];cand.push({a,b,s:r[a]+r[b],hasTop:a===sorted[0]||b===sorted[0]})}
+    cand.sort((x,y)=>y.s-x.s||(y.hasTop-x.hasTop));
+    const alt=cand.find(c=>PAIRS[pairKey(c.a,c.b)]!==out[0].id);
+    const [a,b]=r[alt.a]>=r[alt.b]?[alt.a,alt.b]:[alt.b,alt.a];
+    out.push({id:PAIRS[pairKey(a,b)],code:a+b});
+  }
+  return {paths:out.slice(0,2), topLetters:[...new Set(pairs.flat())]};
+}
+/* Dopasowanie roli: średnia ważona odchyleń cech od środka skali (6), w przedziale −4..+4,
+   przeliczona na 0–100%. */
+function rankRoles(path,t){
+  return path.roles.map(role=>{
+    let s=0,sw=0;const why=[];
+    for(const k in role.w){const w=role.w[k];s+=w*(t[k]-6);sw+=Math.abs(w);
+      if(w>0&&t[k]>=7)why.push("wysoka "+TRAITS[k].name.toLowerCase());
+      if(w<0&&t[k]<=5)why.push("niższa "+TRAITS[k].name.toLowerCase());}
+    const fit=s/sw;
+    return {...role,fit,pct:Math.round((fit+4)/8*100),why};
+  }).sort((a,b)=>b.fit-a.fit);
+}
+
+
+/* ===================== WIDOKI ===================== */
+const FRIENDLY = {
+  R:"technika i praca rękami", I:"analiza i rozwiązywanie problemów", A:"tworzenie i nowe pomysły",
+  S:"pomaganie ludziom", E:"przekonywanie i kierowanie", C:"porządek i praca z danymi"
+};
+const ANSWERS = ["Zdecydowanie nie","Raczej nie","Nie wiem","Raczej tak","Zdecydowanie tak"];
+
+let answers = load() || Array(Q.length).fill(null);
+let idx = 0, screen = "start", isSample = false, subject = null, from = "start", plan = 0, busy = false;
+
+function load(){try{const a=JSON.parse(localStorage.getItem("maturalni-answers"));return Array.isArray(a)&&a.length===Q.length?a:null}catch(e){return null}}
+function save(){try{localStorage.setItem("maturalni-answers",JSON.stringify(answers))}catch(e){}}
+const app = document.getElementById("app");
+const esc = s => String(s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+const lvlIdx = v => v<=4?0:v<=7?1:2;
+const LVL = ["niska","średnia","wysoka"];
+const $ = id => document.getElementById(id);
+
+function go(s){screen=s;render();window.scrollTo(0,0);const h=app.querySelector("h1,h2");if(h){h.setAttribute("tabindex","-1");h.focus({preventScroll:true})}}
+function render(){({start:viewStart,quiz:viewQuiz,result:viewResult,subjects:viewSubjects,subject:viewSubject})[screen]()}
+function startTest(){isSample=false;idx=answers.includes(null)?answers.indexOf(null):0;if(!answers.includes(null)){go("result")}else go("quiz")}
+
+/* ---------- start ---------- */
+function viewStart(){
+  const n = answers.filter(v=>v!==null).length;
+  const resume = n>0 && n<Q.length, done = n===Q.length;
+  app.innerHTML=`
+  <span class="eyebrow">Dla maturzystów</span>
+  <h1>Kompas Maturalni</h1>
+  <p class="lead">Sprawdź w 5 minut, jaki kierunek studiów do Ciebie pasuje i jakie przedmioty zdawać na maturze.</p>
+  <ul class="facts"><li>22 krótkie pytania</li><li>ok. 5 minut</li><li>bez logowania</li></ul>
+  <div class="stack">
+    <button class="btn wide" id="go">${done?"Zobacz swój wynik":resume?`Kontynuuj (pytanie ${n+1} z ${Q.length})`:"Zaczynam"}</button>
+    <div class="row" style="justify-content:space-between">
+      <button class="btn link" id="sample">Pokaż przykładowy wynik</button>
+      <button class="btn link" id="skip">Pomiń test, przejdź do przedmiotów</button>
+    </div>
+    ${n?'<button class="btn link" id="reset" style="align-self:flex-start">Zacznij od nowa</button>':""}
+  </div>
+  <p class="note">Nie ma dobrych ani złych odpowiedzi. Wynik to podpowiedź na start, nie wyrok. Warto o nim porozmawiać z doradcą zawodowym.</p>`;
+  $("go").onclick=startTest;
+  $("sample").onclick=()=>{isSample=true;plan=0;go("result")};
+  $("skip").onclick=()=>{from="start";go("subjects")};
+  if($("reset"))$("reset").onclick=()=>{answers=Array(Q.length).fill(null);save();startTest()};
+}
+
+/* ---------- pytania ---------- */
+function viewQuiz(){
+  const q=Q[idx], partA=idx<10;
+  const text = partA ? q.t : q.t.charAt(0).toUpperCase()+q.t.slice(1)+".";
+  app.innerHTML=`
+  <div class="stack" style="gap:8px">
+    <div class="qtop">
+      <button class="qback" id="back">← ${idx===0?"Start":"Wstecz"}</button>
+      <span class="qcount">Pytanie ${idx+1} z ${Q.length}</span>
+    </div>
+    <div class="track" role="progressbar" aria-valuemin="0" aria-valuemax="${Q.length}" aria-valuenow="${idx}" aria-label="Postęp testu"><i style="width:${idx/Q.length*100}%"></i></div>
+  </div>
+  <span class="eyebrow">${partA?"O Tobie":"Czy to coś dla Ciebie?"}</span>
+  <h2 class="qtext" id="qt">${esc(text)}</h2>
+  <div class="answers" role="radiogroup" aria-labelledby="qt">
+    ${ANSWERS.map((l,i)=>`<button class="ans" role="radio" id="a${i+1}" data-v="${i+1}" aria-checked="${answers[idx]===i+1}"><span class="dot"></span>${l}</button>`).join("")}
+  </div>
+  <p class="hint">Na komputerze możesz odpowiadać klawiszami 1–5.</p>`;
+  app.querySelectorAll(".ans").forEach(b=>b.onclick=()=>answer(+b.dataset.v));
+  $("back").onclick=back;
+}
+function answer(v){
+  if(busy)return;busy=true;
+  answers[idx]=v;save();
+  app.querySelectorAll(".ans").forEach(b=>b.setAttribute("aria-checked",+b.dataset.v===v));
+  setTimeout(()=>{busy=false;
+    if(idx<Q.length-1){idx++;render();const h=$("qt");h.setAttribute("tabindex","-1");h.focus({preventScroll:true})}
+    else{isSample=false;plan=0;go("result")}
+  },180);
+}
+function back(){if(idx===0)go("start");else{idx--;render()}}
+document.addEventListener("keydown",e=>{
+  if(screen!=="quiz"||e.metaKey||e.ctrlKey||e.altKey)return;
+  if(/^[1-5]$/.test(e.key)){e.preventDefault();answer(+e.key)}
+  else if(e.key==="ArrowLeft"){e.preventDefault();back()}
+});
+
+/* ---------- wynik ---------- */
+function subjectGrid(rec){
+  return `<div class="subjects">${SUBJECTS.map(s=>{const r=rec.includes(s.id);return `
+    <button class="subj ${s.active?"on":""} ${r?"rec":""}" data-id="${s.id}" ${s.active?"":"disabled"} aria-label="${s.n}${r?", rekomendowany":""}${s.active?"":", wkrótce"}">
+      ${r?'<span class="rectag">Rekomendowany</span>':""}
+      <b>${s.n}</b><small>${s.active?"Sprawdź wiedzę →":"Wkrótce"}</small>
+    </button>`}).join("")}</div>`;
+}
+function bindSubjects(){app.querySelectorAll(".subj.on").forEach(b=>b.onclick=()=>{subject=b.dataset.id;go("subject")})}
+
+function planCard(p,t){
+  const P=PATHS[p.id], roles=rankRoles(P,t), top=roles[0], alt=roles[1];
+  const why=w=>w.length?"Pasuje do Twojego profilu: "+w.join(", ")+".":"Najbliższe dopasowanie przy Twoim profilu.";
+  return `
+  <div class="card" id="plan-panel" role="tabpanel">
+    <p class="muted">${P.opis}</p>
+    <div class="stack" style="gap:8px">
+      <h3>Rola, która do Ciebie pasuje</h3>
+      <div class="role"><span class="fit">dopasowanie ${top.pct}%</span><b>${top.n}</b><span class="muted small">${why(top.why)}</span></div>
+      <p class="small muted">Inna opcja: <b style="color:var(--ink)">${alt.n}</b> (${alt.pct}%)</p>
+    </div>
+    <div class="stack" style="gap:8px">
+      <h3>Kierunki studiów</h3>
+      <div class="chips">${P.kierunki.map(k=>`<span class="chip">${k}</span>`).join("")}</div>
+    </div>
+    <div class="stack" style="gap:8px">
+      <h3>Co zdawać na maturze</h3>
+      <div class="chips">${P.req.map(s=>`<span class="chip req">${s}</span>`).join("")}${P.opt.map(s=>`<span class="chip">${s}</span>`).join("")}</div>
+      <p class="small muted">${P.req.length?"Pogrubione: najczęściej wymagane. Reszta: do wyboru, zależnie od uczelni.":"Do wyboru, zależnie od uczelni."}</p>
+    </div>
+    <div class="stack" style="gap:8px">
+      <h3>Gdzie studiować</h3>
+      <div class="offers">${P.oferty.map(o=>`
+        <details class="offer"><summary><span class="who"><b>${o.u}</b><span>${o.k}</span></span></summary>
+          <div class="body"><span class="st ${o.s}">${STATUS[o.s]}</span><p>${o.m}</p>${o.src?`<a href="${o.src}" target="_blank" rel="noopener">Zobacz źródło</a>`:""}</div>
+        </details>`).join("")}</div>
+      <p class="small muted">Kliknij uczelnię, żeby zobaczyć zasady rekrutacji.</p>
+    </div>
+  </div>`;
+}
+
+function viewResult(){
+  const a=isSample?SAMPLE:answers;
+  const {t,r}=score(a);
+  const {paths,topLetters}=pickPaths(r);
+  const P0=PATHS[paths[0].id];
+  const rec=[...new Set(paths.flatMap(p=>PATHS[p.id].key))];
+  const topInt=ORDER.slice().sort((x,y)=>r[y]-r[x]).slice(0,2);
+
+  app.innerHTML=`
+  <span class="eyebrow">${isSample?"Przykładowy wynik":"Twój wynik"}</span>
+  <h1>Pasuje do Ciebie ścieżka ${P0.name.toLowerCase()}</h1>
+  <p>Najbardziej ciekawi Cię ${FRIENDLY[topInt[0]]} oraz ${FRIENDLY[topInt[1]]}. Masz dwa plany do porównania.</p>
+  ${Math.max(...Object.values(r))<=5?'<p class="note">Twoje odpowiedzi o zainteresowaniach wyszły dość niskie, więc wynik jest mniej pewny. Warto wrócić do testu za jakiś czas.</p>':""}
+
+  <div class="tabs" role="tablist" aria-label="Plany">
+    ${paths.map((p,i)=>`<button class="tab" role="tab" id="tab${i}" aria-selected="${plan===i}" aria-controls="plan-panel"><small>Plan ${i?"B":"A"}</small><span>${PATHS[p.id].name}</span></button>`).join("")}
+  </div>
+  <div id="plan">${planCard(paths[plan],t)}</div>
+
+  <section class="card">
+    <h2>Twój profil</h2>
+    <div class="stack" style="gap:8px">
+      <h3>Co Cię ciekawi</h3>
+      <div class="chips">${ORDER.slice().sort((x,y)=>r[y]-r[x]).slice(0,3).map((k,i)=>`<span class="chip ${i<2?"req":""}">${FRIENDLY[k]}</span>`).join("")}</div>
+    </div>
+    <div class="stack" style="gap:10px">
+      <h3>Jak działasz</h3>
+      <ul class="traits">${Object.keys(TRAITS).map(k=>{const li=lvlIdx(t[k]);return `
+        <li><div class="th"><b>${TRAITS[k].name}</b><span class="lvl" aria-label="${LVL[li]}">${[0,1,2].map(j=>`<i class="${j<=li?"on":""}"></i>`).join("")}</span></div>
+        <span class="muted small">${TRAITS[k].d[li]}</span></li>`}).join("")}</ul>
+    </div>
+  </section>
+
+  <section class="stack">
+    <span class="eyebrow">Krok 2</span>
+    <h2>Sprawdź swoją wiedzę z matury</h2>
+    <span class="legend"><i></i> rekomendowane dla Twoich planów</span>
+    ${subjectGrid(rec)}
+  </section>
+
+  <div class="row">
+    <button class="btn ghost" id="copy">Kopiuj wynik</button>
+    <button class="btn link" id="again">${isSample?"Zrób własny test":"Zrób test od nowa"}</button>
+    <span id="copymsg" class="muted small" role="status"></span>
+  </div>
+  <div id="fallback"></div>
+
+  <details class="more">
+    <summary>Jak liczymy wynik</summary>
+    <div class="body">
+      <p><b>Plan A</b> wynika z dwóch Twoich najmocniejszych zainteresowań (model RIASEC Hollanda). <b>Plan B</b> to kolejna najmocniejsza para, która prowadzi do innej ścieżki.</p>
+      <p><b>Rola</b> wynika z cech osobowości (Wielka Piątka). Każda rola ma wagi cech, a dopasowanie to średnia ważona:</p>
+      <div class="formula">dopasowanie = Σ waga × (cecha − 6) / Σ |waga|  →  0–100%</div>
+      <p>Wagi oparliśmy na badaniach (Barrick i Mount, 1991; Grant, 2013). To założenia eksperckie, które dostroimy po pilotażu.</p>
+      <p>Zasady rekrutacji sprawdziliśmy w uchwałach uczelni na rok 2027/28 tam, gdzie były dostępne. Etykieta przy uczelni mówi, czy dane są aktualne.</p>
+    </div>
+  </details>`;
+
+  paths.forEach((p,i)=>$("tab"+i).onclick=()=>{plan=i;app.querySelectorAll(".tab").forEach((b,j)=>b.setAttribute("aria-selected",j===i));$("plan").innerHTML=planCard(paths[i],t)});
+  bindSubjects();
+  $("again").onclick=()=>{answers=Array(Q.length).fill(null);save();startTest()};
+  $("copy").onclick=()=>{
+    const txt=summary(t,r,paths,topLetters.slice(0,3).join("")), msg=$("copymsg");
+    const fb=()=>{$("fallback").innerHTML=`<textarea class="copyfallback" id="fbt" readonly>${esc(txt)}</textarea>`;$("fbt").focus();$("fbt").select();msg.textContent="Zaznaczono tekst, skopiuj go skrótem klawiszowym."};
+    try{navigator.clipboard.writeText(txt).then(()=>{msg.textContent="Skopiowano"},fb)}catch(e){fb()}
+  };
+  from="result";
+}
+
+/* ---------- przedmioty ---------- */
+function viewSubjects(){
+  app.innerHTML=`
+  <span class="eyebrow">Krok 2</span>
+  <h1>Sprawdź swoją wiedzę z matury</h1>
+  <p>Wybierz przedmiot. Na razie dostępna jest matematyka, kolejne dodamy wkrótce.</p>
+  ${subjectGrid([])}
+  <div class="stack">
+    <button class="btn ghost wide" id="toTest">Jednak zrób test predyspozycji</button>
+    <button class="btn link" id="toStart" style="align-self:flex-start">← Wróć na start</button>
+  </div>`;
+  bindSubjects();
+  $("toTest").onclick=startTest;
+  $("toStart").onclick=()=>go("start");
+  from="subjects";
+}
+function viewSubject(){
+  const s=SUBJECTS.find(x=>x.id===subject);
+  app.innerHTML=`
+  <button class="btn link" id="backSubj" style="align-self:flex-start">← ${from==="result"?"Wróć do wyniku":"Wróć do przedmiotów"}</button>
+  <span class="eyebrow">Diagnoza przedmiotowa</span>
+  <h1>${s.n}</h1>
+  <div class="placeholder" id="subject-module" data-subject="${s.id}">
+    <h3>Moduł w przygotowaniu</h3>
+    <p class="muted">Tutaj pojawi się test sprawdzający Twój stan wiedzy.</p>
+  </div>`;
+  $("backSubj").onclick=()=>go(from==="result"?"result":"subjects");
+}
+
+function summary(t,r,paths,code){
+  const L=["KOMPAS MATURALNI – wynik","Kod zainteresowań: "+code,
+    "Zainteresowania: "+ORDER.map(k=>`${k} ${r[k]}`).join(", "),
+    "Osobowość: "+Object.keys(TRAITS).map(k=>`${TRAITS[k].name} ${t[k]}/10`).join("; ")];
+  paths.forEach((p,i)=>{const P=PATHS[p.id],ro=rankRoles(P,t);
+    L.push("",`Plan ${i?"B":"A"}: ${P.name}`,`Rola: ${ro[0].n} (${ro[0].pct}%), inna opcja: ${ro[1].n} (${ro[1].pct}%)`,
+      "Kierunki: "+P.kierunki.join(", "),"Matura: "+[...P.req,...P.opt].join(", "));
+    P.oferty.forEach(o=>L.push(`- ${o.u}, ${o.k} [${STATUS[o.s]}]: ${o.m}`));});
+  return L.join("\n");
+}
+render();
+</script>
+</body>
+</html>
