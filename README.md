@@ -29,10 +29,10 @@ Odpowiedzi ucznia zapisują się tylko w jego przeglądarce (localStorage).
 
 ## Podgląd zmian dla zespołu
 
-Strona jest wdrażana przez Cloudflare Pages, połączone z tym repozytorium. Działa to niezależnie od tego, który współpracownik zrobił commit.
+Strona: **https://maturalni-4l1.pages.dev** – wdrażana przez Cloudflare Pages, połączone z tym repozytorium. Działa to niezależnie od tego, który współpracownik zrobił commit.
 
 - **Push na `main`** – zmiana pojawia się na stronie głównej po ok. minucie.
-- **Push na inną gałąź** – gałąź dostaje własny adres podglądu (`nazwa-galezi.<projekt>.pages.dev`), a w pull requeście pojawia się link.
+- **Push na inną gałąź** – gałąź dostaje własny adres podglądu (`nazwa-galezi.maturalni-4l1.pages.dev`), a w pull requeście pojawia się link.
 
 Jak pracować:
 
