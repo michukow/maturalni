@@ -79,7 +79,8 @@
 
   // ───────────── ścieżka ucznia: 4 kroki ─────────────
   // Uczeń zawsze widzi, na którym kroku jest: 1. Diagnoza (Kompas) > 2. Test z przedmiotu (dziś: matematyka) > 3. Plan > 4. Nauka.
-  // Pasek kroków to jedyna nawigacja ucznia. Pozostałe ekrany (opis, matryca, AI, demo) są na stronie dla jury.
+  // Pasek kroków pokazuje postęp, dolny pasek (rysujDol) służy do codziennej nawigacji.
+  // Pozostałe ekrany (opis, matryca, AI, demo) są na stronie dla jury.
   const KROKI = [
     { nr: 1, nazwa: 'Diagnoza', opis: 'osobowość i kierunki' },
     { nr: 2, nazwa: 'Test', opis: 'z przedmiotu' },
@@ -123,6 +124,30 @@
           <span class="nr">${zr ? '✓' : otw ? k.nr : '🔒'}</span><span class="tx"><b>${k.nazwa}</b><small>${k.opis}</small></span></button>`;
       }).join('')}</nav>`;
     $('topbar').querySelectorAll('[data-krok]').forEach(b => b.onclick = () => idzDoKroku(+b.dataset.krok));
+    rysujDol(n);
+  }
+  // Dolny pasek pod kciukiem: najczęściej używane miejsca. Pasek kroków u góry pokazuje postęp,
+  // a ten pasek służy do codziennego poruszania się po aplikacji.
+  function rysujDol(n) {
+    const zakladki = testZrobiony()
+      ? [['dzis', '🔥', 'Dziś'], ['plan', '✅', 'Plan'], ['materialy', '📚', 'Materiały'], ['postepy', '📈', 'Postępy'], [celKroku(1), '🧭', 'Kompas']]
+      : [['', '🏠', 'Start'], [celKroku(1), '🧭', 'Diagnoza'], [celKroku(2), '📝', 'Test'], ['materialy', '📚', 'Materiały']];
+    const grupa = h => {
+      if (h === n) return true;
+      if (h === 'dzis') return ['lekcja', 'quiz-wynik'].includes(n) || (n === 'quiz' && krokTrasy(n) === 4);
+      if (h === 'plan') return n === 'kalendarz';
+      if (h === 'materialy') return n === 'import';
+      if (KOMPAS.has(h)) return KOMPAS.has(n);
+      if (['kalibracja', 'test', 'wynik'].includes(h)) return krokTrasy(n) === 2;
+      return false;
+    };
+    let bar = $('tabbar');
+    if (!bar) { bar = document.createElement('nav'); bar.id = 'tabbar'; bar.className = 'tabbar'; bar.setAttribute('aria-label', 'Szybka nawigacja'); document.body.appendChild(bar); }
+    bar.style.gridTemplateColumns = `repeat(${zakladki.length}, minmax(0, 1fr))`;
+    bar.innerHTML = zakladki.map(([h, ik, t]) => `<a href="#/${h}" ${grupa(h) ? 'aria-current="page"' : ''}><span aria-hidden="true">${ik}</span>${t}</a>`).join('');
+    // W trakcie testu, Kompasu i kalibracji chowamy pasek, żeby nic nie rozpraszało i nie dało się przypadkiem wyjść.
+    bar.hidden = n === 'quiz' || n === 'kompas-test' || n === 'kalibracja';
+    document.body.classList.toggle('bez-dolu', bar.hidden);
   }
   function rysujStopke() {
     $('stopka').innerHTML = `<span>Prototyp na EduHackaton Maturalnych 2026 · Twoje postępy zapisują się tylko w tej przeglądarce na tym urządzeniu</span>

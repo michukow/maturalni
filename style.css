@@ -509,3 +509,19 @@ textarea.json{width:100%;min-height:160px;font-family:ui-monospace,Menlo,monospa
 .kroki-start span{color:var(--muted);font-size:.95rem}
 details.card > summary{cursor:pointer;min-height:40px;display:flex;align-items:center;flex-wrap:wrap;gap:4px}
 details.card[open] > summary{margin-bottom:6px}
+
+/* ───────── Dolny pasek nawigacji (pod kciukiem) ───────── */
+.tabbar{position:fixed;left:0;right:0;bottom:0;z-index:30;display:grid;gap:2px;
+  background:rgba(255,255,255,.97);backdrop-filter:saturate(1.4) blur(8px);border-top:1px solid var(--line);
+  padding:6px max(6px, env(safe-area-inset-right,0px)) calc(6px + env(safe-area-inset-bottom,0px)) max(6px, env(safe-area-inset-left,0px))}
+.tabbar a{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;min-width:0;min-height:52px;padding:6px 2px;
+  border-radius:12px;text-decoration:none;color:var(--muted);font-weight:700;font-size:.74rem;white-space:nowrap}
+.tabbar a span{font-size:1.25rem;line-height:1}
+.tabbar a:hover{color:var(--ink)}
+.tabbar a[aria-current="page"]{color:var(--blue);background:var(--blue-soft)}
+@media (min-width:900px){.tabbar{left:50%;right:auto;transform:translateX(-50%);width:min(520px, calc(100% - 32px));bottom:14px;border:1px solid var(--line);border-radius:18px;box-shadow:var(--shadow)}
+  .tabbar a{font-size:.8rem}}
+body{padding-bottom:calc(84px + env(safe-area-inset-bottom,0px))}
+body.bez-dolu{padding-bottom:calc(24px + env(safe-area-inset-bottom,0px))}
+/* Powiadomienie nad dolnym paskiem, żeby go nie zasłaniało */
+body:not(.bez-dolu) .toast{bottom:calc(88px + env(safe-area-inset-bottom,0px))}

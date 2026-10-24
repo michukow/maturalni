@@ -6,7 +6,9 @@ Strona: **https://maturalni-4l1.pages.dev** (Cloudflare Pages, wdrożenie po pus
 
 ## Przepływ ucznia: 4 kroki
 
-Uczeń widzi jedną ścieżkę. Pasek kroków u góry każdego ekranu to jedyna nawigacja: pokazuje, gdzie uczeń jest, co już zrobił (✓) i co jest jeszcze zablokowane (🔒). Kroki 3 i 4 otwierają się po teście z matematyki.
+Uczeń widzi jedną ścieżkę i ma dwa paski nawigacji:
+- **Pasek kroków u góry**: gdzie uczeń jest, co już zrobił (✓) i co jest jeszcze zablokowane (🔒). Kroki 3 i 4 otwierają się po teście.
+- **Dolny pasek pod kciukiem** do codziennego używania. Przed testem: Start, Diagnoza, Test, Materiały. Po teście: Dziś, Plan, Materiały, Postępy, Kompas. W trakcie testu, Kompasu i kalibracji pasek się chowa, żeby nic nie rozpraszało.
 
 | Krok | Co robi uczeń | Co dostaje | Ekrany |
 |---|---|---|---|
