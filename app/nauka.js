@@ -51,7 +51,7 @@
 
   // ───────────── router ─────────────
   const TRASY = {}, KOMPAS = new Set();
-  const SZEROKIE = new Set(['', 'dzis', 'plan', 'postepy', 'powiadomienia', 'jak-to-dziala', 'mapa', 'matryca', 'wynik', 'kalendarz']);
+  const SZEROKIE = new Set(['', 'dzis', 'plan', 'postepy', 'powiadomienia', 'jak-to-dziala', 'mapa', 'matryca', 'wynik', 'kalendarz', 'materialy', 'import']);
   function rejestruj(t, kompasowe) { Object.assign(TRASY, t); (kompasowe || []).forEach(k => KOMPAS.add(k)); }
   function trasa() {
     const h = decodeURIComponent(location.hash.replace(/^#\/?/, ''));
@@ -81,9 +81,9 @@
     const ma = !!D;
     const s = ma ? seria() : null;
     const linki = [['', 'Start']].concat(ma
-      ? [['dzis', 'Dziś'], ['plan', 'Plan'], ['postepy', 'Postępy'], ['powiadomienia', 'Powiadomienia'], ['kalendarz', 'Kalendarz']]
-      : [['kalibracja', 'Kalibracja']], [['kompas', 'Kompas'], ['jak-to-dziala', 'Jak to działa'], ['mapa', 'Mapa']]);
-    const aktywna = h => h === n || (h === 'kompas' && KOMPAS.has(n)) || (h === 'dzis' && (n === 'lekcja' || n === 'quiz' || n === 'quiz-wynik'));
+      ? [['dzis', 'Dziś'], ['plan', 'Plan'], ['materialy', 'Materiały'], ['postepy', 'Postępy'], ['powiadomienia', 'Powiadomienia'], ['kalendarz', 'Kalendarz']]
+      : [['kalibracja', 'Kalibracja'], ['materialy', 'Materiały']], [['kompas', 'Kompas'], ['jak-to-dziala', 'Jak to działa'], ['mapa', 'Mapa']]);
+    const aktywna = h => h === n || (h === 'kompas' && KOMPAS.has(n)) || (h === 'dzis' && (n === 'lekcja' || n === 'quiz' || n === 'quiz-wynik')) || (h === 'materialy' && n === 'import');
     $('topbar').innerHTML = `<div class="in"><a class="logo" href="#/"><i>M</i>Maturalni <small>plan matury</small></a>
       <nav class="nav" aria-label="Główna nawigacja">${linki.map(([h, t]) => `<a href="#/${h}" ${aktywna(h) ? 'aria-current="page"' : ''}>${t}</a>`).join('')}</nav>
       ${s ? `<a class="pill-fire ${s.dni ? '' : 'off'}" href="#/dzis" title="Seria: dni nauki z rzędu">🔥 ${s.dni}</a>` : ''}</div>`;
@@ -124,33 +124,6 @@
           <span>${esc(k.nazwa)} <span class="muted tiny">· ${POZIOM[k.poziomTrudnosci]} · CKE ${esc(k.cke)}</span>${k.zaliczona ? ' <span class="badge green">zaliczone</span>' : ''}</span>
           <b class="small">${k.opanowanie}%${k.pewny ? '' : '<span class="muted tiny"> szac.</span>'}</b></li>`).join('')}</ul></details>`;
     }).join('')}</div>`;
-  }
-  function materialHtml(m) {
-    const ik = { teoria: '📖', arkusz: '📝', wideo: '🎬', cwiczenia: '📝' }[m.typ] || '📘';
-    const typ = { teoria: 'schemat / teoria', arkusz: 'zadania z arkusza', wideo: 'wideo' }[m.typ] || m.typ;
-    return `<div class="mat"><div class="okl ${esc(m.typ)}">${ik}</div><div class="stack" style="gap:4px">
-      <b>${esc(m.tytul)}</b><span class="small">${esc(m.fragment)}</span>
-      <div class="row"><span class="badge blue">${typ}</span>${m.minuty ? `<span class="badge">ok. ${m.minuty} min</span>` : ''}<a class="small" href="${esc(m.url)}" target="_blank" rel="noopener">Otwórz materiał Maturalnych ↗</a></div></div></div>`;
-  }
-  function praktykaHtml(q, id, naglowek) {
-    if (!q) return '';
-    const kol = tasuj([0, 1, 2, 3]);
-    return `<div class="card flat" id="${id}"><span class="eyebrow">${naglowek}</span><b style="font-size:1.08rem">${esc(q.tresc)}</b>
-      <div class="odpowiedzi">${kol.map((i, n) => `<button class="odp" data-i="${i}"><span class="lit">${'ABCD'[n]}</span>${esc(q.odp[i])}</button>`).join('')}</div>
-      <div class="wp"></div></div>`;
-  }
-  function podepnijPraktyke(id, q) {
-    const box = $(id);
-    if (!box || !q) return;
-    box.querySelectorAll('.odp').forEach(b => b.onclick = () => {
-      const i = +b.dataset.i;
-      box.querySelectorAll('.odp').forEach(x => { x.disabled = true; const j = +x.dataset.i; x.classList.add(j === 0 ? 'dobra' : j === i ? 'zla' : 'wygaszona'); });
-      const tag = q.bledy && q.bledy[i];
-      const opis = tag ? tag.replace(/^PRE:\S+\s*/, '') : '';
-      box.querySelector('.wp').innerHTML = i === 0
-        ? '<div class="kom ok"><b class="t">Dobrze! ✓</b></div>'
-        : `<div class="kom nie"><b class="t">Prawie.</b><span>Poprawnie: <b>${esc(q.odp[0])}</b>.${opis ? ' Uważaj: ' + esc(opis) + '.' : ''}</span></div>`;
-    });
   }
   function brakDanych() {
     app.innerHTML = `<div class="q-head"><h1>Najpierw zróbmy kalibrację</h1><p class="sub">Ten ekran pokazuje Twój plan, a planu jeszcze nie ma. Zajmie to kilka minut.</p></div>
@@ -588,7 +561,7 @@
 
     const zad = zrobione.map(h => `<div class="zad zrobione"><div class="wezel">✓</div><div><div class="tyt">${esc(h.tytul || { quiz: 'Quiz', powtorka: 'Powtórka 5 min', diagnoza: 'Diagnoza pełna', nauka: 'Sesja nauki' }[h.typ])}</div><div class="meta">${h.minuty} min · zrobione</div></div><span></span></div>`)
       .concat(sesjeDzis.map((s, i) => `<div class="zad ${i === 0 ? 'teraz' : ''}"><div class="wezel">${IKONA[s.typ]}</div>
-        <div><div class="tyt">${esc(nazwaSesji(s))}</div><div class="meta">${s.minuty} min · ${s.start}${s.powod ? ' · ' + esc(s.powod) : ''}${s.dostosowane ? ' · <b style="color:var(--yellow-ink)">materiał dostosowany</b>' : ''}</div></div>
+        <div><div class="tyt">${esc(nazwaSesji(s))}</div><div class="meta">${s.minuty} min · ${s.start}${s.czesci && s.czesci.length ? ' · ' + s.czesci.map(c => (root.Kurs ? root.Kurs.IK[c.typ] : '') + ' ' + esc(root.Kurs ? root.Kurs.TYP[c.typ] : c.typ)).join(' + ') : s.powod ? ' · ' + esc(s.powod) : ''}${s.dostosowane ? ' · <b style="color:var(--yellow-ink)">materiał dostosowany</b>' : ''}</div></div>
         <button class="btn-small ${i === 0 ? '' : 'alt'}" data-s="${i}">${i === 0 ? 'Start' : 'Zrób'}</button></div>`)).join('');
 
     // tydzień
@@ -688,40 +661,31 @@
     const u = plan.jednostki.find(x => x.komp === komp);
     const sesja = plan.sesje.find(s => s.typ === 'nauka' && s.komp === komp && s.data === t) || plan.sesje.find(s => s.typ === 'nauka' && s.komp === komp);
     const dost = u && u.dostosowanie;
-    const mats = u && u.materialy && u.materialy.length ? u.materialy : (M.MATERIALY_DZIALU && M.MATERIALY_DZIALU['*']) || [];
-    const pyt = S.pytaniaDla(komp);
-    const praktyka = pyt.length ? pyt[Math.floor(Math.random() * pyt.length)] : null;
-    const rozg = dost && dost.rozgrzewka ? S.pytaniaDla(dost.rozgrzewka)[0] : null;
-    const min = sesja ? sesja.minuty : 15;
     const zaliczona = D.stan.zaliczone[komp];
     const st = S.status(D.stan, komp);
-    const kroki = [];
-    if (rozg) kroki.push(['🔥', 'Rozgrzewka z podstawy', dost.rozgrzewkaNazwa, 2]);
-    kroki.push(['📖', 'Materiał Maturalnych', mats[0] ? mats[0].tytul + ': ' + mats[0].fragment : 'materiał do tematu', Math.max(5, min - (rozg ? 5 : 3))]);
-    if (praktyka) kroki.push(['✏️', 'Sprawdź się', '1 zadanie z natychmiastową odpowiedzią', 3]);
+    const czesci = sesja ? root.Kurs.czesciSesji(sesja, dost) : root.Kurs.czesciKomp(komp);
+    const wszystkie = root.Kurs.czesciKomp(komp);
+    const minCz = czesci.reduce((a, c) => a + (c.minutySesji || c.minuty), 0);
     app.innerHTML = `
       <button class="wstecz" onclick="location.hash='#/dzis'" style="align-self:flex-start">← Dziś</button>
       <div class="stack" style="gap:10px">
         <div class="row"><span class="badge">${esc(S.dzial(k.dzial).nazwa)}</span><span class="badge ${k.poziom === 1 ? 'green' : k.poziom === 2 ? 'yellow' : 'red'}">${POZIOM[k.poziom]}</span>
-          <span class="badge">wymaganie CKE ${esc(k.cke)}</span>${sesja ? `<span class="badge blue">część ${sesja.czesc}/${sesja.z} · ${sesja.minuty} min</span>` : ''}${zaliczona ? '<span class="badge green">zaliczone</span>' : ''}</div>
+          <span class="badge">wymaganie CKE ${esc(k.cke)}</span>${sesja ? `<span class="badge blue">sesja ${sesja.czesc}/${sesja.z} · ${sesja.minuty} min</span>` : ''}${zaliczona ? '<span class="badge green">zaliczone</span>' : ''}</div>
         <h1>${esc(k.nazwa)}</h1>
         <p class="muted">Twój poziom: <b>${Math.round(st.p * 100)}%</b>${st.pewny ? '' : ' (szacunek)'}${u ? ' · ' + esc(u.powod) : ''}</p>
       </div>
       ${dost ? `<div class="callout"><span class="ico">🛠️</span><div class="stack" style="gap:6px"><b class="t">Dostosowaliśmy materiał do Ciebie</b>
         <span>${dost.proby ? `Quiz z tego tematu nie wyszedł ${dost.proby === 1 ? 'raz' : dost.proby + ' razy'}.` : 'Wracamy do tematu po wzmocnieniu podstaw.'}${dost.przyczyna ? ` Najczęstszy błąd: <b>${esc(dost.przyczyna)}</b>.` : ''}</span>
         <ul style="margin:0;padding-left:18px">${dost.zmiany.map(z => `<li>${esc(z)}</li>`).join('')}</ul></div></div>` : ''}
-      <div class="card"><h3>Plan na te ${min} minut</h3>
-        <div class="lista">${kroki.map((x, i) => `<div class="poz"><span style="font-size:1.2rem">${x[0]}</span><span><span class="t">${i + 1}. ${esc(x[1])}</span><br><span class="m">${esc(x[2])}</span></span><b class="small">${x[3]} min</b></div>`).join('')}</div></div>
-      ${rozg ? praktykaHtml(rozg, 'rozg', 'Rozgrzewka · ' + esc(dost.rozgrzewkaNazwa)) : ''}
-      <div class="card"><h3>Materiał Maturalnych</h3><div class="stack">${mats.map(materialHtml).join('')}</div>
-        <p class="muted small">Zamiast całego kursu wskazujemy konkretny fragment do tego tematu.${dost ? ' Kolejność zmieniona: najpierw wyjaśnienie, potem zadania.' : ''}</p></div>
-      ${praktyka ? praktykaHtml(praktyka, 'prak', 'Sprawdź się') : ''}
+      <div class="callout blue"><span class="ico">🎬</span><span><b>Dziś: ${czesci.length} ${odmiana(czesci.length, 'część', 'części', 'części')}, ok. ${minCz} min.</b> To fragmenty materiałów Maturalnych dobrane do tej umiejętności, a nie cały kurs.
+        Cały temat (${wszystkie.length} części) znajdziesz w <a href="#/materialy/${komp}">Materiałach</a>.</span></div>
+      <div id="panelLekcji"></div>
       <div class="cta">${sesja ? `<button class="btn-main xl" id="odhacz">Zrobione! Odhaczam sesję ✓</button>${sesja.data !== t ? `<span class="muted small">Ta sesja jest zaplanowana na ${fKrotko(sesja.data)}. Możesz ją zrobić wcześniej.</span>` : ''}${sesja.czesc === sesja.z ? '<span class="muted small">To ostatnia część. Potem quiz zaliczeniowy (5 min, próg 70%).</span>' : ''}`
         : zaliczona ? '<span class="muted">Ten temat jest zaliczony. Wróci w powtórce.</span>' : '<span class="muted">Tego tematu nie ma teraz w planie nauki.</span>'}</div>`;
-    podepnijPraktyke('rozg', rozg);
-    podepnijPraktyke('prak', praktyka);
+    root.Kurs.panel($('panelLekcji'), { komp: komp, czesci: czesci, aktywna: Math.max(0, czesci.findIndex(c => !root.Kurs.zrobione(c.id))), tytulListy: 'Na dziś' });
     if ($('odhacz')) $('odhacz').onclick = () => {
       const przed = seria().dni;
+      czesci.forEach(c => { if (!c.kontynuacja) root.Kurs.oznacz(c.id, true); });
       S.oznaczSesje(D.stan, sesja, true, t); zapisz();
       const po = seria().dni;
       toast((po > przed ? `🔥 Seria: ${dniSl(po)}! ` : 'Sesja odhaczona ✓ ') + (sesja.czesc === sesja.z ? 'Teraz quiz zaliczeniowy.' : 'Kolejna część jest już w planie.'));
@@ -913,10 +877,11 @@
   }
 
   // ═════════════ KALENDARZ ═════════════
+  function adresAplikacji() { return location.origin + location.pathname.replace(/index\.html$/, ''); }
   function pobierzIcs() {
     const r = planTeraz();
     if (!r.plan) return toast('Najpierw potrzebny jest plan.');
-    const blob = new Blob([S.doIcs(r.plan)], { type: 'text/calendar;charset=utf-8' });
+    const blob = new Blob([S.doIcs(r.plan, { adres: adresAplikacji() })], { type: 'text/calendar;charset=utf-8' });
     const a = document.createElement('a');
     a.href = URL.createObjectURL(blob); a.download = 'plan-matura-maturalni.ics';
     document.body.appendChild(a); a.click();
@@ -930,7 +895,12 @@
     const sesje = r.plan.sesje.filter(s => s.minuty && s.data >= dzis()).slice(0, 8);
     const ile = r.plan.sesje.filter(s => s.minuty).length;
     app.innerHTML = `
-      <div class="stack" style="gap:6px"><h1>Twój plan w Google Calendar</h1><p class="muted">Każda sesja to wydarzenie z tematem, czasem i linkiem do materiału Maturalnych. Przypomnienia ustawisz w kalendarzu jak zwykle.</p></div>
+      <div class="stack" style="gap:6px"><h1>Twój plan w Google Calendar</h1><p class="muted">Google Calendar to Twój główny kalendarz: widzisz w nim, <b>co</b> i <b>kiedy</b> robisz. Uczysz się w aplikacji, bo tu plan sam się przelicza po każdym quizie.</p></div>
+      <div class="grid3">
+        <div class="card flat"><span style="font-size:1.6rem">🗓️</span><h3>Co i kiedy</h3><p class="small muted">Wydarzenie: temat, część, minuty i lista dzisiejszych części (wideo, notatka, zadania).</p></div>
+        <div class="card flat"><span style="font-size:1.6rem">🔗</span><h3>Link do lekcji</h3><p class="small muted">Jedno kliknięcie w wydarzeniu otwiera dzisiejszą lekcję w aplikacji, z materiałami Maturalnych w środku.</p></div>
+        <div class="card flat"><span style="font-size:1.6rem">🛟</span><h3>Link zapasowy</h3><p class="small muted">W opisie jest też bezpośredni link do materiału na platformie Maturalnych, gdyby aplikacja była niedostępna.</p></div>
+      </div>
       <div class="cols">
         <div class="card"><h3>1. Cały plan naraz (${ile} sesji)</h3>
           <button class="btn-main" id="ics">⬇ Pobierz plan (.ics)</button>
@@ -942,7 +912,7 @@
             ['Gdy plan się zmieni', 'Usuń kalendarz „Matura” i zaimportuj nowy plik. Dzięki osobnemu kalendarzowi nie zostaną duplikaty.']
           ].map((x, i) => `<div class="poz"><span class="box">${i + 1}</span><span><span class="t">${x[0]}</span><br><span class="m">${x[1]}</span></span><span></span></div>`).join('')}</div></div>
         <div class="card"><h3>2. Pojedyncza sesja jednym kliknięciem</h3><p class="small muted">Otwiera Google Calendar z gotowym wydarzeniem. Bez importu.</p>
-          <div class="lista">${sesje.map(s => `<div class="poz"><span>${IKONA[s.typ]}</span><span><span class="t">${esc(nazwaSesji(s))}</span><br><span class="m">${fKrotko(s.data)} · ${s.start}-${s.koniec}</span></span><a class="btn-small alt" href="${S.linkGoogle(s)}" target="_blank" rel="noopener">Dodaj ↗</a></div>`).join('')}</div></div>
+          <div class="lista">${sesje.map(s => `<div class="poz"><span>${IKONA[s.typ]}</span><span><span class="t">${esc(nazwaSesji(s))}</span><br><span class="m">${fKrotko(s.data)} · ${s.start}-${s.koniec}</span></span><a class="btn-small alt" href="${S.linkGoogle(s, { adres: adresAplikacji() })}" target="_blank" rel="noopener">Dodaj ↗</a></div>`).join('')}</div></div>
       </div>
       <div class="callout blue"><span class="ico">🔄</span><span><b>W kolejnej iteracji:</b> połączenie z kontem Google (Google Calendar API), żeby plan sam aktualizował się w kalendarzu po każdej zmianie.</span></div>`;
     $('ics').onclick = pobierzIcs;
@@ -960,7 +930,7 @@
           <div class="lista">${ks.map(k => {
             const s = w && w.kompetencje.find(x => x.id === k.id);
             return `<div class="poz"><span class="badge ${k.poziom === 1 ? 'green' : k.poziom === 2 ? 'yellow' : 'red'}" style="padding:2px 6px">${k.poziom}</span>
-              <span><span class="t">${esc(k.nazwa)}</span><br><span class="m">${k.id} · CKE ${esc(k.cke)} · pytań: ${S.pytaniaDla(k.id).length}${k.wymaga.length ? ' · wymaga: ' + esc(k.wymaga.map(x => S.kompetencja(x).nazwa).join(', ')) : ''}</span></span>
+              <span><a class="t" href="#/materialy/${k.id}" style="color:inherit">${esc(k.nazwa)}</a><br><span class="m">${k.id} · CKE ${esc(k.cke)} · pytań: ${S.pytaniaDla(k.id).length} · materiałów: ${(M.MATERIALY[k.id] || []).length}${k.wymaga.length ? ' · wymaga: ' + esc(k.wymaga.map(x => S.kompetencja(x).nazwa).join(', ')) : ''}</span></span>
               ${s ? `<span class="row" style="gap:6px"><i class="kr ${s.status} ${s.pewny ? '' : 'szac'}"></i><b class="small">${s.opanowanie}%</b></span>` : '<span></span>'}</div>`;
           }).join('')}</div></div>`;
       }).join('')}
@@ -983,7 +953,8 @@
           ['Postęp', 'Obejrzane lekcje', 'Zaliczenie quizem (70%), powtórki co 2 > 5 > 12 > 30 dni'],
           ['Gdy nie idzie', 'Uczeń zostaje sam', 'Zmiana materiału na wyjaśnienie, rozgrzewka z podstawy, cofnięcie w matrycy'],
           ['Życie', 'Plan stały', 'Bufor 20%, święta, studniówka, choroba: plan się przelicza, seria trwa'],
-          ['Materiały', 'Cały kurs', 'Konkretny fragment produktu Maturalnych dla danej umiejętności']
+          ['Materiały', 'Cały kurs albo arkusz do przejrzenia', 'W aplikacji: fragment wideo (od-do), notatka, trening i zadania Maturalnych dla jednej umiejętności, w kolejności dopasowanej do stylu nauki'],
+          ['Kalendarz', 'Ręczne wpisywanie', 'Google Calendar pokazuje co i kiedy, z linkiem do lekcji i zapasowym linkiem do materiału']
         ].map(r => `<tr><td><b>${r[0]}</b></td><td>${r[1]}</td><td>${r[2]}</td></tr>`).join('')}</tbody></table></div>
       <div class="card"><h3>Przepływ ucznia</h3>
         <div class="flow"><span>Kompas (opcjonalnie)</span><i>→</i><span>Kalibracja: 9 pytań</span><i>→</i><span>Test adaptacyjny</span><i>→</i><span>Wynik + mapa</span><i>→</i><span>Plan dnia</span><i>→</i><span>Lekcja z materiałem</span><i>→</i><span>Quiz 70%</span><i>→</i><span>Powtórki</span><i>→</i><span>Diagnoza pełna</span></div>
@@ -1021,6 +992,7 @@
         ${lk('#/wynik', '📊', 'Wynik diagnozy', 'Prognoza, przyczyny błędów, mapa')}
         ${lk('#/dzis', '🔥', 'Dziś', 'Komunikat dnia, seria, ścieżka na dziś')}
         ${lk('#/plan', '✅', 'Lista do matury', 'Wszystkie tematy, minuty, dni wolne')}
+        ${lk('#/materialy', '🎬', 'Materiały', 'Wideo, notatki i zadania Maturalnych per umiejętność')}
         ${lk('#/postepy', '📈', 'Postępy', 'Prognoza w czasie, przyczyny błędów')}
         ${lk('#/powiadomienia', '🔔', 'Powiadomienia', 'Ekran push i ustawienia')}
         ${lk('#/kalendarz', '🗓️', 'Kalendarz', 'Plik .ics i Google Calendar')}
@@ -1030,6 +1002,7 @@
         ${lk('#/przedmioty', '📚', 'Przedmioty maturalne', 'Wybór przedmiotu do diagnozy')}
         ${lk('#/jak-to-dziala', '💡', 'Jak to działa', 'Wyróżniki, algorytm, wartość dla Maturalnych')}
         ${lk('#/matryca', '🧩', 'Matryca mikrokompetencji', '67 umiejętności z wymagań CKE')}
+        ${lk('#/import', '🔄', 'Import materiałów', 'Lekcje z API Maturalnych > mikrokompetencje')}
       </div></div>
       <div class="card yellow"><div class="row between"><h3>Narzędzia demo (dla jury)</h3><span class="badge">data w aplikacji: ${fData(dzis(), true)}</span></div>
         <div class="linki">
@@ -1139,5 +1112,8 @@
     'jak-to-dziala': widokJak, mapa: widokMapa
   });
 
-  root.Nauka = { rejestruj: rejestruj, render: render, go: go, trasa: trasa, start: render, startPrzedmiot: startPrzedmiot, zacheta: zacheta, silnik: S };
+  root.Nauka = {
+    rejestruj: rejestruj, render: render, go: go, trasa: trasa, start: render, startPrzedmiot: startPrzedmiot, zacheta: zacheta, silnik: S,
+    pomoc: { S: S, esc: esc, dane: () => D, zapisz: zapisz, dzis: dzis, planTeraz: planTeraz, toast: toast, go: go, render: render, fData: fData, fKrotko: fKrotko, odmiana: odmiana, startTest: startTest }
+  };
 })(window);

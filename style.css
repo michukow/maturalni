@@ -378,3 +378,74 @@ details.more .body{display:flex;flex-direction:column;gap:10px;padding-top:10px;
 .copyfallback{width:100%;min-height:160px;font-family:ui-monospace,Menlo,monospace;font-size:.8rem;background:var(--surface);color:var(--ink);border:1px solid var(--line);border-radius:8px;padding:10px}
 @media (max-width:480px){.card{padding:18px}.subjects{grid-template-columns:1fr 1fr}}
 @media (prefers-reduced-motion:reduce){*{transition:none!important;scroll-behavior:auto!important}}
+
+/* ═════════ Platforma kursowa: materiały per mikrokompetencja ═════════ */
+.kurs{display:grid;grid-template-columns:300px minmax(0,1fr);gap:22px;align-items:start}
+@media (max-width:900px){.kurs{grid-template-columns:1fr}.kurs-menu{max-height:none;position:static}}
+.kurs-menu{position:sticky;top:76px;max-height:calc(100vh - 96px);overflow:auto;background:var(--surface);border:1px solid var(--line);border-radius:18px;padding:12px;display:flex;flex-direction:column;gap:6px;box-shadow:var(--shadow)}
+.kurs-menu input{font:inherit;border:1.5px solid var(--line-2);border-radius:10px;padding:9px 12px;width:100%}
+.kurs-menu details{border-radius:12px}
+.kurs-menu summary{list-style:none;cursor:pointer;padding:9px 10px;border-radius:10px;font-weight:700;font-size:.92rem;display:flex;justify-content:space-between;gap:8px}
+.kurs-menu summary::-webkit-details-marker{display:none}
+.kurs-menu summary:hover{background:var(--bg)}
+.kurs-menu summary span{color:var(--muted);font-weight:600;font-size:.8rem}
+.kurs-menu a{display:grid;grid-template-columns:14px minmax(0,1fr) auto;gap:8px;align-items:center;padding:7px 10px 7px 14px;border-radius:10px;text-decoration:none;color:var(--ink);font-size:.88rem;line-height:1.3}
+.kurs-menu a:hover{background:var(--bg)}
+.kurs-menu a[aria-current="page"]{background:var(--blue-soft);color:var(--blue);font-weight:700}
+.kurs-menu a small{color:var(--muted);font-size:.74rem;font-weight:600;white-space:nowrap}
+.kurs-menu .dzis-tag{background:var(--blue);color:#fff;border-radius:6px;padding:1px 6px;font-size:.66rem;font-weight:800}
+.okruszki{font-size:.85rem;color:var(--muted);display:flex;gap:6px;flex-wrap:wrap}
+.okruszki a{color:var(--muted)}
+.lista-czesci{display:flex;flex-direction:column;border:1px solid var(--line);border-radius:16px;overflow:hidden;background:var(--surface)}
+.lc{display:grid;grid-template-columns:40px minmax(0,1fr) auto;gap:12px;align-items:center;padding:12px 14px;text-align:left;border:0;background:var(--surface);width:100%;border-bottom:1px solid var(--line)}
+.lc:last-child{border-bottom:0}
+.lc:hover{background:var(--bg)}
+.lc[aria-current="true"]{background:var(--blue-soft)}
+.lc .ik{width:40px;height:40px;border-radius:12px;display:grid;place-items:center;font-size:1.15rem;background:var(--bg)}
+.lc.wideo .ik{background:#F3E8FF}.lc.tekst .ik{background:#FFF1E0}.lc.trening .ik{background:var(--blue-soft)}.lc.arkusz .ik{background:var(--green-soft)}
+.lc.zrobione .ik{background:var(--green);color:#fff;font-weight:800}
+.lc .n{font-weight:600;line-height:1.3}
+.lc .s{font-size:.8rem;color:var(--muted)}
+.lc .mn{font-size:.82rem;color:var(--muted);font-weight:700;white-space:nowrap}
+.odtw{background:var(--surface);border:1px solid var(--line);border-radius:18px;overflow:hidden;box-shadow:var(--shadow)}
+.odtw .glowa{display:flex;justify-content:space-between;gap:10px;align-items:center;padding:14px 18px;border-bottom:1px solid var(--line);flex-wrap:wrap}
+.odtw .cialo{padding:18px;display:flex;flex-direction:column;gap:14px}
+.odtw .stopka-odtw{display:flex;justify-content:space-between;gap:10px;align-items:center;padding:12px 18px;border-top:1px solid var(--line);background:var(--bg);flex-wrap:wrap}
+.wideo-box{position:relative;aspect-ratio:16/9;background:#0B1220;border-radius:14px;overflow:hidden;color:#fff}
+.wideo-box iframe{position:absolute;inset:0;width:100%;height:100%;border:0}
+.plakat{position:absolute;inset:0;padding:22px 24px;display:flex;flex-direction:column;justify-content:space-between;background:radial-gradient(120% 120% at 0% 0%,#2563EB 0%,#1E3A8A 45%,#0B1220 100%)}
+.plakat .gora{display:flex;justify-content:space-between;gap:10px;align-items:center;font-size:.8rem;font-weight:700;opacity:.9}
+.plakat .gora b{background:#FFC700;color:#2B2100;border-radius:6px;padding:2px 8px}
+.plakat .tyt{font-size:clamp(1.15rem,3vw,1.8rem);font-weight:800;line-height:1.2;max-width:80%;letter-spacing:-.01em}
+.plakat .tablica{font-family:ui-monospace,Menlo,monospace;font-size:clamp(.85rem,2vw,1.05rem);background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.15);border-radius:10px;padding:10px 14px;max-width:85%;min-height:44px;transition:opacity .3s}
+.play{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);width:76px;height:76px;border-radius:50%;border:0;background:rgba(255,255,255,.95);color:var(--blue);font-size:1.8rem;display:grid;place-items:center;box-shadow:0 8px 30px rgba(0,0,0,.35)}
+.play:hover{transform:translate(-50%,-50%) scale(1.05)}
+.sterowanie{display:flex;align-items:center;gap:12px;padding:10px 4px 0}
+.sterowanie button{border:0;background:var(--blue);color:#fff;border-radius:10px;width:40px;height:36px;font-weight:800}
+.sterowanie .czas{font-variant-numeric:tabular-nums;font-size:.86rem;color:var(--muted);white-space:nowrap}
+.pasek{flex:1;height:8px;border-radius:8px;background:#E6E8EC;overflow:hidden;cursor:pointer}
+.pasek i{display:block;height:100%;width:0;background:var(--blue);border-radius:8px}
+.os-lekcji{display:flex;flex-direction:column;gap:6px}
+.os-lekcji .tor{position:relative;height:14px;border-radius:7px;background:#E6E8EC;overflow:hidden}
+.os-lekcji .seg{position:absolute;top:0;bottom:0;background:#C7D2FE;border-left:1px solid #fff}
+.os-lekcji .seg.ten{background:var(--blue)}
+.os-lekcji .opis{font-size:.8rem;color:var(--muted)}
+.notatka{display:flex;flex-direction:column;gap:12px;font-size:1.02rem}
+.notatka .wz{font-family:ui-monospace,Menlo,monospace;background:var(--blue-soft);border:1px solid #D4E2FF;border-radius:12px;padding:12px 16px;font-size:1.05rem;overflow-x:auto;white-space:pre-wrap}
+.notatka .prz{background:var(--green-soft);border:1px solid #BCEFCF;border-radius:12px;padding:12px 16px}
+.notatka .prz b{display:block;margin-bottom:4px}
+.notatka .prz ol{margin:0;padding-left:20px}
+.notatka .uw{background:var(--red-soft);border:1px solid #F8C9C9;border-radius:12px;padding:12px 16px}
+.notatka table{border-collapse:collapse;font-size:1.02rem}
+.notatka th,.notatka td{border:1px solid var(--line);padding:8px 14px;text-align:center}
+.notatka th{background:var(--bg)}
+.notatka ul{margin:0;padding-left:20px}
+.zrodlo{display:grid;grid-template-columns:72px minmax(0,1fr);gap:14px;align-items:center;border:1px solid var(--line);border-radius:14px;padding:10px;background:var(--bg)}
+.zrodlo .okl{width:72px;height:72px;border-radius:10px;object-fit:cover;background:var(--surface);display:grid;place-items:center;font-size:1.8rem;border:1px solid var(--line)}
+.ramka-arkusz{width:100%;height:560px;border:1px solid var(--line);border-radius:12px;background:var(--bg)}
+.import-tab{width:100%;border-collapse:collapse;font-size:.9rem}
+.import-tab th,.import-tab td{padding:8px 10px;border-bottom:1px solid var(--line);text-align:left;vertical-align:middle}
+.import-tab th{font-size:.76rem;text-transform:uppercase;letter-spacing:.05em;color:var(--muted)}
+.import-tab select{font:inherit;font-size:.85rem;border:1.5px solid var(--line-2);border-radius:8px;padding:6px;max-width:300px}
+textarea.json{width:100%;min-height:160px;font-family:ui-monospace,Menlo,monospace;font-size:.82rem;border:1.5px solid var(--line-2);border-radius:12px;padding:10px;background:var(--surface);color:var(--ink)}
+.kod{font-family:ui-monospace,Menlo,monospace;font-size:.82rem;background:var(--bg);border:1px solid var(--line);border-radius:8px;padding:2px 6px}

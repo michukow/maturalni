@@ -592,14 +592,53 @@
       return wynik;
     }
 
-    // Materiały w kolejności dopasowanej do ucznia: preferencja z kalibracji,
-    // a po porażce najpierw wyjaśnienie (schemat, wideo), dopiero potem zadania z arkusza.
-    function materialDla(id, org, wTrudnosci) {
+    // Części materiałów (wideo / tekst / trening / arkusz) w kolejności dopasowanej do ucznia:
+    // styl z kalibracji, po porażce najpierw wyjaśnienie, przy utrwalaniu bez wideo (notatka + zadania).
+    const KOLEJNOSC_TYPOW = {
+      wideo: ['wideo', 'tekst', 'trening', 'arkusz'],
+      teoria: ['tekst', 'wideo', 'trening', 'arkusz'],
+      arkusz: ['trening', 'wideo', 'tekst', 'arkusz'],
+      domyslna: ['wideo', 'tekst', 'trening', 'arkusz'],
+      utrwalenie: ['tekst', 'trening', 'arkusz']
+    };
+    function materialDla(id, org, wTrudnosci, utrwalenie) {
       const k = K[id];
-      let lista = (materialy[id] || materialyDzialu[k.dzial] || materialyDzialu['*'] || []).slice();
-      const pref = wTrudnosci ? null : (org && (org.preferencja || ((org.dysleksja || org.dyskalkulia) ? 'wideo' : null)));
-      const ocena = m => wTrudnosci ? (m.typ === 'teoria' || m.typ === 'wideo' ? 0 : 1) : (pref && m.typ === pref ? 0 : 1);
-      return lista.sort((a, b) => ocena(a) - ocena(b));
+      const lista = (materialy[id] || materialyDzialu[k.dzial] || materialyDzialu['*'] || []).slice();
+      const pref = org && (org.preferencja || ((org.dysleksja || org.dyskalkulia) ? 'wideo' : null));
+      const kol = wTrudnosci ? KOLEJNOSC_TYPOW.domyslna : utrwalenie ? KOLEJNOSC_TYPOW.utrwalenie : (KOLEJNOSC_TYPOW[pref] || KOLEJNOSC_TYPOW.domyslna);
+      const ocena = m => { const i = kol.indexOf(m.typ); return i === -1 ? 9 : i; };
+      return lista.filter(m => ocena(m) < 9 || !utrwalenie).map((m, i) => ({ m: m, i: i }))
+        .sort((a, b) => ocena(a.m) - ocena(b.m) || a.i - b.i).map(x => x.m);
+    }
+    // Gdy temat ma mniej czasu niż suma części (np. utrwalanie), bierzemy części po kolei i skracamy ostatnią.
+    function dopasujDoCzasu(czesci, T) {
+      if (!T) return czesci;
+      const wynik = [];
+      let suma = 0;
+      for (const c of czesci) {
+        if (suma + c.minuty <= T + 2) { wynik.push(c); suma += c.minuty; }
+        else { if (T - suma >= 5) wynik.push(Object.assign({}, c, { minuty: T - suma, skrocone: true, nazwa: c.nazwa + ' (wybrane zadania)' })); break; }
+      }
+      return wynik.length ? wynik : czesci.slice(0, 1);
+    }
+    // Które części przypadają na sesję obejmującą minuty [a, b) tematu o długości T.
+    function czesciSesji(czesci, T, a, b, ostatnia) {
+      const P = czesci.reduce((s, c) => s + (c.minuty || 0), 0);
+      if (!P || !T) return [];
+      let c0 = 0;
+      const wynik = [];
+      czesci.forEach((c, i) => {
+        const srodek = (c0 + c.minuty / 2) * T / P;
+        if ((srodek >= a && srodek < b) || (ostatnia && srodek >= b)) wynik.push(i);
+        c0 += c.minuty;
+      });
+      if (!wynik.length) { // długa część rozłożona na kilka sesji: kontynuacja
+        let x = 0;
+        const mid = (a + b) / 2 * P / T;
+        for (let i = 0; i < czesci.length; i++) { if (mid < x + czesci[i].minuty) return [{ i: i, kontynuacja: true }]; x += czesci[i].minuty; }
+        return [{ i: czesci.length - 1, kontynuacja: true }];
+      }
+      return wynik.map(i => ({ i: i }));
     }
 
     function dostosowanieDla(stan, id) {
@@ -636,7 +675,7 @@
         minuty: min, pozostalo: Math.max(0, min - (stan.zrobioneMinuty[x.id] || 0)),
         powod: powod, status: st.status, pewny: st.pewny, opanowanie: Math.round(st.p * 100),
         dostosowanie: dostosowanie,
-        materialy: sprawdzenie ? [] : materialDla(x.id, org, !!dostosowanie)
+        materialy: sprawdzenie ? [] : dopasujDoCzasu(materialDla(x.id, org, !!dostosowanie, st.pewny && st.status === 'do_utrwalenia' && !dostosowanie), min)
       };
     }
 
@@ -781,9 +820,13 @@
             const m = Math.min(cap, u.pozostalo);
             u.czesc++;
             if (!u.start) u.start = data;
-            const mat = u.materialy[0];
+            const a = u.minuty - u.pozostalo;
+            const cz = czesciSesji(u.materialy, u.minuty, a, a + m, u.pozostalo - m <= 0).map(x => Object.assign({ kontynuacja: !!x.kontynuacja }, u.materialy[x.i]));
+            const mat = cz[0] || u.materialy[0];
             dodajSesje({ typ: 'nauka', komp: u.komp, minuty: m, czesc: u.czesc, nazwa: u.nazwa, dostosowane: !!u.dostosowanie, powod: u.powod,
-              opis: 'Temat: ' + u.nazwa + '.' + (mat ? ' Materiał Maturalnych: ' + mat.tytul + ', ' + mat.fragment + '. ' + mat.url : '') });
+              czesci: cz.map(c => ({ id: c.id, typ: c.typ, nazwa: c.nazwa, minuty: c.minuty, kontynuacja: c.kontynuacja, url: c.url, produkt: c.produkt })),
+              opis: 'Temat: ' + u.nazwa + '.' + (cz.length ? ' Dziś: ' + cz.map(c => (c.kontynuacja ? 'dokończ: ' : '') + c.nazwa + ' (' + c.minuty + ' min)').join(', ') + '.' : '') +
+                (mat && mat.url ? ' Materiał Maturalnych: ' + (mat.produkt || mat.tytul) + (mat.fragment ? ', ' + mat.fragment : '') + '. ' + mat.url : '') });
             u.pozostalo -= m; cap -= m;
             if (u.pozostalo <= 0) u.etap = 'quiz';
           } else {
@@ -885,24 +928,43 @@
     }
     function czasIcs(data, godz) { return data.replace(/-/g, '') + 'T' + godz.replace(':', '') + '00'; }
 
-    function doIcs(plan) {
+    // Opis wydarzenia w kalendarzu: CO i KIEDY + link do lekcji w aplikacji + zapasowy link do materiału.
+    const IKONY = { wideo: '▶', tekst: '📄', trening: '✏️', arkusz: '📝' };
+    function opisWydarzenia(s, adres) {
+      const L = [];
+      if (s.typ === 'nauka') {
+        L.push('Co: ' + s.tytul + ', ' + s.minuty + ' min.');
+        if (s.czesci && s.czesci.length) L.push('Dziś: ' + s.czesci.map(c => (IKONY[c.typ] || '') + ' ' + (c.kontynuacja ? 'dokończ: ' : '') + c.nazwa + ' (' + c.minuty + ' min)').join(' · '));
+      } else L.push(s.opis || s.tytul);
+      if (adres && s.komp && s.typ === 'nauka') L.push('Otwórz lekcję w aplikacji: ' + adres + '#/lekcja/' + s.komp);
+      else if (adres) L.push('Otwórz aplikację: ' + adres + '#/dzis');
+      const zapas = (s.czesci || []).find(c => c.url);
+      if (zapas) L.push('Zapasowy link do materiału Maturalnych: ' + zapas.produkt + ' ' + zapas.url);
+      L.push('Plan zmienia się po każdym quizie. Aktualny plan zawsze w aplikacji.');
+      return L.join('\n');
+    }
+
+    function doIcs(plan, opcje) {
+      opcje = opcje || {};
       const stamp = new Date().toISOString().replace(/[-:]/g, '').slice(0, 15) + 'Z';
       const linie = ['BEGIN:VCALENDAR', 'VERSION:2.0', 'PRODID:-//Maturalni//Plan nauki//PL', 'CALSCALE:GREGORIAN', 'METHOD:PUBLISH', 'X-WR-CALNAME:Matura: plan nauki'];
       plan.sesje.forEach((s, i) => {
         if (!s.minuty) return;
         linie.push('BEGIN:VEVENT', 'UID:maturalni-' + s.data + '-' + i + '@plan', 'DTSTAMP:' + stamp,
           'DTSTART:' + czasIcs(s.data, s.start), 'DTEND:' + czasIcs(s.data, s.koniec),
-          zawin('SUMMARY:' + escIcs('Matura: ' + s.tytul)), zawin('DESCRIPTION:' + escIcs(s.opis)), 'END:VEVENT');
+          zawin('SUMMARY:' + escIcs('Matura: ' + s.tytul)), zawin('DESCRIPTION:' + escIcs(opisWydarzenia(s, opcje.adres))),
+          ...(opcje.adres ? [zawin('URL:' + opcje.adres + (s.typ === 'nauka' && s.komp ? '#/lekcja/' + s.komp : '#/dzis'))] : []), 'END:VEVENT');
       });
       linie.push('END:VCALENDAR');
       return linie.join('\r\n');
     }
 
-    function linkGoogle(s) {
+    function linkGoogle(s, opcje) {
+      opcje = opcje || {};
       return 'https://calendar.google.com/calendar/render?action=TEMPLATE' +
         '&text=' + encodeURIComponent('Matura: ' + s.tytul) +
         '&dates=' + czasIcs(s.data, s.start) + '/' + czasIcs(s.data, s.koniec) +
-        '&details=' + encodeURIComponent(s.opis || '') + '&ctz=Europe%2FWarsaw';
+        '&details=' + encodeURIComponent(opisWydarzenia(s, opcje.adres)) + '&ctz=Europe%2FWarsaw';
     }
 
     // ───────────── KONTROLA DANYCH (dla autorów matrycy i pytań) ─────────────
@@ -948,7 +1010,8 @@
       prognoza: prognoza, podsumujWiedze: podsumujWiedze,
       zaplanuj: zaplanuj, przeplanuj: zaplanuj, oznaczSesje: oznaczSesje, grupujTygodnie: grupujTygodnie,
       seria: seria, zapiszAktywnosc: zapiszAktywnosc, mapaDni: (stan, org, doDaty) => mapaDni(stan, przygotujOrg(org), doDaty),
-      doIcs: doIcs, linkGoogle: linkGoogle,
+      doIcs: doIcs, linkGoogle: linkGoogle, opisWydarzenia: opisWydarzenia,
+      materialyDla: (id, org) => materialDla(id, org || {}, false, false),
       walidujDane: walidujDane,
       status: status, wagaWMaturze: id => W[id], kompetencja: id => K[id],
       kompetencje: () => dane.kompetencje, dzialy: () => dane.dzialy, dzial: id => D[id],

@@ -18,6 +18,15 @@ Strona: **https://maturalni-4l1.pages.dev** (Cloudflare Pages, wdrożenie po pus
 
 **Szybka ścieżka**: „wiem, że chcę poprawić trygonometrię” > krótka kalibracja > test tylko z działu > plan.
 
+## Materiały i integracja z API Maturalnych
+
+- **Materiały** (`#/materialy`): platforma kursowa w aplikacji. Każda z 67 mikrokompetencji ma krótkie części: wideo (fragment lekcji od-do), notatka, szybki trening i zadania z arkusza CKE. Kolejność zależy od stylu nauki z kalibracji, po porażce najpierw wyjaśnienie, przy utrwalaniu bez wideo.
+- **Lekcja dnia** pokazuje tylko części przypadające na dzisiejszą sesję (silnik dzieli części tematu na sesje).
+- **Dane przykładowe**: `silnik/materialy.js` buduje kurs w kształcie API (kurs > rozdział > lekcja z fragmentami czasu). Notatki do trygonometrii i jej podstaw są pisane ręcznie (`NOTATKI`), pozostałe generowane z wymagań CKE i banku pytań.
+- **Bramka do API**: `functions/api/maturalni/[[sciezka]].js` (Cloudflare Pages Function). Adres `/api/maturalni/lesson-plans/` przekazuje zapytanie do `https://backend.maturalni.com/lesson-plans/`. Token (jeśli potrzebny): zmienna `MATURALNI_TOKEN` w ustawieniach projektu w Cloudflare.
+- **Import** (`#/import`): pobiera JSON z bramki albo z wklejenia, znajduje lekcje, przypisuje je do mikrokompetencji (słowa kluczowe z nazw), pozwala poprawić przypisanie i zapisuje w przeglądarce albo jako plik `silnik/materialy-maturalni.js` do repozytorium.
+- **Kalendarz**: Google Calendar pokazuje co i kiedy. Opis wydarzenia zawiera dzisiejsze części, link do lekcji w aplikacji i zapasowy link do materiału Maturalnych.
+
 ## Uruchomienie
 
 Otwórz `index.html` w przeglądarce albo wejdź na stronę. Bez serwera i instalacji. Dane ucznia są tylko w jego przeglądarce (localStorage).
@@ -40,7 +49,10 @@ Test silnika bez przeglądarki: `cd silnik && node sprawdz.js` (na końcu ma by�
 | `silnik/silnik.js` | algorytmy: diagnoza, prognoza, plan, powtórki, seria, .ics | dev |
 | `silnik/matryca.js` | 13 działów CKE z wagami i 67 mikrokompetencji z prerekwizytami | merytoryka |
 | `silnik/pytania.js` | bank pytań, błędne odpowiedzi opisane przyczyną | merytoryka |
-| `silnik/materialy.js` | mapowanie umiejętności na fragmenty produktów Maturalnych | merytoryka |
+| `silnik/materialy.js` | części materiałów per umiejętność (wideo, notatka, trening, arkusz), notatki ręczne | merytoryka |
+| `silnik/materialy-maturalni.js` | lekcje zaimportowane z API (generuje ekran Import) | merytoryka |
+| `app/kurs.js` | ekran Materiały, odtwarzacz części, Import z API | dev |
+| `functions/api/maturalni/` | bramka do API Maturalnych na Cloudflare | dev |
 | `silnik/README.md` | opis API silnika | dev |
 
 ## Gdzie co zmieniać
@@ -53,7 +65,7 @@ Test silnika bez przeglądarki: `cd silnik && node sprawdz.js` (na końcu ma by�
 
 ## Kolejna iteracja
 
-- API produktów Maturalnych zamiast pliku `materialy.js`.
+- Prawdziwe lekcje z `lesson-plans` (bramka i import są gotowe, potrzebny dostęp/token).
 - Google Calendar API (automatyczna synchronizacja zamiast importu .ics).
 - AI (OpenRouter, po stronie serwera): analiza odpowiedzi z `stan.doAnalizyAI` i wskazówka do błędu.
 - Powiadomienia push na telefon (service worker + serwer).
