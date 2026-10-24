@@ -3,143 +3,25 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>Kompas Maturalni</title>
-<meta name="description" content="Sprawdź w 5 minut, jaki kierunek studiów do Ciebie pasuje i jakie przedmioty zdawać na maturze.">
+<title>Maturalni: plan matury z matematyki</title>
+<meta name="description" content="Diagnoza mikrokompetencji z matematyki, prognoza wyniku matury i plan nauki, który sam się przestawia. Do tego Kompas: jaki kierunek studiów do Ciebie pasuje.">
 <meta name="claude:viewport-fit-sides" content="cover">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700&family=Atkinson+Hyperlegible:ital,wght@0,400;0,700;1,400&display=swap">
-<style>
-/* Layout: jedna wąska kolumna; test to jedno pytanie na ekran z listą odpowiedzi, wynik to karta planu z zakładkami A/B. */
-:root{
-  --bg:#F3F6F5; --surface:#FFFFFF; --ink:#14201C; --muted:#56655F; --line:#D5DFDB;
-  --accent:#1E6B57; --accent-soft:#DCEDE6; --mark:#B97A12; --mark-soft:#F6E8CC;
-  --display:"Bricolage Grotesque", "Segoe UI", system-ui, sans-serif;
-  --body:"Atkinson Hyperlegible", "Segoe UI", system-ui, sans-serif;
-  color-scheme:light;
-}
-@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
-  --bg:#0E1412; --surface:#161F1C; --ink:#E5EDEA; --muted:#93A49D; --line:#2B3934;
-  --accent:#55C2A0; --accent-soft:#1B3A31; --mark:#E2A847; --mark-soft:#3A2E17; color-scheme:dark}}
-:root[data-theme="dark"]{
-  --bg:#0E1412; --surface:#161F1C; --ink:#E5EDEA; --muted:#93A49D; --line:#2B3934;
-  --accent:#55C2A0; --accent-soft:#1B3A31; --mark:#E2A847; --mark-soft:#3A2E17; color-scheme:dark}
-
-*{box-sizing:border-box}
-html{-webkit-text-size-adjust:100%}
-body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--body);font-size:17px;line-height:1.55;
-  padding-left:max(16px, env(safe-area-inset-left, 0px));padding-right:max(16px, env(safe-area-inset-right, 0px));
-  padding-block:calc(24px + env(safe-area-inset-top, 0px)) calc(56px + env(safe-area-inset-bottom, 0px))}
-[hidden]{display:none!important}
-.wrap{max-width:640px;margin:0 auto;display:flex;flex-direction:column;gap:24px}
-h1,h2,h3{font-family:var(--display);text-wrap:balance;margin:0;line-height:1.15}
-h1{font-size:clamp(1.9rem,6.5vw,2.6rem);font-weight:700;letter-spacing:-0.02em}
-h2{font-size:1.35rem;font-weight:700}
-h3{font-size:1.02rem;font-weight:700}
-h1:focus,h2:focus{outline:none}
-p{margin:0;max-width:62ch}
-a{color:var(--accent)}
-.eyebrow{font-size:.75rem;text-transform:uppercase;letter-spacing:.09em;color:var(--muted);font-weight:700}
-.muted{color:var(--muted)}
-.small{font-size:.88rem}
-button{font:inherit;cursor:pointer;color:inherit}
-button:focus-visible,a:focus-visible,summary:focus-visible{outline:3px solid var(--mark);outline-offset:2px}
-.btn{border:0;border-radius:12px;padding:15px 22px;font-weight:700;background:var(--accent);color:var(--bg);min-height:52px}
-.btn.wide{width:100%}
-.btn.ghost{background:transparent;color:var(--ink);border:1.5px solid var(--line)}
-.btn.link{background:none;border:0;padding:8px 0;color:var(--muted);text-decoration:underline;text-underline-offset:3px;font-weight:400;min-height:0}
-.stack{display:flex;flex-direction:column;gap:12px}
-.row{display:flex;flex-wrap:wrap;gap:12px;align-items:center}
-.card{background:var(--surface);border:1px solid var(--line);border-radius:16px;padding:22px;display:flex;flex-direction:column;gap:18px}
-.chips{display:flex;flex-wrap:wrap;gap:6px}
-.chip{font-size:.88rem;padding:4px 11px;border-radius:20px;border:1px solid var(--line);background:var(--surface)}
-.chip.req{border:2px solid var(--accent);color:var(--accent);font-weight:700}
-.note{font-size:.88rem;color:var(--muted);border-left:3px solid var(--line);padding-left:12px}
-
-/* start */
-.facts{display:flex;flex-wrap:wrap;gap:8px;margin:0;padding:0;list-style:none}
-.facts li{font-size:.88rem;padding:5px 12px;border-radius:20px;background:var(--accent-soft);color:var(--accent);font-weight:700}
-.lead{font-size:1.15rem}
-
-/* pytania */
-.qtop{display:flex;align-items:center;justify-content:space-between;gap:12px}
-.qback{background:none;border:0;padding:8px 0;color:var(--muted);font-weight:700;min-height:44px}
-.qback:disabled{visibility:hidden}
-.qcount{font-size:.88rem;color:var(--muted);font-variant-numeric:tabular-nums}
-.track{height:6px;background:var(--line);border-radius:3px;overflow:hidden}
-.track i{display:block;height:100%;background:var(--accent);transition:width .25s}
-.qtext{font-family:var(--display);font-size:clamp(1.4rem,5vw,1.8rem);font-weight:500;line-height:1.25;text-wrap:balance}
-.answers{display:flex;flex-direction:column;gap:8px}
-.ans{display:flex;align-items:center;gap:14px;text-align:left;width:100%;border:1.5px solid var(--line);background:var(--surface);border-radius:12px;padding:14px 16px;min-height:56px;transition:border-color .15s, background .15s}
-.ans .dot{flex:none;width:22px;height:22px;border-radius:50%;border:2px solid var(--line);display:grid;place-items:center}
-.ans:hover{border-color:var(--accent)}
-.ans[aria-checked="true"]{border-color:var(--accent);background:var(--accent-soft)}
-.ans[aria-checked="true"] .dot{border-color:var(--accent);background:var(--accent);box-shadow:inset 0 0 0 4px var(--accent-soft)}
-.hint{font-size:.82rem;color:var(--muted)}
-
-/* wynik */
-.tabs{display:grid;grid-template-columns:1fr 1fr;gap:6px;background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:5px}
-.tab{border:0;background:transparent;border-radius:10px;padding:10px 12px;text-align:left;display:flex;flex-direction:column;gap:2px;min-height:56px;min-width:0}
-.tab small{font-size:.72rem;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--muted)}
-.tab span{font-weight:700;line-height:1.2;overflow-wrap:anywhere}
-.tab[aria-selected="true"]{background:var(--accent);color:var(--bg)}
-.tab[aria-selected="true"] small{color:var(--bg);opacity:.85}
-.role{border-left:4px solid var(--mark);padding:2px 0 2px 14px;display:flex;flex-direction:column;gap:4px}
-.role b{font-family:var(--display);font-size:1.25rem;line-height:1.2}
-.fit{display:inline-block;font-size:.8rem;font-weight:700;color:var(--mark);font-variant-numeric:tabular-nums}
-.offers{display:flex;flex-direction:column;border:1px solid var(--line);border-radius:12px;overflow:hidden}
-.offer{background:var(--bg)}
-.offer+.offer{border-top:1px solid var(--line)}
-.offer summary{list-style:none;cursor:pointer;padding:12px 14px;display:flex;justify-content:space-between;align-items:center;gap:10px;min-height:52px}
-.offer summary::-webkit-details-marker{display:none}
-.offer summary .who{display:flex;flex-direction:column;min-width:0}
-.offer summary .who b{line-height:1.25}
-.offer summary .who span{font-size:.85rem;color:var(--muted)}
-.offer summary::after{content:"+";font-size:1.3rem;color:var(--muted);flex:none}
-.offer[open] summary::after{content:"–"}
-.offer .body{padding:0 14px 14px;display:flex;flex-direction:column;gap:8px;font-size:.92rem}
-.st{align-self:flex-start;font-size:.7rem;font-weight:700;letter-spacing:.05em;text-transform:uppercase;padding:2px 7px;border-radius:4px}
-.st.v{background:var(--accent);color:var(--bg)}
-.st.p{background:var(--accent-soft);color:var(--accent)}
-.st.o{background:var(--mark-soft);color:var(--ink)}
-.st.x{color:var(--muted);border:1px solid var(--line)}
-.traits{display:flex;flex-direction:column;gap:12px;margin:0;padding:0;list-style:none}
-.traits li{display:flex;flex-direction:column;gap:2px}
-.traits .th{display:flex;justify-content:space-between;gap:10px;align-items:center}
-.lvl{display:inline-flex;gap:3px}
-.lvl i{width:18px;height:6px;border-radius:3px;background:var(--line)}
-.lvl i.on{background:var(--accent)}
-details.more{border-top:1px solid var(--line);padding-top:14px}
-details.more summary{cursor:pointer;font-weight:700;min-height:32px}
-details.more .body{display:flex;flex-direction:column;gap:10px;padding-top:10px;font-size:.92rem}
-.formula{font-family:ui-monospace,Menlo,monospace;font-size:.82rem;background:var(--bg);padding:8px 10px;border-radius:6px;overflow-x:auto}
-
-/* przedmioty */
-.subjects{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:10px}
-.subj{text-align:left;border:1.5px solid var(--line);background:var(--surface);border-radius:12px;padding:14px;display:flex;flex-direction:column;gap:4px;min-height:84px}
-.subj b{font-family:var(--display);line-height:1.2}
-.subj small{font-size:.75rem;color:var(--muted)}
-.subj.on{border-color:var(--accent);border-width:2px}
-.subj.on:hover{background:var(--accent-soft)}
-.subj.on small{color:var(--accent);font-weight:700}
-.subj:disabled{cursor:not-allowed;opacity:.55;background:var(--bg)}
-.subj.rec{border:2.5px solid var(--mark)}
-.subj.rec:disabled{opacity:.8}
-.subj .rectag{font-size:.66rem;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--mark)}
-.legend{display:flex;align-items:center;gap:8px;font-size:.82rem;color:var(--muted)}
-.legend i{display:inline-block;width:18px;height:12px;border-radius:3px;border:2.5px solid var(--mark)}
-.placeholder{border:2px dashed var(--line);border-radius:16px;padding:28px 22px;display:flex;flex-direction:column;gap:10px}
-.copyfallback{width:100%;min-height:160px;font-family:ui-monospace,Menlo,monospace;font-size:.8rem;background:var(--surface);color:var(--ink);border:1px solid var(--line);border-radius:8px;padding:10px}
-
-@media (max-width:480px){
-  .card{padding:18px}
-  .subjects{grid-template-columns:1fr 1fr}
-}
-@media (prefers-reduced-motion:reduce){*{transition:none!important}}
-</style>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap">
+<link rel="stylesheet" href="style.css">
 </head>
 <body>
+<header class="topbar" id="topbar"></header>
 <main class="wrap" id="app" aria-live="polite"></main>
+<footer class="stopka" id="stopka"></footer>
+<div class="toast" id="toast" role="status" hidden></div>
+
+<script src="silnik/matryca.js"></script>
+<script src="silnik/pytania.js"></script>
+<script src="silnik/materialy.js"></script>
+<script src="silnik/silnik.js"></script>
+<script src="app/nauka.js"></script>
 
 <script>
 /* ===================== DANE ===================== */
@@ -429,7 +311,7 @@ const FRIENDLY = {
 const ANSWERS = ["Zdecydowanie nie","Raczej nie","Nie wiem","Raczej tak","Zdecydowanie tak"];
 
 let answers = load() || Array(Q.length).fill(null);
-let idx = 0, screen = "start", isSample = false, subject = null, from = "start", plan = 0, busy = false;
+let idx = 0, isSample = false, subject = null, from = "start", plan = 0, busy = false;
 
 function load(){try{const a=JSON.parse(localStorage.getItem("maturalni-answers"));return Array.isArray(a)&&a.length===Q.length?a:null}catch(e){return null}}
 function save(){try{localStorage.setItem("maturalni-answers",JSON.stringify(answers))}catch(e){}}
@@ -439,8 +321,10 @@ const lvlIdx = v => v<=4?0:v<=7?1:2;
 const LVL = ["niska","średnia","wysoka"];
 const $ = id => document.getElementById(id);
 
-function go(s){screen=s;render();window.scrollTo(0,0);const h=app.querySelector("h1,h2");if(h){h.setAttribute("tabindex","-1");h.focus({preventScroll:true})}}
-function render(){({start:viewStart,quiz:viewQuiz,result:viewResult,subjects:viewSubjects,subject:viewSubject})[screen]()}
+/* Kompas korzysta ze wspólnego routera aplikacji (app/nauka.js). */
+const K_MAP = {start:"kompas", quiz:"kompas-test", result:"kompas-wynik", subjects:"przedmioty"};
+function go(s){Nauka.go(K_MAP[s]||s)}
+function render(){Nauka.render()}
 function startTest(){isSample=false;idx=answers.includes(null)?answers.indexOf(null):0;if(!answers.includes(null)){go("result")}else go("quiz")}
 
 /* ---------- start ---------- */
@@ -448,9 +332,9 @@ function viewStart(){
   const n = answers.filter(v=>v!==null).length;
   const resume = n>0 && n<Q.length, done = n===Q.length;
   app.innerHTML=`
-  <span class="eyebrow">Dla maturzystów</span>
+  <span class="eyebrow">Krok 1 (nieobowiązkowy) · Diagnoza osobowości i predyspozycji</span>
   <h1>Kompas Maturalni</h1>
-  <p class="lead">Sprawdź w 5 minut, jaki kierunek studiów do Ciebie pasuje i jakie przedmioty zdawać na maturze.</p>
+  <p class="lead">Sprawdź w 5 minut, jaki kierunek studiów do Ciebie pasuje i jakie przedmioty zdawać na maturze. Potem od razu robimy plan z matmy.</p>
   <ul class="facts"><li>22 krótkie pytania</li><li>ok. 5 minut</li><li>bez logowania</li></ul>
   <div class="stack">
     <button class="btn wide" id="go">${done?"Zobacz swój wynik":resume?`Kontynuuj (pytanie ${n+1} z ${Q.length})`:"Zaczynam"}</button>
@@ -475,7 +359,7 @@ function viewQuiz(){
   <div class="stack" style="gap:8px">
     <div class="qtop">
       <button class="qback" id="back">← ${idx===0?"Start":"Wstecz"}</button>
-      <span class="qcount">Pytanie ${idx+1} z ${Q.length}</span>
+      <span class="qcount">Pytanie ${idx+1} z ${Q.length} · <b style="color:var(--ink)">${Nauka.zacheta(idx,Q.length)}</b></span>
     </div>
     <div class="track" role="progressbar" aria-valuemin="0" aria-valuemax="${Q.length}" aria-valuenow="${idx}" aria-label="Postęp testu"><i style="width:${idx/Q.length*100}%"></i></div>
   </div>
@@ -499,7 +383,7 @@ function answer(v){
 }
 function back(){if(idx===0)go("start");else{idx--;render()}}
 document.addEventListener("keydown",e=>{
-  if(screen!=="quiz"||e.metaKey||e.ctrlKey||e.altKey)return;
+  if(Nauka.trasa()[0]!=="kompas-test"||e.metaKey||e.ctrlKey||e.altKey)return;
   if(/^[1-5]$/.test(e.key)){e.preventDefault();answer(+e.key)}
   else if(e.key==="ArrowLeft"){e.preventDefault();back()}
 });
@@ -512,7 +396,7 @@ function subjectGrid(rec){
       <b>${s.n}</b><small>${s.active?"Sprawdź wiedzę →":"Wkrótce"}</small>
     </button>`}).join("")}</div>`;
 }
-function bindSubjects(){app.querySelectorAll(".subj.on").forEach(b=>b.onclick=()=>{subject=b.dataset.id;go("subject")})}
+function bindSubjects(){app.querySelectorAll(".subj.on").forEach(b=>b.onclick=()=>{subject=b.dataset.id;Nauka.startPrzedmiot(subject)})}
 
 function planCard(p,t){
   const P=PATHS[p.id], roles=rankRoles(P,t), top=roles[0], alt=roles[1];
@@ -581,6 +465,7 @@ function viewResult(){
   <section class="stack">
     <span class="eyebrow">Krok 2</span>
     <h2>Sprawdź swoją wiedzę z matury</h2>
+    <p class="muted">Matematyka: diagnoza mikrokompetencji, prognoza wyniku i plan nauki. Kliknij, żeby zacząć.</p>
     <span class="legend"><i></i> rekomendowane dla Twoich planów</span>
     ${subjectGrid(rec)}
   </section>
@@ -627,22 +512,9 @@ function viewSubjects(){
   </div>`;
   bindSubjects();
   $("toTest").onclick=startTest;
-  $("toStart").onclick=()=>go("start");
+  $("toStart").onclick=()=>Nauka.go("");
   from="subjects";
 }
-function viewSubject(){
-  const s=SUBJECTS.find(x=>x.id===subject);
-  app.innerHTML=`
-  <button class="btn link" id="backSubj" style="align-self:flex-start">← ${from==="result"?"Wróć do wyniku":"Wróć do przedmiotów"}</button>
-  <span class="eyebrow">Diagnoza przedmiotowa</span>
-  <h1>${s.n}</h1>
-  <div class="placeholder" id="subject-module" data-subject="${s.id}">
-    <h3>Moduł w przygotowaniu</h3>
-    <p class="muted">Tutaj pojawi się test sprawdzający Twój stan wiedzy.</p>
-  </div>`;
-  $("backSubj").onclick=()=>go(from==="result"?"result":"subjects");
-}
-
 function summary(t,r,paths,code){
   const L=["KOMPAS MATURALNI – wynik","Kod zainteresowań: "+code,
     "Zainteresowania: "+ORDER.map(k=>`${k} ${r[k]}`).join(", "),
@@ -653,7 +525,8 @@ function summary(t,r,paths,code){
     P.oferty.forEach(o=>L.push(`- ${o.u}, ${o.k} [${STATUS[o.s]}]: ${o.m}`));});
   return L.join("\n");
 }
-render();
+Nauka.rejestruj({kompas:viewStart, "kompas-test":viewQuiz, "kompas-wynik":viewResult, przedmioty:viewSubjects}, ["kompas","kompas-test","kompas-wynik","przedmioty"]);
+Nauka.start();
 </script>
 </body>
 </html>
