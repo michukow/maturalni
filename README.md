@@ -1,11 +1,14 @@
-# T0X \- nazwa projektu do uzupełnienia
+# T06 \- nazwa projektu do uzupełnienia
 > Ten README stanowi Kartę Projektu. Uzupełnijcie wszystkie pola `DO_UZUPELNIENIA`.&nbsp;  
 > Jeśli punkt nie dotyczy projektu, wpiszcie „nie dotyczy” i krótko wyjaśnijcie dlaczego. Dodajcie tyle wierszy w tabelach, ile potrzebujecie.
 ## Zespół i wyzwanie
-- **Drużyna:** T0X  
-- **Wybrane wyzwanie:** `DO_UZUPELNIENIA`
+- **Drużyna:** T06  
+- **Wybrane wyzwanie:** `Wyzwanie 1`
 Wymieńcie wszystkich autorów i opiszcie rzeczywisty wkład każdej osoby.
-| Imię i nazwisko | Wkład w projekt |
+| Michał Kowal | Wkład w projekt |
+| Milena Ćiećko | Wkład w projekt |
+| Mateusz Kubarski | Opracowanie Modelu Biznesowego, Pitch |
+
 | :---- | :---- |
 | DO\_UZUPELNIENIA | DO\_UZUPELNIENIA |
 ## Co robi aplikacja
