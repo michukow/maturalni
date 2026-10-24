@@ -1,0 +1,40 @@
+# Uwaga: Cloudflare Pages publikuje cały katalog repozytorium.
+# Wszystko, co trafi do repo, będzie dostępne pod adresem strony.
+
+# Pliki systemowe
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Edytory i IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# Sekrety i lokalna konfiguracja
+.env
+.env.*
+!.env.example
+.dev.vars
+
+# Cloudflare / Wrangler
+.wrangler/
+
+# Node.js
+node_modules/
+npm-debug.log*
+yarn-error.log*
+
+# Python (skrypty pomocnicze, np. do danych rekrutacyjnych)
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+.ipynb_checkpoints/
+
+# Logi i pliki tymczasowe
+*.log
+tmp/
+.cache/
