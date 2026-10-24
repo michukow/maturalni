@@ -30,6 +30,18 @@ Strona: **https://maturalni-4l1.pages.dev** (Cloudflare Pages, wdrożenie po pus
 - **Import** (`#/import`): pobiera JSON z bramki albo z wklejenia, znajduje lekcje, przypisuje je do mikrokompetencji (słowa kluczowe z nazw), pozwala poprawić przypisanie i zapisuje w przeglądarce albo jako plik `silnik/materialy-maturalni.js` do repozytorium.
 - **Kalendarz**: Google Calendar pokazuje co i kiedy. Opis wydarzenia zawiera dzisiejsze części, link do lekcji w aplikacji i zapasowy link do materiału Maturalnych.
 
+## AI i jakość
+
+- **Rola AI**: szuka przyczyny błędu ucznia. Po złej odpowiedzi w teście lub quizie wskazuje brakującą mikrokompetencję i daje wskazówkę. W teście adaptacyjnym następne pytanie od razu sprawdza wskazaną podstawę. Po 2 nieudanych quizach AI czyta wszystkie błędy z tematu i wskazuje podstawę do powtórki, a plan i lekcja (rozgrzewka, wskazówka) zmieniają się automatycznie. Uczeń może dopisać, jak liczył.
+- **Czego AI nie robi**: plan, daty, powtórki, prognoza i próg zaliczenia liczy algorytm (dokładnie, szybko, bez kosztów).
+- **AI proponuje, silnik decyduje**: AI może wskazać tylko temat albo jego podstawę (do 2 poziomów w dół, `silnik.kandydaciAI`). Silnik przyjmuje propozycję od pewności 70% (`KONFIG.progPewnosciAI`). Niżej, przy błędzie albo braku odpowiedzi decyduje klucz odpowiedzi z banku pytań.
+- **Przepływ danych**: `silnik.daneDoAI` (treść zadania, odpowiedź, opis ucznia, kandydaci; bez danych osobowych) > `POST /api/ai/analiza` (Cloudflare) > OpenRouter > kontrola JSON na serwerze > `silnik.zastosujAI` / `silnik.zastosujAIPoPorazce`.
+- **Model**: domyślnie `google/gemini-3.6-flash`, temperatura 0,1, odpowiedź JSON. Zmiana: zmienna `AI_MODEL` w Cloudflare.
+- **Logika i prompt**: `functions/api/ai/analiza.js` (serwer). Ekrany i testy: `app/ai.js`.
+- **Klucz**: Cloudflare > Workers & Pages > maturalni > Settings > Variables and Secrets > Add > `OPENROUTER_API_KEY`, typ **Secret**. Nigdy w kodzie, README, na Discordzie ani w formularzu.
+- **Testy jakości** (`#/ai`): 27 przypadków o znanej przyczynie. A: typowe, klucz wystarcza (10). B: opis ucznia zmienia przyczynę (7). C: nietypowe, np. „Nie wiem”, manipulacja, tekst bez sensu, zgadywanie, zły klik, angielski (8). T: analiza tematu po 2 porażkach (2). Mierzymy trafność reguł, samej AI i systemu (AI, gdy pewna, inaczej reguły), liczbę „pewnych, ale błędnych” odpowiedzi AI, wstrzymania, czas i koszt. Wyniki można pobrać jako JSON.
+- **Ograniczenia**: zestaw testowy przygotował zespół (to nie są odpowiedzi prawdziwych uczniów), próba jest mała, AI nie wskaże przyczyny spoza tematu i jego podstaw, bez opisu ucznia AI wie niewiele więcej niż klucz odpowiedzi.
+
 ## Uruchomienie
 
 Otwórz `index.html` w przeglądarce albo wejdź na stronę. Bez serwera i instalacji. Dane ucznia są tylko w jego przeglądarce (localStorage).
@@ -57,6 +69,8 @@ Test silnika bez przeglądarki: `cd silnik && node sprawdz.js` (na końcu ma by�
 | `app/kurs.js` | ekran Materiały, odtwarzacz części, Import z API | dev |
 | `app/produkty-api.js` | katalog produktów na żywo z `products/`, zapis zapasowy | dev |
 | `functions/api/maturalni/` | bramka do API Maturalnych na Cloudflare | dev |
+| `functions/api/ai/analiza.js` | AI: prompt, wywołanie OpenRouter, kontrola odpowiedzi | dev |
+| `app/ai.js` | AI w quizie i po porażkach, ekran „AI i jakość” z testami | dev |
 | `silnik/README.md` | opis API silnika | dev |
 
 ## Gdzie co zmieniać
@@ -72,7 +86,7 @@ Test silnika bez przeglądarki: `cd silnik && node sprawdz.js` (na końcu ma by�
 
 - Prawdziwe lekcje z `lesson-plans` (bramka i import są gotowe, potrzebny dostęp/token).
 - Google Calendar API (automatyczna synchronizacja zamiast importu .ics).
-- AI (OpenRouter, po stronie serwera): analiza odpowiedzi z `stan.doAnalizyAI` i wskazówka do błędu.
+- AI: zestaw testowy z prawdziwych rozwiązań uczniów Maturalnych (200+) ocenionych przez egzaminatora.
 - Powiadomienia push na telefon (service worker + serwer).
 
 ## Podgląd zmian dla zespołu

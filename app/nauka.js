@@ -51,7 +51,7 @@
 
   // ───────────── router ─────────────
   const TRASY = {}, KOMPAS = new Set();
-  const SZEROKIE = new Set(['', 'dzis', 'plan', 'postepy', 'powiadomienia', 'jak-to-dziala', 'mapa', 'matryca', 'wynik', 'kalendarz', 'materialy', 'import']);
+  const SZEROKIE = new Set(['', 'dzis', 'plan', 'postepy', 'powiadomienia', 'jak-to-dziala', 'mapa', 'matryca', 'wynik', 'kalendarz', 'materialy', 'import', 'ai']);
   function rejestruj(t, kompasowe) { Object.assign(TRASY, t); (kompasowe || []).forEach(k => KOMPAS.add(k)); }
   function trasa() {
     const h = decodeURIComponent(location.hash.replace(/^#\/?/, ''));
@@ -82,7 +82,7 @@
     const s = ma ? seria() : null;
     const linki = [['', 'Start']].concat(ma
       ? [['dzis', 'Dziś'], ['plan', 'Plan'], ['materialy', 'Materiały'], ['postepy', 'Postępy'], ['powiadomienia', 'Powiadomienia'], ['kalendarz', 'Kalendarz']]
-      : [['kalibracja', 'Kalibracja'], ['materialy', 'Materiały']], [['kompas', 'Kompas'], ['jak-to-dziala', 'Jak to działa'], ['mapa', 'Mapa']]);
+      : [['kalibracja', 'Kalibracja'], ['materialy', 'Materiały']], [['kompas', 'Kompas'], ['ai', 'AI ✨'], ['jak-to-dziala', 'Jak to działa'], ['mapa', 'Mapa']]);
     const aktywna = h => h === n || (h === 'kompas' && KOMPAS.has(n)) || (h === 'dzis' && (n === 'lekcja' || n === 'quiz' || n === 'quiz-wynik')) || (h === 'materialy' && n === 'import');
     $('topbar').innerHTML = `<div class="in"><a class="logo" href="#/"><i>M</i>Maturalni <small>plan matury</small></a>
       <nav class="nav" aria-label="Główna nawigacja">${linki.map(([h, t]) => `<a href="#/${h}" ${aktywna(h) ? 'aria-current="page"' : ''}>${t}</a>`).join('')}</nav>
@@ -432,7 +432,8 @@
     }
     const q = T.pyt, o = T.odp;
     const nazwa = { diagnoza: T.opcje.pelna ? 'Diagnoza pełna' : 'Test diagnostyczny', jednostka: T.opcje.sprawdzenie ? 'Szybkie sprawdzenie' : 'Quiz zaliczeniowy', powtorka: 'Powtórka 5 min' }[T.typ];
-    const baner = q.powod === 'cofniecie' ? '<div class="adapt dol">↓ Schodzimy poziom niżej: sprawdzamy, czy problem nie leży w podstawach</div>'
+    const baner = q.powod === 'cofniecie' && T.aiNa === q.komp ? '<div class="adapt dol ai">✨ AI wskazała przyczynę błędu: sprawdzamy tę podstawę</div>'
+      : q.powod === 'cofniecie' ? '<div class="adapt dol">↓ Schodzimy poziom niżej: sprawdzamy, czy problem nie leży w podstawach</div>'
       : q.powod === 'wyzej' ? '<div class="adapt gora">↑ Dobrze idzie, wchodzimy poziom wyżej</div>' : '';
     let kom = '';
     if (o) {
@@ -441,7 +442,8 @@
         : r.nieWiem ? `<div class="kom nw"><b class="t">Spoko, zapisaliśmy.</b><span>Poprawna odpowiedź: <b>${esc(r.poprawnaOdpowiedz)}</b>. Właśnie po to jest test: plan to uwzględni.</span></div>`
         : `<div class="kom nie"><b class="t">Nie tym razem.</b><span>Poprawna odpowiedź: <b>${esc(r.poprawnaOdpowiedz)}</b>.</span>
             ${r.przyczyna ? `<span>🔎 Ten wybór zwykle oznacza: <b>${esc(r.przyczyna)}</b>.</span>` : ''}
-            ${r.podstawa ? `<span class="muted small">Sprawdzimy też podstawę: ${esc(r.podstawa)}.</span>` : ''}</div>`;
+            ${r.podstawa ? `<span class="muted small">Sprawdzimy też podstawę: ${esc(r.podstawa)}.</span>` : ''}</div>
+            <div class="ai-box" id="aiBox"></div>`;
     }
     app.innerHTML = `${krokiHtml(q.numer, q.z, 'Pytanie')}
       <div class="row" style="justify-content:center"><span class="badge blue">${nazwa}</span><span class="badge">${esc(q.dzial)}</span>
@@ -457,6 +459,7 @@
     app.querySelectorAll('.odp:not([disabled])').forEach(b => b.onclick = () => odpowiedzQuiz(+b.dataset.idx));
     if ($('nw')) $('nw').onclick = () => odpowiedzQuiz(-1);
     if ($('dalej')) { $('dalej').onclick = dalejQuiz; $('dalej').focus({ preventScroll: true }); }
+    if (o && root.AIUI) root.AIUI.poBledzie(T, q, o);
   }
   function odpowiedzQuiz(idx) {
     if (!T || T.odp) return;
@@ -711,7 +714,7 @@
         tresc = `<p class="lead">${esc(W.komunikat)}</p>
           ${W.cofniecieDo.length ? `<div class="card flat"><h3>Najpierw te podstawy</h3><div class="lista">${W.cofniecieDo.map(c => `<div class="poz"><span>🧩</span><span class="t">${esc(c.nazwa)}</span><span class="badge yellow">w planie od jutra</span></div>`).join('')}</div></div>` : ''}
           <div class="callout"><span class="ico">🛠️</span><div class="stack" style="gap:4px"><b class="t">Materiał automatycznie dostosowany</b><span>Najpierw wyjaśnienie krok po kroku, potem zadania. Na start rozgrzewka z podstawy. Quiz z nowym zestawem pytań.</span></div></div>
-          ${W.doAnalizyAI ? '<p class="muted small">Twoje odpowiedzi trafiły do analizy przyczyn (w kolejnej wersji zrobi to AI i dobierze wskazówkę).</p>' : ''}`;
+          ${W.doAnalizyAI ? '<div id="aiPorazka"></div>' : ''}`;
       } else {
         ik = '💪'; tyt = 'Jeszcze nie tym razem';
         tresc = `<p class="lead">${esc(W.komunikat)}</p>
@@ -730,6 +733,7 @@
       <div class="cta"><button class="btn-main xl arrow" id="dalej">Wracam do planu</button>${zmiany}</div>`;
     $('dalej').onclick = () => go('dzis');
     if ($('lek')) $('lek').onclick = () => go('lekcja', W.komp);
+    if (W.doAnalizyAI && root.AIUI) root.AIUI.poPorazce(W);
   }
 
   // ═════════════ PLAN (LISTA DO MATURY) ═════════════
@@ -816,7 +820,7 @@
           <p class="small muted">Kropka to prognoza z diagnozy, niebieskie pole to przedział niepewności. ${plan && plan.terminyDiagnoz[0] ? 'Następna diagnoza pełna w planie: ' + fData(plan.terminyDiagnoz[0], true) + ' (co ok. ' + plan.podsumowanie.coIleDniDiagnoza + ' dni).' : ''}</p></div>
         <div class="card"><div class="row between"><h3>Najczęstsze przyczyny błędów</h3><span class="tag-new">Nowość</span></div>
           ${top.length ? `<div class="lista">${top.map(g => `<div class="poz"><span>🔎</span><span><span class="t">${esc(g.opis)}</span><br><span class="m">${esc(Array.from(g.tematy).slice(0, 2).join(', '))}</span></span><span class="badge red">${g.n}×</span></div>`).join('')}</div>` : '<p class="muted">Jeszcze brak danych.</p>'}
-          ${st.doAnalizyAI.length ? `<p class="small muted">Do pogłębionej analizy (AI, kolejna iteracja): ${tematySl(st.doAnalizyAI.length)}.</p>` : ''}</div>
+          ${st.przyczyny.some(x => x.zrodlo === 'AI') ? `<p class="small muted">✨ ${st.przyczyny.filter(x => x.zrodlo === 'AI').length} z tych przyczyn wskazała AI na podstawie Twoich rozwiązań.</p>` : ''}</div>
       </div>
       <div class="card"><div class="row between"><h3>Mapa mikrokompetencji</h3>${LEGENDA}</div>${mapaHtml(S.podsumujWiedze(st))}</div>`;
     $('pelna').onclick = () => startTest('diagnoza', { pelna: true }, 'wynik');
@@ -945,7 +949,7 @@
       <div class="card"><table class="porownanie"><thead><tr><th></th><th>Typowa diagnoza i kurs</th><th>Plan Maturalni</th></tr></thead><tbody>
         ${[
           ['Wynik', 'Procent z testu, ewentualnie z działu', 'Poziom każdej z 67 mikrokompetencji z wymagań CKE'],
-          ['Błąd', '„Źle”', 'Przyczyna (np. pomylone sin i cos) i brakująca podstawa'],
+          ['Błąd', '„Źle”', 'AI czyta rozwiązanie ucznia i wskazuje brakującą mikrokompetencję z pewnością. Gdy AI nie jest pewna, decyduje klucz odpowiedzi'],
           ['Pytania', 'Stały zestaw dla wszystkich', 'Adaptacyjne: źle > schodzimy po matrycy niżej, dobrze > wyżej'],
           ['Prognoza', 'Brak', 'Wynik matury na dziś z przedziałem niepewności, aktualizowany co ok. miesiąc'],
           ['Plan', 'Kurs na X godzin, ten sam dla każdego', 'Tylko to, czego brakuje, od tematów dających najwięcej punktów na minutę'],
@@ -963,7 +967,7 @@
         <div class="card"><h3>Jak liczymy</h3><ul style="margin:0;padding-left:18px" class="stack small">
           <li><b>Poziom umiejętności</b> to udział trafień z uwzględnieniem pewności. Kalibracja daje słaby szacunek startowy, test go weryfikuje. Od 70% opanowane, poniżej 40% luka.</li>
           <li><b>Test</b> pyta tam, gdzie spodziewana luka kosztuje najwięcej punktów, a wiemy najmniej. Każdy dział dostaje min. jedno pytanie.</li>
-          <li><b>Przyczyna błędu</b> wynika z tego, którą złą odpowiedź wybrano. Każda zła odpowiedź w banku pytań jest opisana.</li>
+          <li><b>Przyczyna błędu</b>: AI analizuje odpowiedź i opis rozwiązania ucznia i wskazuje brakującą podstawę (<a href="#/ai">jak i z jaką trafnością</a>). Zapasowo: każda zła odpowiedź w banku pytań jest opisana.</li>
           <li><b>Prognoza</b> to suma poziomów ważona udziałem w punktach matury. Przedział zwęża się z każdą odpowiedzią.</li>
           <li><b>Plan</b> sortuje tematy według punktów na minutę, wstawia podstawy przed tematy zależne i rozkłada je na dni z 20% buforem.</li>
         </ul></div>
@@ -1001,6 +1005,7 @@
         ${lk('#/kompas', '🧑‍🎓', 'Kompas', 'Diagnoza osobowości i predyspozycji')}
         ${lk('#/przedmioty', '📚', 'Przedmioty maturalne', 'Wybór przedmiotu do diagnozy')}
         ${lk('#/jak-to-dziala', '💡', 'Jak to działa', 'Wyróżniki, algorytm, wartość dla Maturalnych')}
+        ${lk('#/ai', '✨', 'AI i jakość', 'Rola AI, przepływ danych, model, testy jakości')}
         ${lk('#/matryca', '🧩', 'Matryca mikrokompetencji', '67 umiejętności z wymagań CKE')}
         ${lk('#/import', '🔄', 'Import materiałów', 'Lekcje z API Maturalnych > mikrokompetencje')}
       </div></div>

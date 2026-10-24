@@ -49,7 +49,9 @@
     zanik: 0.7,                 // w quizach starsze odpowiedzi ważą mniej (uczeń się zmienia)
     poziomPoNauce: 0.8,         // założenie do prognozy "po realizacji planu"
     interwalDiagnozy: { min: 14, max: 42, ileDoMatury: 5 }, // ok. 5 diagnoz pełnych do matury
-    progZdania: 30
+    progZdania: 30,
+    progPewnosciAI: 0.7,        // AI: przyczynę przyjmujemy dopiero od tej pewności, niżej decydują reguły
+    wagaAI: 0.75                // AI: siła dowodu, że brakuje wskazanej podstawy (jak tag PRE)
   };
 
   // ───────────── DATY ─────────────
@@ -138,7 +140,7 @@
       if (dzis) w.ostatnio = dzis;
     }
     function uzupelnijStan(stan) {
-      ['wiedza', 'zaliczone', 'proby', 'cofniecia', 'zrobioneMinuty', 'czesciZrobione', 'widzianePytania', 'aktywneDni'].forEach(k => { if (!stan[k]) stan[k] = {}; });
+      ['wiedza', 'zaliczone', 'proby', 'cofniecia', 'zrobioneMinuty', 'czesciZrobione', 'widzianePytania', 'aktywneDni', 'aiDiagnozy'].forEach(k => { if (!stan[k]) stan[k] = {}; });
       ['powtorki', 'przyczyny', 'doAnalizyAI', 'prognozy', 'historiaSesji'].forEach(k => { if (!stan[k]) stan[k] = []; });
       return stan;
     }
@@ -646,13 +648,16 @@
       const bledy = stan.przyczyny.filter(x => x.komp === id && x.opis && x.opis !== 'nie wiem' && x.opis !== 'nieznana').slice(-6);
       const licz = {};
       bledy.forEach(b => { licz[b.opis] = (licz[b.opis] || 0) + 1; });
-      const przyczyna = Object.keys(licz).sort((a, b) => licz[b] - licz[a])[0] || null;
+      const ai = (stan.aiDiagnozy || {})[id] || null;
+      const przyczyna = ai ? ai.opis : Object.keys(licz).sort((a, b) => licz[b] - licz[a])[0] || null;
       const podstawy = (K[id].wymaga || []).filter(pre => K[pre]).sort((a, b) => poziom(stan, a) - poziom(stan, b));
-      const rozgrzewka = podstawy.length && poziom(stan, podstawy[0]) < 0.9 ? podstawy[0] : null;
+      // rozgrzewka: podstawa wskazana przez AI, a bez AI najsłabsza podstawa
+      const rozgrzewka = ai && ai.pre && PYT[ai.pre] ? ai.pre : podstawy.length && poziom(stan, podstawy[0]) < 0.9 ? podstawy[0] : null;
       const zmiany = ['Najpierw wyjaśnienie krok po kroku (schemat), dopiero potem zadania'];
-      if (rozgrzewka) zmiany.push('Rozgrzewka z podstawy: ' + K[rozgrzewka].nazwa);
+      if (rozgrzewka) zmiany.push('Rozgrzewka z podstawy: ' + K[rozgrzewka].nazwa + (ai && ai.pre === rozgrzewka ? ' (wskazała AI)' : ''));
+      if (ai && ai.wskazowka) zmiany.push('Wskazówka AI: ' + ai.wskazowka);
       zmiany.push('Quiz z nowym zestawem pytań');
-      return { proby: stan.proby[id] || 0, cofniecie: !!stan.cofniecia[id], przyczyna: przyczyna, rozgrzewka: rozgrzewka, rozgrzewkaNazwa: rozgrzewka ? K[rozgrzewka].nazwa : null, zmiany: zmiany };
+      return { proby: stan.proby[id] || 0, cofniecie: !!stan.cofniecia[id], przyczyna: przyczyna, rozgrzewka: rozgrzewka, rozgrzewkaNazwa: rozgrzewka ? K[rozgrzewka].nazwa : null, zmiany: zmiany, ai: ai };
     }
 
     function utworzJednostke(stan, x, org) {
@@ -1003,8 +1008,95 @@
       return { ok: bledy.length === 0, bledy: bledy, ostrzezenia: ostrzezenia, kompetencji: dane.kompetencje.length, pytan: pytania.length };
     }
 
+    // ───────────── AI: przyczyna błędu (model językowy proponuje, silnik decyduje) ─────────────
+    // Kandydaci = temat + jego podstawy do 2 poziomów w dół. AI może wskazać tylko jednego z nich.
+    function kandydaciAI(id) {
+      const L = [];
+      const dodaj = x => { if (K[x] && L.indexOf(x) === -1) L.push(x); };
+      dodaj(id);
+      (K[id].wymaga || []).forEach(p1 => { dodaj(p1); ((K[p1] && K[p1].wymaga) || []).forEach(dodaj); });
+      return L.map(x => ({ id: x, nazwa: K[x].nazwa, cke: K[x].cke }));
+    }
+    // Przyczyna według reguł (tag przy błędnej odpowiedzi w banku pytań): punkt odniesienia dla AI
+    function regulaDla(pytanieId, wybrana) {
+      const q = PYT_ID[pytanieId];
+      if (!q || wybrana === 0) return null;
+      if (wybrana === -1) return { komp: null, opis: 'nie wiem' };
+      const p = rozpoznajPrzyczyne(q.bledy && q.bledy[wybrana]);
+      return { komp: p && p.pre ? p.pre : q.komp, opis: p ? p.opis : 'brak opisu błędu w kluczu' };
+    }
+    // Dane do analizy jednego błędu (bez danych osobowych ucznia)
+    function daneDoAI(pytanieId, wybrana, rozwiazanie) {
+      const q = PYT_ID[pytanieId];
+      const r = regulaDla(pytanieId, wybrana);
+      return {
+        tryb: 'pytanie',
+        temat: { id: q.komp, nazwa: K[q.komp].nazwa, cke: K[q.komp].cke },
+        kandydaci: kandydaciAI(q.komp),
+        bledy: [{ pytanie: q.tresc, poprawna: q.odp[0], odpowiedzUcznia: wybrana === -1 ? 'nie wiem' : q.odp[wybrana], typowaPrzyczyna: r ? r.opis : null }],
+        rozwiazanieUcznia: String(rozwiazanie || '').slice(0, 600)
+      };
+    }
+    // Dane do analizy po 2 nieudanych quizach (wpis z stan.doAnalizyAI)
+    function daneDoAIPoPorazce(wpis) {
+      return {
+        tryb: 'temat',
+        temat: { id: wpis.komp, nazwa: K[wpis.komp].nazwa, cke: K[wpis.komp].cke },
+        kandydaci: kandydaciAI(wpis.komp),
+        bledy: (wpis.bledne || []).slice(0, 8).map(b => ({ pytanie: b.pytanie, poprawna: b.poprawna, odpowiedzUcznia: b.wybrana, typowaPrzyczyna: b.przyczyna })),
+        rozwiazanieUcznia: ''
+      };
+    }
+    function przyjmijAI(id, ai) {
+      if (!ai || !ai.komp || !(Number(ai.pewnosc) >= KONFIG.progPewnosciAI)) return null;
+      return kandydaciAI(id).some(x => x.id === ai.komp) ? ai.komp : null;
+    }
+    const powodOdrzucenia = (id, ai) => !ai || !ai.komp ? 'AI nie wskazała przyczyny: decydują reguły'
+      : !kandydaciAI(id).some(x => x.id === ai.komp) ? 'AI wskazała temat spoza listy: decydują reguły' : 'AI niepewna: decydują reguły';
+    // Po jednym błędzie: AI zmienia przyczynę i (w teście adaptacyjnym) kolejne pytanie
+    function zastosujAI(stan, sesja, pytanieId, ai, dzis) {
+      const q = PYT_ID[pytanieId];
+      const o = sesja && sesja.odpowiedzi.find(x => x.pytanie === pytanieId);
+      if (!q || !o || o.poprawna) return { przyjete: false, powod: 'brak błędu do analizy' };
+      const komp = przyjmijAI(q.komp, ai);
+      if (!komp) return { przyjete: false, powod: powodOdrzucenia(q.komp, ai) };
+      const pre = komp !== q.komp ? komp : null;
+      const regula = o.przyczyna ? o.przyczyna.pre : null;
+      if (pre && pre !== regula) dodajDowod(stan, pre, false, KONFIG.wagaAI, dzis || sesja.dzis);
+      o.przyczyna = Object.assign({}, o.przyczyna || {}, { pre: pre, opis: ai.opis || (o.przyczyna || {}).opis, ai: true, nieWiem: false });
+      for (let i = stan.przyczyny.length - 1; i >= 0; i--) {
+        const x = stan.przyczyny[i];
+        if (x.pytanie === pytanieId) { x.opis = ai.opis || x.opis; x.pre = pre; x.zrodlo = 'AI'; x.pewnosc = ai.pewnosc; break; }
+      }
+      let zmianaTestu = null;
+      if (sesja.adaptacyjny && pre && pre !== regula && maPytanie(sesja, pre) && !juzZadana(sesja, pre)) {
+        const stare = sesja.kolejka[0] && sesja.kolejka[0].powod === 'cofniecie' ? sesja.kolejka.shift().id : null;
+        sesja.kolejka.unshift({ id: pre, powod: 'cofniecie' });
+        if (stare !== pre) zmianaTestu = { z: stare, na: pre, nazwa: K[pre].nazwa };
+      }
+      return { przyjete: true, komp: komp, pre: pre, podstawa: pre ? K[pre].nazwa : null, zmianaTestu: zmianaTestu };
+    }
+    // Po 2 nieudanych quizach: AI wskazuje podstawę do powtórki, plan ją uwzględnia
+    function zastosujAIPoPorazce(stan, id, ai, dzis) {
+      const wpis = stan.doAnalizyAI.slice().reverse().find(x => x.komp === id && !x.ai);
+      if (wpis) wpis.ai = { komp: ai && ai.komp, pewnosc: ai && ai.pewnosc, opis: ai && ai.opis };
+      const komp = przyjmijAI(id, ai);
+      if (!komp) return { przyjete: false, powod: powodOdrzucenia(id, ai) };
+      const pre = komp !== id ? komp : null;
+      stan.aiDiagnozy[id] = { pre: pre, opis: ai.opis, wskazowka: ai.wskazowka, pewnosc: ai.pewnosc, data: dzis };
+      let dodanaPodstawa = null;
+      if (pre) {
+        dodajDowod(stan, pre, false, KONFIG.wagaAI, dzis);
+        if (stan.zaliczone[pre]) { delete stan.zaliczone[pre]; resetPostepu(stan, pre); }
+        dodanaPodstawa = { komp: pre, nazwa: K[pre].nazwa };
+      }
+      return { przyjete: true, komp: komp, pre: pre, podstawa: dodanaPodstawa };
+    }
+
     return {
       KONFIG: KONFIG,
+      kandydaciAI: kandydaciAI, regulaDla: regulaDla, daneDoAI: daneDoAI, daneDoAIPoPorazce: daneDoAIPoPorazce,
+      zastosujAI: zastosujAI, zastosujAIPoPorazce: zastosujAIPoPorazce,
       nowyStan: nowyStan, uzupelnijStan: uzupelnijStan,
       utworzTest: utworzTest, nastepnePytanie: nastepnePytanie, odpowiedz: odpowiedz, zakonczTest: zakonczTest,
       prognoza: prognoza, podsumujWiedze: podsumujWiedze,
