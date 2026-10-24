@@ -78,11 +78,11 @@
   window.addEventListener('hashchange', () => { render(); window.scrollTo(0, 0); fokus(); });
 
   // ───────────── ścieżka ucznia: 4 kroki ─────────────
-  // Uczeń zawsze widzi, na którym kroku jest: 1. Diagnoza (Kompas) > 2. Test z matematyki > 3. Plan > 4. Nauka.
+  // Uczeń zawsze widzi, na którym kroku jest: 1. Diagnoza (Kompas) > 2. Test z przedmiotu (dziś: matematyka) > 3. Plan > 4. Nauka.
   // Pasek kroków to jedyna nawigacja ucznia. Pozostałe ekrany (opis, matryca, AI, demo) są na stronie dla jury.
   const KROKI = [
     { nr: 1, nazwa: 'Diagnoza', opis: 'osobowość i kierunki' },
-    { nr: 2, nazwa: 'Test', opis: 'matematyka' },
+    { nr: 2, nazwa: 'Test', opis: 'z przedmiotu' },
     { nr: 3, nazwa: 'Plan', opis: 'do matury' },
     { nr: 4, nazwa: 'Nauka', opis: 'materiał i quiz' }
   ];
@@ -198,7 +198,7 @@
         <h1 style="font-size:clamp(2rem,5.6vw,3.2rem);max-width:17ch">Od tego, kim jesteś, <span class="hl">do planu na maturę.</span></h1>
         <ol class="kroki-start">
           <li><b>Diagnoza</b><span>22 pytania o Ciebie. Dostajesz pasujące kierunki studiów i przedmioty do zdawania. Ok. 5 min.</span></li>
-          <li><b>Test z matematyki</b><span>3 pytania o cel i czas, potem test. Dostajesz prognozę wyniku matury. Ok. 15 min.</span></li>
+          <li><b>Test z przedmiotu maturalnego</b><span>Zaczynamy od matematyki, kolejne przedmioty już wkrótce. 3 pytania o cel i czas, potem test. Dostajesz prognozę wyniku matury. Ok. 15 min.</span></li>
           <li><b>Plan</b><span>Układamy plan do matury: tylko to, czego Ci brakuje.</span></li>
           <li><b>Nauka</b><span>Każdego dnia krótki materiał, fragment kursu Maturalnych i quiz.</span></li>
         </ol>

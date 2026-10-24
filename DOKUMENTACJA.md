@@ -11,7 +11,7 @@ Uczeń widzi jedną ścieżkę. Pasek kroków u góry każdego ekranu to jedyna 
 | Krok | Co robi uczeń | Co dostaje | Ekrany |
 |---|---|---|---|
 | **1. Diagnoza** | 22 pytania o osobowość i zainteresowania (można pominąć) | ścieżkę A i B, kierunki, uczelnie, przedmioty maturalne | `#/kompas`, `#/kompas-test`, `#/kompas-wynik` |
-| **2. Test** | 3 pytania (cel z rokiem matury, czas dziennie, trudne działy), potem test adaptacyjny 20 pytań, ok. 15 min | prognozę wyniku matury, przyczyny błędów, mapę mikrokompetencji | `#/kalibracja`, `#/test`, `#/quiz`, `#/wynik` |
+| **2. Test** (z przedmiotu maturalnego; dostępna matematyka, kolejne przedmioty w przygotowaniu) | 3 pytania (cel z rokiem matury, czas dziennie, trudne działy), potem test adaptacyjny 20 pytań, ok. 15 min | prognozę wyniku matury, przyczyny błędów, mapę mikrokompetencji | `#/kalibracja`, `#/test`, `#/quiz`, `#/wynik` |
 | **3. Plan** | przegląda plan, może zmienić minuty, dni, dni wolne, dodać „więcej czasu” (dysleksja/dyskalkulia) | listę tematów z datami, od tych dających najwięcej punktów | `#/plan`, `#/postepy`, `#/kalendarz` |
 | **4. Nauka** | codziennie: materiał (części tematu i fragmenty materiałów Maturalnych), zadanie „Sprawdź się”, quiz zaliczeniowy (70%), powtórki | serię 🔥, zaliczone tematy, aktualizowaną prognozę | `#/dzis`, `#/lekcja`, `#/quiz-wynik`, `#/materialy` |
 
