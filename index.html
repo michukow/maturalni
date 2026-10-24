@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>Maturalni Plus</title>
+<title>Kompas Maturalni</title>
 <meta name="description" content="Sprawdź w 5 minut, jaki kierunek studiów do Ciebie pasuje i jakie przedmioty zdawać na maturze.">
 <meta name="claude:viewport-fit-sides" content="cover">
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -449,7 +449,7 @@ function viewStart(){
   const resume = n>0 && n<Q.length, done = n===Q.length;
   app.innerHTML=`
   <span class="eyebrow">Dla maturzystów</span>
-  <h1>Maturalni Plus</h1>
+  <h1>Kompas Maturalni</h1>
   <p class="lead">Sprawdź w 5 minut, jaki kierunek studiów do Ciebie pasuje i jakie przedmioty zdawać na maturze.</p>
   <ul class="facts"><li>22 krótkie pytania</li><li>ok. 5 minut</li><li>bez logowania</li></ul>
   <div class="stack">
@@ -644,7 +644,7 @@ function viewSubject(){
 }
 
 function summary(t,r,paths,code){
-  const L=["MATURALNI PLUS – wynik","Kod zainteresowań: "+code,
+  const L=["KOMPAS MATURALNI – wynik","Kod zainteresowań: "+code,
     "Zainteresowania: "+ORDER.map(k=>`${k} ${r[k]}`).join(", "),
     "Osobowość: "+Object.keys(TRAITS).map(k=>`${TRAITS[k].name} ${t[k]}/10`).join("; ")];
   paths.forEach((p,i)=>{const P=PATHS[p.id],ro=rankRoles(P,t);

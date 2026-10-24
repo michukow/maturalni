@@ -1,4 +1,4 @@
-# Maturalni Plus
+# Kompas Maturalni
 
 Test dla maturzystów w jednym pliku HTML. W 5 minut podpowiada ścieżkę zawodową, kierunki studiów, uczelnie i przedmioty maturalne.
 
