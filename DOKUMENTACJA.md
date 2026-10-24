@@ -22,8 +22,11 @@ Strona: **https://maturalni-4l1.pages.dev** (Cloudflare Pages, wdrożenie po pus
 
 - **Materiały** (`#/materialy`): platforma kursowa w aplikacji. Każda z 67 mikrokompetencji ma krótkie części: wideo (fragment lekcji od-do), notatka, szybki trening i zadania z arkusza CKE. Kolejność zależy od stylu nauki z kalibracji, po porażce najpierw wyjaśnienie, przy utrwalaniu bez wideo.
 - **Lekcja dnia** pokazuje tylko części przypadające na dzisiejszą sesję (silnik dzieli części tematu na sesje).
+- **Katalog na żywo** (`app/produkty-api.js`): przy starcie aplikacja pobiera publiczny endpoint `products/` (przez bramkę, bez tokenu). Z niego biorą się tytuły, okładki, linki FlippingBook, cena i poziom Premium dla notatek (Bank schematów) i zadań (Arkusz CKE). Gdy API nie odpowiada: ostatnie pobranie z przeglądarki, a gdy go brak: zapis z 24.10.2026 w tym pliku. Stan widać na ekranie Materiały i w `#/import`.
+- **Materiały w aplikacji**: Bank schematów i Arkusz CKE otwierają się w ramce wewnątrz aplikacji (przycisk „Otwórz … tutaj”), link do oryginału jest zapasowy. Numer strony we FlippingBooku dla tematu: `STRONY` w `silnik/materialy.js`.
+- **Wideo**: `products/` nie zawiera lekcji wideo z matematyki, więc wideo to kurs demo. Lekcje z `lesson-plans` / `chapters` wejdą przez ekran Import.
 - **Dane przykładowe**: `silnik/materialy.js` buduje kurs w kształcie API (kurs > rozdział > lekcja z fragmentami czasu). Notatki do trygonometrii i jej podstaw są pisane ręcznie (`NOTATKI`), pozostałe generowane z wymagań CKE i banku pytań.
-- **Bramka do API**: `functions/api/maturalni/[[sciezka]].js` (Cloudflare Pages Function). Adres `/api/maturalni/lesson-plans/` przekazuje zapytanie do `https://backend.maturalni.com/lesson-plans/`. Token (jeśli potrzebny): zmienna `MATURALNI_TOKEN` w ustawieniach projektu w Cloudflare.
+- **Bramka do API**: `functions/api/maturalni/[[sciezka]].js` (Cloudflare Pages Function). Adresy `/api/maturalni/products/` i `/api/maturalni/lesson-plans/` przekazują zapytanie do `https://backend.maturalni.com/lesson-plans/`. Token (jeśli potrzebny): zmienna `MATURALNI_TOKEN` w ustawieniach projektu w Cloudflare.
 - **Import** (`#/import`): pobiera JSON z bramki albo z wklejenia, znajduje lekcje, przypisuje je do mikrokompetencji (słowa kluczowe z nazw), pozwala poprawić przypisanie i zapisuje w przeglądarce albo jako plik `silnik/materialy-maturalni.js` do repozytorium.
 - **Kalendarz**: Google Calendar pokazuje co i kiedy. Opis wydarzenia zawiera dzisiejsze części, link do lekcji w aplikacji i zapasowy link do materiału Maturalnych.
 
@@ -52,6 +55,7 @@ Test silnika bez przeglądarki: `cd silnik && node sprawdz.js` (na końcu ma by�
 | `silnik/materialy.js` | części materiałów per umiejętność (wideo, notatka, trening, arkusz), notatki ręczne | merytoryka |
 | `silnik/materialy-maturalni.js` | lekcje zaimportowane z API (generuje ekran Import) | merytoryka |
 | `app/kurs.js` | ekran Materiały, odtwarzacz części, Import z API | dev |
+| `app/produkty-api.js` | katalog produktów na żywo z `products/`, zapis zapasowy | dev |
 | `functions/api/maturalni/` | bramka do API Maturalnych na Cloudflare | dev |
 | `silnik/README.md` | opis API silnika | dev |
 
@@ -59,6 +63,7 @@ Test silnika bez przeglądarki: `cd silnik && node sprawdz.js` (na końcu ma by�
 
 - **Nowe pytanie**: `silnik/pytania.js`. Poprawna odpowiedź zawsze pierwsza (silnik miesza kolejność). Błędne odpowiedzi opisz w `bledy`, a jeśli błąd wynika z braku podstawy, zacznij od `PRE:ID-podstawy`.
 - **Materiał do tematu**: `silnik/materialy.js`, klucz = id mikrokompetencji (np. `TR-05`), pola `fragment` i `minuty`.
+- **Strona w Banku schematów / Arkuszu**: `STRONY` w `silnik/materialy.js`, np. `bank: { 'TR-01': 41 }`. Link otworzy się od tej strony.
 - **Wagi działów**: `silnik/matryca.js`, pole `waga` w `DZIALY` (suma 100). To szacunek do weryfikacji na arkuszach CKE.
 - **Progi i odstępy** (70%, 2-5-12-30 dni, bufor co 5. dzień): `KONFIG` na górze `silnik/silnik.js`.
 - **Kompas**: w `index.html` stałe `Q`, `PATHS`, `PAIRS`, `SUBJECTS` (`active: true` włącza przedmiot). Status danych uczelni (`s`): `v` zasady 2027/28 z uchwały, `p` projekt 2027/28, `o` zasady 2026/27, `x` do sprawdzenia.

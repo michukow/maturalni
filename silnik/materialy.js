@@ -37,6 +37,14 @@
     }
   };
 
+  // Numery stron we FlippingBooku (link otwiera się od tej strony: .../view/ID/STRONA/).
+  // Do uzupełnienia przez zespół: klucz = id mikrokompetencji, wartość = numer strony.
+  const STRONY = {
+    bank: { /* np. 'TR-01': 41 */ },
+    arkusz: { /* np. 'TR-05': 7 */ }
+  };
+  const zeStrona = (url, nr) => nr ? url.replace(/\/?$/, '/') + nr + '/' : url;
+
   // ───────────── notatki pisane ręcznie (zakres demo: trygonometria i jej podstawy) ─────────────
   // Bloki: p = akapit, wzor = wzór w ramce, lista = punkty, tabela = { naglowki, wiersze },
   //        przyklad = przykład krok po kroku, uwaga = najczęstszy błąd
@@ -171,8 +179,9 @@
     const reczna = NOTATKI[k.id];
     czesci.push({
       id: k.id + '-t', typ: 'tekst', nazwa: 'Notatka: ' + k.nazwa, minuty: reczna ? 6 : 4,
-      produkt: PRODUKTY.bank.tytul, url: PRODUKTY.bank.url, okladka: PRODUKTY.bank.okladka,
-      fragment: 'Schemat do tematu „' + k.nazwa + '” (strona do uzupełnienia)',
+      produkt: PRODUKTY.bank.tytul, produktId: PRODUKTY.bank.produktId, okladka: PRODUKTY.bank.okladka,
+      urlBazowy: PRODUKTY.bank.url, strona: STRONY.bank[k.id] || null, url: zeStrona(PRODUKTY.bank.url, STRONY.bank[k.id]), osadz: true,
+      fragment: 'Schemat do tematu „' + k.nazwa + '”' + (STRONY.bank[k.id] ? ', strona ' + STRONY.bank[k.id] : ''),
       notatka: reczna || notatkaAuto(k), przyklad: !reczna, notatkaReczna: !!reczna
     });
     const pyt = PYTANIA.filter(q => q.komp === k.id).map(q => q.id);
@@ -184,15 +193,16 @@
       const m = i < ile ? Math.round(reszta / ile / 5) * 5 : reszta - Math.round(reszta / ile / 5) * 5 * (ile - 1);
       czesci.push({
         id: k.id + '-a' + i, typ: 'arkusz', nazwa: 'Zadania z arkusza CKE' + (ile > 1 ? ' (zestaw ' + i + ' z ' + ile + ')' : ''), minuty: m,
-        produkt: PRODUKTY.arkusz.tytul, url: PRODUKTY.arkusz.url, okladka: PRODUKTY.arkusz.okladka,
-        fragment: 'Zadania z działu ' + dz.nazwa + ' do tematu „' + k.nazwa + '” (numery do uzupełnienia)'
+        produkt: PRODUKTY.arkusz.tytul, produktId: PRODUKTY.arkusz.produktId, okladka: PRODUKTY.arkusz.okladka,
+        urlBazowy: PRODUKTY.arkusz.url, strona: STRONY.arkusz[k.id] || null, url: zeStrona(PRODUKTY.arkusz.url, STRONY.arkusz[k.id]),
+        fragment: 'Zadania z działu ' + dz.nazwa + ' do tematu „' + k.nazwa + '”' + (STRONY.arkusz[k.id] ? ', strona ' + STRONY.arkusz[k.id] : '')
       });
     }
     MATERIALY[k.id] = czesci;
   });
 
   const MATERIALY_DZIALU = { '*': [] };
-  const eksport = { MATERIALY: MATERIALY, MATERIALY_DZIALU: MATERIALY_DZIALU, KURS_DEMO: KURS, PRODUKTY: PRODUKTY, NOTATKI: NOTATKI, czasWideo: czas };
+  const eksport = { MATERIALY: MATERIALY, MATERIALY_DZIALU: MATERIALY_DZIALU, KURS_DEMO: KURS, PRODUKTY: PRODUKTY, STRONY: STRONY, NOTATKI: NOTATKI, czasWideo: czas };
   if (W) module.exports = eksport;
   else root.Mikro = Object.assign(root.Mikro || {}, eksport);
 })(typeof window !== 'undefined' ? window : globalThis);

@@ -45,10 +45,25 @@
     for (const r of M.KURS_DEMO.chapters) for (const l of r.lessons) if (l.id === c.wideo.lekcjaId) return l;
     return null;
   }
+  // Stan katalogu produktów (app/produkty-api.js): na żywo z API, z pamięci albo zapis
+  function statusKatalogu() {
+    const i = M.produktyInfo || {};
+    const kiedy = i.czas ? new Date(i.czas).toLocaleString('pl-PL', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' }) : '';
+    const czesc = i.wszystkichWApi && i.liczba < i.wszystkichWApi ? ` z ${i.wszystkichWApi}` : '';
+    const n = i.wszystkichWApi && i.liczba < i.wszystkichWApi ? i.wszystkichWApi : i.liczba;
+    const pr = n === 1 ? 'produkt' : (n % 10 >= 2 && n % 10 <= 4 && (n % 100 < 12 || n % 100 > 14)) ? 'produkty' : 'produktów';
+    if (i.stan === 'na-zywo') return { kl: 'green', ico: '🟢', t: `Katalog Maturalnych na żywo z API: ${i.liczba}${czesc} ${pr}, ${kiedy}` };
+    if (i.stan === 'pamiec') return { kl: 'green', ico: '🟢', t: `Katalog Maturalnych z API, pobrany ${kiedy}: ${i.liczba}${czesc} ${pr}` };
+    return { kl: '', ico: '🟡', t: `Katalog Maturalnych: zapis z API z ${kiedy}${i.blad ? ' (API teraz nie odpowiada)' : ''}` };
+  }
   function zrodloHtml(c, tekstLinku) {
     if (!c.produkt) return '';
     const okl = c.okladka ? `<img class="okl" src="${esc(c.okladka)}" alt="" onerror="this.outerHTML='<span class=&quot;okl&quot;>${IK[c.typ] || '📘'}</span>'">` : `<span class="okl">${IK[c.typ] || '📘'}</span>`;
+    const st = statusKatalogu();
+    const znaczki = c.produktId ? (c.niedostepny ? '<span class="badge red">brak w katalogu Maturalnych</span>'
+      : `<span class="badge ${st.kl}" title="${esc(st.t)}">${st.ico} z API Maturalnych</span>${c.premium ? `<span class="badge yellow" title="Wymagany poziom Premium: ${esc(c.premium)}">🔒 w Premium</span>` : ''}${c.cena ? `<span class="badge">${esc(M.cenaZl(c.cena))}</span>` : ''}`) : '';
     return `<div class="zrodlo">${okl}<div class="stack" style="gap:4px"><span class="tiny muted">Materiał Maturalnych</span><b>${esc(c.produkt)}</b><span class="small">${esc(c.fragment || '')}</span>
+      ${znaczki ? `<div class="row" style="gap:6px">${znaczki}</div>` : ''}
       ${c.url ? `<a class="small" href="${esc(c.url)}" target="_blank" rel="noopener">${tekstLinku || 'Otwórz oryginał w nowej karcie (zapas)'} ↗</a>` : ''}</div></div>`;
   }
   function notatkaHtml(bloki) {
@@ -84,15 +99,15 @@
         ${c.przyklad ? '<p class="tiny muted">Podgląd demo: w wersji produkcyjnej odtwarza się tu fragment lekcji z serwera wideo Maturalnych (Vimeo) od wskazanej sekundy. Po imporcie lekcji z API pojawi się prawdziwy odtwarzacz.</p>' : ''}`;
     }
     if (c.typ === 'tekst') {
-      const osadzone = c.osadz && c.url ? `<div class="stack"><button class="btn-small alt" id="pokaz">Pokaż materiał tutaj</button><div id="ramka"></div></div>` : '';
-      return `${c.notatka ? notatkaHtml(c.notatka) : ''}${osadzone}${zrodloHtml(c)}
-        ${c.przyklad ? '<p class="tiny muted">Notatka wygenerowana z wymagań CKE i banku pytań (do zastąpienia schematem z Banku schematów Maturalnych).</p>' : ''}`;
+      const osadzone = c.osadz && c.url && !c.niedostepny ? `<div class="stack"><button class="btn-small alt" id="pokaz">📖 Otwórz ${c.zaimportowane ? 'materiał' : 'Bank schematów'} tutaj</button><div id="ramka"></div></div>` : '';
+      return `${c.notatka ? notatkaHtml(c.notatka) : ''}${zrodloHtml(c)}${osadzone}
+        ${c.przyklad ? '<p class="tiny muted">Notatka powyżej to skrót aplikacji (z wymagań CKE i banku pytań). Pełny schemat jest w Banku schematów Maturalnych.</p>' : ''}`;
     }
     if (c.typ === 'trening') return '<div id="tr"></div>';
     if (c.typ === 'arkusz') {
       return `${zrodloHtml(c, 'Otwórz arkusz w nowej karcie')}
         <div class="callout"><span class="ico">📝</span><span>Rozwiąż zadania na kartce, potem sprawdź odpowiedzi w kluczu na końcu arkusza. Zaznacz „Zrobione”, gdy skończysz.</span></div>
-        <div class="stack"><button class="btn-small alt" id="pokaz">Pokaż arkusz tutaj</button><div id="ramka"></div></div>`;
+        ${c.url && !c.niedostepny ? '<div class="stack"><button class="btn-small" id="pokaz">📝 Otwórz arkusz tutaj</button><div id="ramka"></div></div>' : ''}`;
     }
     return '';
   }
@@ -165,7 +180,7 @@
       const zr = zrobione(c.id);
       el.innerHTML = `<div class="stack" style="gap:16px">
         <div class="odtw"><div class="glowa"><div class="stack" style="gap:2px"><span class="eyebrow">${IK[c.typ]} ${TYP[c.typ]} · część ${a + 1} z ${czesci.length} · ${c.minutySesji || c.minuty} min${c.kontynuacja ? ' · dokończ' : ''}</span><b style="font-size:1.1rem">${esc(c.nazwa)}</b></div>
-          ${c.zaimportowane ? '<span class="badge green">z API Maturalnych</span>' : c.przyklad ? '<span class="badge">dane przykładowe</span>' : ''}</div>
+          ${c.zaimportowane ? '<span class="badge green">z API Maturalnych</span>' : c.produktId && !c.niedostepny ? '<span class="badge green">materiał Maturalnych</span>' : c.typ === 'wideo' && c.przyklad ? '<span class="badge">wideo demo</span>' : ''}</div>
           <div class="cialo" id="cialo">${cialoHtml(c, c.kompZrodlo || o.komp)}</div>
           <div class="stopka-odtw"><button class="btn-small ${zr ? 'alt' : ''}" id="zr">${zr ? '✓ Zrobione (cofnij)' : 'Oznacz jako zrobione ✓'}</button>
             <div class="row"><button class="btn-ghost" id="wst" ${a === 0 ? 'disabled' : ''}>← Poprzednia</button><button class="btn-ghost" id="nast" ${a >= czesci.length - 1 ? 'disabled' : ''}>Następna →</button></div></div></div>
@@ -215,7 +230,8 @@
     const info = M.importInfo;
     app.innerHTML = `
       <div class="row between"><div class="stack" style="gap:4px"><h1>Materiały</h1><p class="muted">Lekcje Maturalnych pocięte na krótkie części: osobno dla każdej z ${S.kompetencje().length} umiejętności. Wideo, notatka, trening i zadania w jednym miejscu.</p></div>
-        <a class="btn-ghost" href="#/import">${info ? '🔄 Import: ' + info.lekcji + ' lekcji' : '⬇ Import z API Maturalnych'}</a></div>
+        <a class="btn-ghost" href="#/import">${info ? '🔄 Import: ' + info.lekcji + ' lekcji' : '⬇ Integracja z API Maturalnych'}</a></div>
+      <a href="#/import" class="small" id="katalogStatus" style="margin-top:-8px">${statusKatalogu().ico} ${esc(statusKatalogu().t)}</a>
       <div class="kurs">
         <nav class="kurs-menu" aria-label="Działy i umiejętności"><input type="search" id="szukaj" placeholder="Szukaj tematu…" aria-label="Szukaj tematu">
           ${S.dzialy().map(d => {
@@ -385,7 +401,9 @@
     app.innerHTML = `
       <div class="stack" style="gap:6px"><span class="eyebrow">Integracja z platformą Maturalnych</span><h1>Import materiałów</h1>
         <p class="muted">Pobieramy lekcje z API Maturalnych, przypisujemy je do mikrokompetencji i od razu pokazujemy uczniom w Materiałach i w lekcji dnia.</p></div>
-      <div class="callout ${info ? 'green' : 'blue'}"><span class="ico">${info ? '✅' : 'ℹ️'}</span><span>${info ? `Aktywny import (${esc(info.zrodlo)}, ${esc(info.data)}): ${info.lekcji} lekcji, ${info.przypisanych} przypisanych do ${info.tematow} tematów.` : 'Teraz aplikacja używa danych przykładowych w kształcie API (kurs > rozdział > lekcja z fragmentem czasu).'}</span></div>
+      <div id="katalog"></div>
+      <h2 style="margin-top:8px">Lekcje wideo (lesson-plans)</h2>
+      <div class="callout ${info ? 'green' : 'blue'}"><span class="ico">${info ? '✅' : 'ℹ️'}</span><span>${info ? `Aktywny import (${esc(info.zrodlo)}, ${esc(info.data)}): ${info.lekcji} lekcji, ${info.przypisanych} przypisanych do ${info.tematow} tematów.` : 'Endpoint products nie zawiera lekcji wideo z matematyki, więc wideo w Materiałach to kurs demo (struktura jak w API). Gdy dostaniecie dostęp do lekcji (lesson-plans / chapters), zaimportujcie je tutaj: aplikacja sama przypisze je do mikrokompetencji.'}</span></div>
       <div class="grid3">
         <div class="card"><h3>1. Pobierz z API</h3><p class="small muted">Przez bramkę na serwerze Cloudflare (bez CORS, token nie trafia do przeglądarki).</p>
           <label class="pole">Ścieżka<input id="sc" value="lesson-plans/"></label><label class="pole">Parametry<input id="pa" value="perPage=100"></label>
@@ -401,6 +419,27 @@
         <p>2. Jeśli API wymaga tokenu: Cloudflare > Workers & Pages > maturalni > Settings > Variables and Secrets > Add: <span class="kod">MATURALNI_TOKEN</span> (Secret). Token dostaniecie od kontaktów technicznych Maturalnych.</p>
         <p>3. Rozdziały podane tylko jako identyfikatory wymagają drugiego zapytania o treść rozdziału (np. <span class="kod">chapters/ID</span>). Ścieżkę wpiszcie w polu „Ścieżka”.</p>
         <p>4. Po zapisaniu importu kliknij „Pobierz plik do repo” i podmień <span class="kod">silnik/materialy-maturalni.js</span>, żeby każdy uczeń widział te lekcje.</p></div></details>`;
+    const rysujKatalog = () => {
+      const k = $('katalog'); if (!k) return;
+      const st = statusKatalogu();
+      const uzycie = {};
+      Object.keys(M.MATERIALY || {}).forEach(komp => M.MATERIALY[komp].forEach(c => { if (c.produktId) (uzycie[c.produktId] = uzycie[c.produktId] || {})[komp] = 1; }));
+      const lista = M.produktyMatematyka ? M.produktyMatematyka() : [];
+      k.innerHTML = `<div class="card"><div class="row between"><div class="stack" style="gap:4px"><h3>Katalog Maturalnych: endpoint products</h3>
+          <span class="small">${st.ico} ${esc(st.t)}${(M.produktyInfo || {}).param === null && (M.produktyInfo || {}).stron > 1 && (M.produktyInfo || {}).stan === 'na-zywo' ? '. API zwraca tylko 1. stronę, ale są na niej wszystkie produkty do matematyki.' : ''}</span></div>
+          <button class="btn-small alt" id="odswiez">🔄 Odśwież z API</button></div>
+        <p class="small muted">Publiczny endpoint, bez tokenu. Aplikacja pobiera go przy starcie (przez bramkę Cloudflare), a gdy API nie odpowiada, używa ostatniego zapisu. Stąd biorą się tytuły, okładki, linki do materiałów, cena i poziom Premium.</p>
+        <div class="produkty">${lista.map(p => {
+          const r = p.learningResources[0] || {}, ile = Object.keys(uzycie[p.id] || {}).length;
+          const okl = r.thumbnailUrl || p.thumbnailUrl;
+          return `<div class="produkt ${ile ? 'uzyty' : ''}">${okl ? `<img src="${esc(okl)}" alt="" loading="lazy" onerror="this.outerHTML='<span class=&quot;okl&quot;>📘</span>'">` : '<span class="okl">📘</span>'}
+            <div class="stack" style="gap:4px"><b>${esc(p.title)}</b><span class="tiny muted">${p.examType === 'matura' ? 'Matura' : 'Egzamin ósmoklasisty'} · ${esc(M.cenaZl(p.grossPrice))}${r.minimumRequiredPremiumStatus ? ' · 🔒 Premium' : ''}</span>
+              ${ile ? `<span class="badge green">używany w ${ile} mikrokompetencjach</span>` : '<span class="badge">nie dotyczy matury z matematyki</span>'}
+              ${r.url ? `<a class="tiny" href="${esc(r.url)}" target="_blank" rel="noopener">${esc(r.url.replace('https://', ''))} ↗</a>` : ''}</div></div>`;
+        }).join('')}</div></div>`;
+      $('odswiez').onclick = () => { $('odswiez').disabled = true; $('odswiez').textContent = 'Pobieram…'; M.odswiezProdukty(true).then(ok => { P.toast(ok ? 'Katalog pobrany z API Maturalnych ✓' : 'API nie odpowiada. Zostaje ostatni zapis.'); rysujKatalog(); }); };
+    };
+    rysujKatalog();
     const pokaz = () => {
       const w = $('wynikImportu');
       if (!analiza) { w.innerHTML = ''; return; }
@@ -454,5 +493,9 @@
   }
 
   N.rejestruj({ materialy: widokMaterialy, import: widokImport });
+  // gdy katalog dojdzie z API: odśwież znaczek stanu (bez przerysowania lekcji)
+  root.addEventListener('maturalni-produkty', () => {
+    const b = $('katalogStatus'); if (b) { const st = statusKatalogu(); b.textContent = st.ico + ' ' + st.t; }
+  });
   root.Kurs = { panel: panel, czesciSesji: czesciSesji, czesciKomp: czesciKomp, zrobione: zrobione, oznacz: oznacz, stop: stop, IK: IK, TYP: TYP, _test: { znajdzLekcje: znajdzLekcje, dopasuj: dopasuj, naMinuty: naMinuty } };
 })(window);

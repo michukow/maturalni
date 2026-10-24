@@ -381,7 +381,6 @@ details.more .body{display:flex;flex-direction:column;gap:10px;padding-top:10px;
 
 /* ═════════ Platforma kursowa: materiały per mikrokompetencja ═════════ */
 .kurs{display:grid;grid-template-columns:300px minmax(0,1fr);gap:22px;align-items:start}
-@media (max-width:900px){.kurs{grid-template-columns:1fr}.kurs-menu{max-height:none;position:static}}
 .kurs-menu{position:sticky;top:76px;max-height:calc(100vh - 96px);overflow:auto;background:var(--surface);border:1px solid var(--line);border-radius:18px;padding:12px;display:flex;flex-direction:column;gap:6px;box-shadow:var(--shadow)}
 .kurs-menu input{font:inherit;border:1.5px solid var(--line-2);border-radius:10px;padding:9px 12px;width:100%}
 .kurs-menu details{border-radius:12px}
@@ -393,6 +392,7 @@ details.more .body{display:flex;flex-direction:column;gap:10px;padding-top:10px;
 .kurs-menu a:hover{background:var(--bg)}
 .kurs-menu a[aria-current="page"]{background:var(--blue-soft);color:var(--blue);font-weight:700}
 .kurs-menu a small{color:var(--muted);font-size:.74rem;font-weight:600;white-space:nowrap}
+@media (max-width:900px){.kurs{grid-template-columns:1fr}.kurs-menu{max-height:none;position:static;order:2}}
 .kurs-menu .dzis-tag{background:var(--blue);color:#fff;border-radius:6px;padding:1px 6px;font-size:.66rem;font-weight:800}
 .okruszki{font-size:.85rem;color:var(--muted);display:flex;gap:6px;flex-wrap:wrap}
 .okruszki a{color:var(--muted)}
@@ -449,3 +449,11 @@ details.more .body{display:flex;flex-direction:column;gap:10px;padding-top:10px;
 .import-tab select{font:inherit;font-size:.85rem;border:1.5px solid var(--line-2);border-radius:8px;padding:6px;max-width:300px}
 textarea.json{width:100%;min-height:160px;font-family:ui-monospace,Menlo,monospace;font-size:.82rem;border:1.5px solid var(--line-2);border-radius:12px;padding:10px;background:var(--surface);color:var(--ink)}
 .kod{font-family:ui-monospace,Menlo,monospace;font-size:.82rem;background:var(--bg);border:1px solid var(--line);border-radius:8px;padding:2px 6px}
+
+/* Katalog produktów Maturalnych (endpoint products) */
+.produkty { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 12px; }
+.produkt { display: flex; gap: 12px; align-items: flex-start; padding: 12px; border: 1px solid var(--line, #E5E7EB); border-radius: 12px; background: #fff; }
+.produkt.uzyty { border-color: #86EFAC; background: #F0FDF4; }
+.produkt img, .produkt .okl { width: 64px; height: 84px; object-fit: cover; border-radius: 6px; flex: none; background: #F3F4F6; display: grid; place-items: center; font-size: 1.6rem; }
+.produkt a { word-break: break-all; }
+#katalogStatus { text-decoration: none; color: var(--muted); }
