@@ -34,10 +34,4 @@ Strona: **https://maturalni-4l1.pages.dev** – wdrażana przez Cloudflare Pages
 - **Push na `main`** – zmiana pojawia się na stronie głównej po ok. minucie.
 - **Push na inną gałąź** – gałąź dostaje własny adres podglądu (`nazwa-galezi.maturalni-4l1.pages.dev`), a w pull requeście pojawia się link.
 
-Jak pracować:
-
-1. Utwórz gałąź, np. `diagnoza-matematyka`, wypchnij zmiany i otwórz pull request.
-2. Przetestuj zmianę pod linkiem podglądu.
-3. Po akceptacji scal PR do `main` – strona główna zaktualizuje się sama.
-
 Postęp wdrożeń widać w panelu Cloudflare (Workers & Pages) oraz przy commitach na GitHubie. Jeśli zmiana nie jest widoczna, odśwież stronę z pominięciem pamięci podręcznej (Ctrl+Shift+R).
