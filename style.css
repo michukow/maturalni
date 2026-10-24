@@ -480,3 +480,32 @@ textarea.json{width:100%;min-height:160px;font-family:ui-monospace,Menlo,monospa
 .ai-metryki small { font-size: .75rem; color: var(--muted); }
 .pasek-ai { height: 8px; background: var(--line); border-radius: 99px; overflow: hidden; }
 .pasek-ai i { display: block; height: 100%; background: #7C3AED; transition: width .3s; }
+
+/* ───────── Ścieżka ucznia: pasek 4 kroków (główna nawigacja) ───────── */
+.sciezka-krokow{max-width:1080px;margin:0 auto;display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:6px;
+  padding:0 max(12px, env(safe-area-inset-right,0px)) 10px max(12px, env(safe-area-inset-left,0px))}
+.krok-nav{display:flex;align-items:center;gap:8px;min-width:0;border:1.5px solid var(--line);background:var(--surface);border-radius:12px;padding:7px 8px;text-align:left;min-height:48px}
+.krok-nav .nr{flex:none;width:26px;height:26px;border-radius:50%;display:grid;place-items:center;font-weight:800;font-size:.85rem;background:var(--bg);color:var(--muted);border:1.5px solid var(--line-2)}
+.krok-nav .tx{display:flex;flex-direction:column;min-width:0;line-height:1.15}
+.krok-nav .tx b{font-size:.88rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.krok-nav .tx small{font-size:.72rem;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.krok-nav:hover{border-color:var(--blue-light)}
+.krok-nav.zrobiony .nr{background:var(--green);border-color:var(--green);color:#fff}
+.krok-nav[aria-current="step"]{border-color:var(--blue);background:var(--blue-soft)}
+.krok-nav[aria-current="step"] .nr{background:var(--blue);border-color:var(--blue);color:#fff}
+.krok-nav.zamkniety{opacity:.6}
+.krok-nav.zamkniety .nr{font-size:.75rem}
+@media (max-width:560px){
+  .krok-nav{flex-direction:column;gap:3px;padding:6px 2px;text-align:center}
+  .krok-nav .tx small{display:none}
+  .krok-nav .tx b{font-size:.78rem}
+}
+
+/* ───────── Start: kroki ───────── */
+.kroki-start{list-style:none;counter-reset:k;margin:4px 0;padding:0;display:flex;flex-direction:column;gap:12px;text-align:left;max-width:30rem;width:100%}
+.kroki-start li{counter-increment:k;display:grid;grid-template-columns:36px 1fr;column-gap:12px;align-items:start}
+.kroki-start li::before{content:counter(k);grid-row:span 2;width:36px;height:36px;border-radius:50%;background:var(--blue);color:#fff;font-weight:800;display:grid;place-items:center}
+.kroki-start b{font-size:1.05rem}
+.kroki-start span{color:var(--muted);font-size:.95rem}
+details.card > summary{cursor:pointer;min-height:40px;display:flex;align-items:center;flex-wrap:wrap;gap:4px}
+details.card[open] > summary{margin-bottom:6px}

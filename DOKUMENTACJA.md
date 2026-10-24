@@ -4,19 +4,22 @@ Aplikacja webowa dla maturzystów. Diagnozuje wiedzę z matematyki na poziomie *
 
 Strona: **https://maturalni-4l1.pages.dev** (Cloudflare Pages, wdrożenie po pushu na `main`).
 
-## Przepływ ucznia
+## Przepływ ucznia: 4 kroki
 
-1. **Kompas** (opcjonalnie): 22 pytania o osobowość i zainteresowania > ścieżka, kierunki, przedmioty.
-2. **Kalibracja** (9 kroków w stylu Maturalnych): rok matury, szkolna skala, cel po maturze, wymarzony wynik, trudne działy, styl nauki, czas dziennie, dysleksja/dyskalkulia i studniówka, godzina przypomnień.
-3. **Test diagnostyczny** (20 pytań, ok. 15 min): adaptacyjny. Źle > schodzi po matrycy do podstaw, dobrze > wyżej. „Nie wiem” jest dozwolone.
-4. **Wynik**: prognoza matury z przedziałem niepewności, gdzie tracisz najwięcej punktów, przyczyny błędów, mapa mikrokompetencji.
-5. **Dziś**: komunikat dnia („Hej! Dzisiaj robimy…”), ścieżka zadań, seria 🔥, tydzień, prognoza teraz i po planie.
-6. **Lekcja**: konkretny fragment materiału Maturalnych + zadanie „Sprawdź się”. Gdy temat nie idzie: materiał automatycznie dostosowany (najpierw wyjaśnienie, rozgrzewka z podstawy, nowe pytania).
-7. **Quiz zaliczeniowy** (próg 70%) i **powtórki adaptacyjne** (2 > 5 > 12 > 30 dni, po błędzie wcześniej).
-8. **Diagnoza pełna** co ok. miesiąc (zależnie od czasu do matury): nowa prognoza.
-9. **Postępy, Powiadomienia (ekran push), Kalendarz (.ics i Google Calendar), Lista do matury, Mapa strony**.
+Uczeń widzi jedną ścieżkę. Pasek kroków u góry każdego ekranu to jedyna nawigacja: pokazuje, gdzie uczeń jest, co już zrobił (✓) i co jest jeszcze zablokowane (🔒). Kroki 3 i 4 otwierają się po teście z matematyki.
 
-**Szybka ścieżka**: „wiem, że chcę poprawić trygonometrię” > krótka kalibracja > test tylko z działu > plan.
+| Krok | Co robi uczeń | Co dostaje | Ekrany |
+|---|---|---|---|
+| **1. Diagnoza** | 22 pytania o osobowość i zainteresowania (można pominąć) | ścieżkę A i B, kierunki, uczelnie, przedmioty maturalne | `#/kompas`, `#/kompas-test`, `#/kompas-wynik` |
+| **2. Test** | 3 pytania (cel z rokiem matury, czas dziennie, trudne działy), potem test adaptacyjny 20 pytań, ok. 15 min | prognozę wyniku matury, przyczyny błędów, mapę mikrokompetencji | `#/kalibracja`, `#/test`, `#/quiz`, `#/wynik` |
+| **3. Plan** | przegląda plan, może zmienić minuty, dni, dni wolne, dodać „więcej czasu” (dysleksja/dyskalkulia) | listę tematów z datami, od tych dających najwięcej punktów | `#/plan`, `#/postepy`, `#/kalendarz` |
+| **4. Nauka** | codziennie: materiał (części tematu i fragmenty materiałów Maturalnych), zadanie „Sprawdź się”, quiz zaliczeniowy (70%), powtórki | serię 🔥, zaliczone tematy, aktualizowaną prognozę | `#/dzis`, `#/lekcja`, `#/quiz-wynik`, `#/materialy` |
+
+Przejścia: wynik Kompasu > „Dalej: krok 2”, wynik testu > „Dalej: krok 3”, plan > „Dalej: krok 4”. Start ma jeden przycisk „Zaczynam” i jeden link dla osób, które wiedzą, co zdają (od razu krok 2).
+
+Szczegóły kroku 4: quiz zaliczeniowy (próg 70%), powtórki adaptacyjne (2 > 5 > 12 > 30 dni, po błędzie wcześniej), diagnoza pełna co ok. miesiąc (nowa prognoza). Gdy temat nie idzie: materiał dostosowany automatycznie (najpierw wyjaśnienie, rozgrzewka z podstawy, nowe pytania).
+
+**Dla jury** (link w stopce, `#/mapa`): wszystkie ekrany, opis (`#/jak-to-dziala`), matryca, AI, powiadomienia, szybka ścieżka i narzędzia demo. Uczeń tych ekranów nie widzi w nawigacji.
 
 ## Materiały i integracja z API Maturalnych
 
@@ -87,6 +90,9 @@ Test silnika bez przeglądarki: `cd silnik && node sprawdz.js` (na końcu ma by�
 - Prawdziwe lekcje z `lesson-plans` (bramka i import są gotowe, potrzebny dostęp/token).
 - Google Calendar API (automatyczna synchronizacja zamiast importu .ics).
 - AI: zestaw testowy z prawdziwych rozwiązań uczniów Maturalnych (200+) ocenionych przez egzaminatora.
+- **AI jako opiekun ucznia** (planowane, nie jest częścią tej wersji):
+  - **Nadzór nad wynikiem:** gdy prognoza spadnie poniżej 30% (próg zdania matury), AI ostrzega ucznia i wskazuje, czego nauczyć się najpierw, na podstawie mapy mikrokompetencji i przyczyn błędów z silnika.
+  - **Pogłębiona diagnoza osobowości:** po teście RIASEC AI zadaje kilka pytań otwartych i łączy odpowiedzi z wynikiem Kompasu i testu z matematyki w jeden opis: osobowość, plany, talenty. Algorytm Kompasu nadal wyznacza ścieżkę, AI ją uzasadnia i uzupełnia.
 - Powiadomienia push na telefon (service worker + serwer).
 
 ## Podgląd zmian dla zespołu

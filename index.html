@@ -337,7 +337,7 @@ function viewStart(){
   const n = answers.filter(v=>v!==null).length;
   const resume = n>0 && n<Q.length, done = n===Q.length;
   app.innerHTML=`
-  <span class="eyebrow">Krok 1 (nieobowiązkowy) · Diagnoza osobowości i predyspozycji</span>
+  <span class="eyebrow">Krok 1 · Diagnoza osobowości i predyspozycji</span>
   <h1>Kompas Maturalni</h1>
   <p class="lead">Sprawdź w 5 minut, jaki kierunek studiów do Ciebie pasuje i jakie przedmioty zdawać na maturze. Potem od razu robimy plan z matmy.</p>
   <ul class="facts"><li>22 krótkie pytania</li><li>ok. 5 minut</li><li>bez logowania</li></ul>
@@ -345,14 +345,14 @@ function viewStart(){
     <button class="btn wide" id="go">${done?"Zobacz swój wynik":resume?`Kontynuuj (pytanie ${n+1} z ${Q.length})`:"Zaczynam"}</button>
     <div class="row" style="justify-content:space-between">
       <button class="btn link" id="sample">Pokaż przykładowy wynik</button>
-      <button class="btn link" id="skip">Pomiń test, przejdź do przedmiotów</button>
+      <button class="btn link" id="skip">Pomiń, przejdź do testu z matematyki</button>
     </div>
     ${n?'<button class="btn link" id="reset" style="align-self:flex-start">Zacznij od nowa</button>':""}
   </div>
   <p class="note">Nie ma dobrych ani złych odpowiedzi. Wynik to podpowiedź na start, nie wyrok. Warto o nim porozmawiać z doradcą zawodowym.</p>`;
   $("go").onclick=startTest;
   $("sample").onclick=()=>{isSample=true;plan=0;go("result")};
-  $("skip").onclick=()=>{from="start";go("subjects")};
+  $("skip").onclick=()=>Nauka.startPrzedmiot("mat");
   if($("reset"))$("reset").onclick=()=>{answers=Array(Q.length).fill(null);save();startTest()};
 }
 
@@ -411,8 +411,8 @@ function planCard(p,t){
     <p class="muted">${P.opis}</p>
     <div class="stack" style="gap:8px">
       <h3>Rola, która do Ciebie pasuje</h3>
-      <div class="role"><span class="fit">dopasowanie ${top.pct}%</span><b>${top.n}</b><span class="muted small">${why(top.why)}</span></div>
-      <p class="small muted">Inna opcja: <b style="color:var(--ink)">${alt.n}</b> (${alt.pct}%)</p>
+      <div class="role"><b>${top.n}</b><span class="muted small">${why(top.why)}</span></div>
+      <p class="small muted">Inna opcja: <b style="color:var(--ink)">${alt.n}</b></p>
     </div>
     <div class="stack" style="gap:8px">
       <h3>Kierunki studiów</h3>
@@ -443,7 +443,7 @@ function viewResult(){
   const topInt=ORDER.slice().sort((x,y)=>r[y]-r[x]).slice(0,2);
 
   app.innerHTML=`
-  <span class="eyebrow">${isSample?"Przykładowy wynik":"Twój wynik"}</span>
+  <span class="eyebrow">${isSample?"Przykładowy wynik":"Krok 1 · Twój wynik"}</span>
   <h1>Pasuje do Ciebie ścieżka ${P0.name.toLowerCase()}</h1>
   <p>Najbardziej ciekawi Cię ${FRIENDLY[topInt[0]]} oraz ${FRIENDLY[topInt[1]]}. Masz dwa plany do porównania.</p>
   ${Math.max(...Object.values(r))<=5?'<p class="note">Twoje odpowiedzi o zainteresowaniach wyszły dość niskie, więc wynik jest mniej pewny. Warto wrócić do testu za jakiś czas.</p>':""}
@@ -470,7 +470,9 @@ function viewResult(){
   <section class="stack">
     <span class="eyebrow">Krok 2</span>
     <h2>Sprawdź swoją wiedzę z matury</h2>
-    <p class="muted">Matematyka: diagnoza mikrokompetencji, prognoza wyniku i plan nauki. Kliknij, żeby zacząć.</p>
+    <p class="muted">Matematyka: 3 pytania i test (ok. 15 min). Dostajesz prognozę wyniku matury i plan nauki.</p>
+    <button class="btn wide" id="toMat">Dalej: krok 2, test z matematyki</button>
+    <p class="small muted">Inne przedmioty dodamy wkrótce:</p>
     <span class="legend"><i></i> rekomendowane dla Twoich planów</span>
     ${subjectGrid(rec)}
   </section>
@@ -495,6 +497,7 @@ function viewResult(){
 
   paths.forEach((p,i)=>$("tab"+i).onclick=()=>{plan=i;app.querySelectorAll(".tab").forEach((b,j)=>b.setAttribute("aria-selected",j===i));$("plan").innerHTML=planCard(paths[i],t)});
   bindSubjects();
+  $("toMat").onclick=()=>Nauka.startPrzedmiot("mat");
   $("again").onclick=()=>{answers=Array(Q.length).fill(null);save();startTest()};
   $("copy").onclick=()=>{
     const txt=summary(t,r,paths,topLetters.slice(0,3).join("")), msg=$("copymsg");
@@ -531,6 +534,7 @@ function summary(t,r,paths,code){
   return L.join("\n");
 }
 Nauka.rejestruj({kompas:viewStart, "kompas-test":viewQuiz, "kompas-wynik":viewResult, przedmioty:viewSubjects}, ["kompas","kompas-test","kompas-wynik","przedmioty"]);
+Nauka.kompasStart=startTest;
 Nauka.start();
 </script>
 </body>

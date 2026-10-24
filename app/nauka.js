@@ -77,20 +77,56 @@
   function fokus() { const h = app.querySelector('h1,h2'); if (h) { h.setAttribute('tabindex', '-1'); h.focus({ preventScroll: true }); } }
   window.addEventListener('hashchange', () => { render(); window.scrollTo(0, 0); fokus(); });
 
+  // ───────────── ścieżka ucznia: 4 kroki ─────────────
+  // Uczeń zawsze widzi, na którym kroku jest: 1. Diagnoza (Kompas) > 2. Test z matematyki > 3. Plan > 4. Nauka.
+  // Pasek kroków to jedyna nawigacja ucznia. Pozostałe ekrany (opis, matryca, AI, demo) są na stronie dla jury.
+  const KROKI = [
+    { nr: 1, nazwa: 'Diagnoza', opis: 'osobowość i kierunki' },
+    { nr: 2, nazwa: 'Test', opis: 'matematyka' },
+    { nr: 3, nazwa: 'Plan', opis: 'do matury' },
+    { nr: 4, nazwa: 'Nauka', opis: 'materiał i quiz' }
+  ];
+  function kompasZrobiony() {
+    try { const a = JSON.parse(localStorage.getItem('maturalni-answers')); return Array.isArray(a) && a.length > 0 && a.every(v => v !== null); } catch (e) { return false; }
+  }
+  function testZrobiony() { return !!(D && D.stan && D.stan.prognozy && D.stan.prognozy.length); }
+  function krokZrobiony(nr) {
+    return nr === 1 ? kompasZrobiony() : nr === 2 ? testZrobiony() : nr === 3 ? !!(D && D.planPokazany) : false;
+  }
+  function krokOtwarty(nr) { return nr <= 2 || testZrobiony(); }
+  function celKroku(nr) {
+    if (nr === 1) return kompasZrobiony() ? 'kompas-wynik' : 'kompas';
+    if (nr === 2) return testZrobiony() ? 'wynik' : D ? 'test' : 'kalibracja';
+    return nr === 3 ? 'plan' : 'dzis';
+  }
+  function krokTrasy(n) {
+    if (KOMPAS.has(n)) return 1;
+    if (['kalibracja', 'szybka', 'test', 'wynik'].includes(n)) return 2;
+    if (n === 'quiz') return T && T.typ === 'diagnoza' && !(T.opcje && T.opcje.pelna) ? 2 : 4;
+    if (['plan', 'postepy', 'kalendarz'].includes(n)) return 3;
+    if (['dzis', 'lekcja', 'quiz-wynik', 'materialy'].includes(n)) return 4;
+    return 0;
+  }
+  function idzDoKroku(nr) {
+    if (!krokOtwarty(nr)) return toast('Najpierw zrób test z matematyki (krok 2). Na jego podstawie ułożymy plan.');
+    go(celKroku(nr));
+  }
   function rysujGore(n) {
-    const ma = !!D;
-    const s = ma ? seria() : null;
-    const linki = [['', 'Start']].concat(ma
-      ? [['dzis', 'Dziś'], ['plan', 'Plan'], ['materialy', 'Materiały'], ['postepy', 'Postępy'], ['powiadomienia', 'Powiadomienia'], ['kalendarz', 'Kalendarz']]
-      : [['kalibracja', 'Kalibracja'], ['materialy', 'Materiały']], [['kompas', 'Kompas'], ['ai', 'AI ✨'], ['jak-to-dziala', 'Jak to działa'], ['mapa', 'Mapa']]);
-    const aktywna = h => h === n || (h === 'kompas' && KOMPAS.has(n)) || (h === 'dzis' && (n === 'lekcja' || n === 'quiz' || n === 'quiz-wynik')) || (h === 'materialy' && n === 'import');
-    $('topbar').innerHTML = `<div class="in"><a class="logo" href="#/"><i>M</i>Maturalni <small>plan matury</small></a>
-      <nav class="nav" aria-label="Główna nawigacja">${linki.map(([h, t]) => `<a href="#/${h}" ${aktywna(h) ? 'aria-current="page"' : ''}>${t}</a>`).join('')}</nav>
-      ${s ? `<a class="pill-fire ${s.dni ? '' : 'off'}" href="#/dzis" title="Seria: dni nauki z rzędu">🔥 ${s.dni}</a>` : ''}</div>`;
+    const s = D ? seria() : null;
+    const akt = krokTrasy(n);
+    $('topbar').innerHTML = `<div class="in"><a class="logo" href="#/"><i>M</i>Kompas Maturalni</a><span style="flex:1"></span>
+      ${s ? `<a class="pill-fire ${s.dni ? '' : 'off'}" href="#/dzis" title="Seria: dni nauki z rzędu">🔥 ${s.dni}</a>` : ''}</div>
+      <nav class="sciezka-krokow" aria-label="Twoja ścieżka">${KROKI.map(k => {
+        const zr = krokZrobiony(k.nr), otw = krokOtwarty(k.nr);
+        return `<button class="krok-nav ${zr ? 'zrobiony' : ''} ${otw ? '' : 'zamkniety'}" data-krok="${k.nr}" ${akt === k.nr ? 'aria-current="step"' : ''}
+          aria-label="Krok ${k.nr}: ${k.nazwa}${zr ? ', zrobione' : ''}${otw ? '' : ', najpierw zrób test'}">
+          <span class="nr">${zr ? '✓' : otw ? k.nr : '🔒'}</span><span class="tx"><b>${k.nazwa}</b><small>${k.opis}</small></span></button>`;
+      }).join('')}</nav>`;
+    $('topbar').querySelectorAll('[data-krok]').forEach(b => b.onclick = () => idzDoKroku(+b.dataset.krok));
   }
   function rysujStopke() {
-    $('stopka').innerHTML = `<span>Prototyp na EduHackaton Maturalnych 2026 · dane zapisują się tylko w Twojej przeglądarce</span>
-      <span>${D && D.demoDzis ? `<b style="color:var(--fire)">Tryb demo: data w aplikacji ${fData(D.demoDzis, true)}</b> · ` : ''}<a href="#/mapa">Mapa strony i narzędzia demo</a></span>`;
+    $('stopka').innerHTML = `<span>Prototyp na EduHackaton Maturalnych 2026 · Twoje postępy zapisują się tylko w tej przeglądarce na tym urządzeniu</span>
+      <span>${D && D.demoDzis ? `<b style="color:var(--fire)">Tryb demo: data w aplikacji ${fData(D.demoDzis, true)}</b> · ` : ''}<a href="#/mapa">Dla jury: opis, wszystkie ekrany i demo</a></span>`;
   }
   let toastT;
   function toast(msg, ms) { const t = $('toast'); t.innerHTML = msg; t.hidden = false; clearTimeout(toastT); toastT = setTimeout(() => { t.hidden = true; }, ms || 4200); }
@@ -126,10 +162,9 @@
     }).join('')}</div>`;
   }
   function brakDanych() {
-    app.innerHTML = `<div class="q-head"><h1>Najpierw zróbmy kalibrację</h1><p class="sub">Ten ekran pokazuje Twój plan, a planu jeszcze nie ma. Zajmie to kilka minut.</p></div>
-      <div class="cta"><button class="btn-main xl arrow" id="k">Rozpocznij kalibrację</button><button class="btn-link" id="d">Albo wczytaj ucznia demo (Ola, cel 80%)</button></div>`;
+    app.innerHTML = `<div class="q-head"><h1>Najpierw test z matematyki</h1><p class="sub">Plan i nauka powstają na podstawie testu (krok 2). Potrzebujemy 3 odpowiedzi i ok. 15 minut.</p></div>
+      <div class="cta"><button class="btn-main xl arrow" id="k">Przejdź do testu</button></div>`;
     $('k').onclick = () => startKalibracji(false);
-    $('d').onclick = demoUczen;
   }
   function bladPlanu(msg) {
     app.innerHTML = `<div class="card yellow"><h2>Planu nie da się policzyć</h2><p>${esc(msg)}</p>
@@ -140,49 +175,38 @@
 
   // ═════════════ START ═════════════
   function widokStart() {
-    const s = D ? seria() : null;
+    if (D) {
+      const s = seria();
+      app.innerHTML = `
+        <section class="stack" style="align-items:center;text-align:center;gap:16px;padding:24px 0 8px">
+          <span class="eyebrow">Witaj z powrotem${imie()}</span>
+          <h1 style="max-width:18ch">Masz już swój plan. Seria: ${dniSl(s.dni)} 🔥</h1>
+          <button class="btn-main xl arrow" id="dzis">Przejdź do dzisiejszej nauki</button>
+          <button class="btn-link" id="nowa">Zacznij wszystko od nowa</button>
+          <div class="card yellow" id="potw" hidden><b>Na pewno? Usuniemy Twój plan i wszystkie odpowiedzi z tej przeglądarki.</b>
+            <div class="row" style="justify-content:center"><button class="btn-small" id="tak">Tak, usuń i zacznij od nowa</button><button class="btn-small alt" id="nie">Nie, zostaw</button></div></div>
+        </section>`;
+      $('dzis').onclick = () => go('dzis');
+      $('nowa').onclick = () => { $('potw').hidden = false; $('nowa').hidden = true; };
+      $('nie').onclick = () => { $('potw').hidden = true; $('nowa').hidden = false; };
+      $('tak').onclick = wyczyscDane;
+      return;
+    }
     app.innerHTML = `
-      ${D ? `<div class="callout blue"><span class="ico">🔥</span><div class="stack" style="gap:6px"><b class="t">Masz już swój plan${imie()}. Seria: ${dniSl(s.dni)}.</b>
-        <div class="row"><button class="btn-small" id="dzis">Przejdź do dzisiejszej nauki</button><button class="btn-small alt" id="nowa">Zrób kalibrację od nowa</button></div></div></div>` : ''}
-      <section class="stack" style="align-items:center;text-align:center;gap:18px;padding:24px 0 8px">
-        <span class="small muted">● Matura 2027 z matematyki · poziom podstawowy</span>
-        <h1 style="font-size:clamp(2.1rem,5.6vw,3.4rem);max-width:17ch">Skalibruj swój plan z matmy <span class="hl">co do umiejętności.</span></h1>
-        <p class="lead" style="font-size:1.3rem">Odblokuj <b>plan na swój wynik</b>, a nie na liczbę godzin kursu.</p>
-        <ul class="stack" style="list-style:none;padding:0;margin:4px 0;gap:10px;font-size:1.1rem;text-align:left">
-          <li>✅ 9 pytań o Ciebie i test ok. 15 minut</li>
-          <li>✅ Wiesz, czego nie umiesz <b>i dlaczego</b></li>
-          <li>✅ Plan, który sam się przestawia, gdy życie się zmienia</li>
-        </ul>
-        <p class="small muted">Koniec z błądzeniem po omacku! Czas na plan zwycięstwa!</p>
-        <button class="btn-main xl arrow" id="kal">Rozpocznij kalibrację</button>
-        <div class="row" style="justify-content:center;gap:18px">
-          <button class="btn-link" id="szybka">Wiem, co chcę poprawić: szybka ścieżka</button>
-          <button class="btn-link" id="pomin">Pomiń ten krok, chcę dostęp od razu!</button>
-        </div>
-      </section>
-      <section class="stack">
-        <div class="row between"><h2>Co dostajesz, czego nie daje zwykła diagnoza</h2><span class="tag-new">Nowość</span></div>
-        <div class="grid3">
-          <div class="card"><span style="font-size:2rem">🧩</span><h3>67 mikrokompetencji z wymagań CKE</h3><p class="muted">Zamiast jednego wyniku z działu widzisz, którą konkretnie umiejętność masz, a której nie.</p></div>
-          <div class="card"><span style="font-size:2rem">🔎</span><h3>Przyczyna błędu, nie tylko „źle”</h3><p class="muted">Test schodzi poziom niżej, gdy coś nie wychodzi, i znajduje brakującą podstawę, np. Pitagorasa pod trygonometrią.</p></div>
-          <div class="card"><span style="font-size:2rem">🎯</span><h3>Prognoza wyniku matury</h3><p class="muted">Procent na dziś z uczciwym przedziałem. Co kilka tygodni diagnoza pełna pokazuje, ile już zyskałeś.</p></div>
-          <div class="card"><span style="font-size:2rem">⏱️</span><h3>Wiesz, ile to zajmie</h3><p class="muted">Każdy temat ma swoje minuty. Tematy, które pewnie już umiesz, sprawdzamy 5-minutowym quizem zamiast godziny nauki.</p></div>
-          <div class="card"><span style="font-size:2rem">🔁</span><h3>Powtórki, które się dopasowują</h3><p class="muted">Pamiętasz, to powtórka za 5, potem 12, potem 30 dni. Zapominasz, to jutro jeszcze raz.</p></div>
-          <div class="card"><span style="font-size:2rem">🎄</span><h3>Plan dla prawdziwego życia</h3><p class="muted">Święta, studniówka, choroba, gorszy tydzień. Plan się przelicza, a seria nie przepada w dni wolne.</p></div>
-        </div>
-      </section>
-      <section class="card soft">
-        <div class="row between"><div class="stack" style="gap:4px"><h3>Nie wiesz jeszcze, jaki kierunek studiów?</h3><p class="muted">Kompas: 22 pytania o osobowość i zainteresowania, 5 minut. Podpowie ścieżkę, kierunki i przedmioty maturalne.</p></div>
-        <button class="btn-small" id="kompas">Zrób Kompas</button></div>
-      </section>
-      <p class="center small"><button class="btn-link" id="demo">Pokaz dla jury: wczytaj ucznia demo (Ola, cel 80%, słaba z trygonometrii)</button></p>`;
-    $('kal').onclick = () => startKalibracji(false);
-    $('szybka').onclick = () => go('szybka');
-    $('pomin').onclick = () => { kal = nowaKal(false); zapiszKal(); zbudujProfil(); go('test'); };
-    $('kompas').onclick = () => go('kompas');
-    $('demo').onclick = demoUczen;
-    if ($('dzis')) $('dzis').onclick = () => go('dzis');
-    if ($('nowa')) $('nowa').onclick = () => startKalibracji(false);
+      <section class="stack" style="align-items:center;text-align:center;gap:18px;padding:16px 0 8px">
+        <span class="small muted">Dla maturzystów · matura 2027</span>
+        <h1 style="font-size:clamp(2rem,5.6vw,3.2rem);max-width:17ch">Od tego, kim jesteś, <span class="hl">do planu na maturę.</span></h1>
+        <ol class="kroki-start">
+          <li><b>Diagnoza</b><span>22 pytania o Ciebie. Dostajesz pasujące kierunki studiów i przedmioty do zdawania. Ok. 5 min.</span></li>
+          <li><b>Test z matematyki</b><span>3 pytania o cel i czas, potem test. Dostajesz prognozę wyniku matury. Ok. 15 min.</span></li>
+          <li><b>Plan</b><span>Układamy plan do matury: tylko to, czego Ci brakuje.</span></li>
+          <li><b>Nauka</b><span>Każdego dnia krótki materiał, fragment kursu Maturalnych i quiz.</span></li>
+        </ol>
+        <button class="btn-main xl arrow" id="start">Zaczynam</button>
+        <button class="btn-link" id="mat">Wiem już, co zdaję: przejdź od razu do testu z matematyki</button>
+      </section>`;
+    $('start').onclick = () => (root.Nauka.kompasStart ? root.Nauka.kompasStart() : go('kompas'));
+    $('mat').onclick = () => startKalibracji(false);
   }
 
   // ═════════════ KALIBRACJA ═════════════
@@ -233,8 +257,11 @@
     return 'Przy celu ' + c + '% pomijamy zadania trudne. Liczy się pewne zdanie, bez przeładowania.';
   }
 
-  const KROKI_PELNE = ['rok', 'skala', 'po-maturze', 'wynik', 'dzialy', 'styl', 'czas', 'warunki', 'przypomnienia'];
-  const KROKI_SZYBKIE = ['rok', 'czas', 'przypomnienia'];
+  // Kalibracja skrócona do 3 kroków. Rok matury jest domyślny (zmiana w kroku 1),
+  // a dysleksję i dni wolne (np. studniówkę) ustawia się później w Planie.
+  // Kroki 'rok', 'skala', 'po-maturze', 'styl', 'warunki', 'przypomnienia' zostają w kodzie, ale nie są używane.
+  const KROKI_PELNE = ['wynik', 'czas', 'dzialy'];
+  const KROKI_SZYBKIE = ['wynik', 'czas'];
   const KROK = {
     rok() {
       const dm = dataMatury(kal.rok), ile = M.roznicaDni(dzis(), dm);
@@ -257,7 +284,7 @@
         fb: `<b>${f[0]}</b><span class="muted">${f[1]}</span>`, ok: true, cta: 'Jedziemy dalej!',
         bind() {
           const s = $('sk');
-          s.oninput = () => { kal.skala = +s.value; s.style.setProperty('--p', s.value + '%'); const g = fbSkali(kal.skala); app.querySelector('.feedback').innerHTML = `<b>${g[0]}</b><span class="muted">${g[1]}</span>`; zapiszKal(); };
+          s.oninput = () => { kal.skala = +s.value; kal.skalaPodana = true; s.style.setProperty('--p', s.value + '%'); const g = fbSkali(kal.skala); app.querySelector('.feedback').innerHTML = `<b>${g[0]}</b><span class="muted">${g[1]}</span>`; zapiszKal(); };
         }
       };
     },
@@ -271,11 +298,14 @@
     },
     wynik() {
       return {
-        html: `<div class="q-head"><h1>Jaki jest Twój wymarzony wynik?</h1><p class="sub">Jak określisz swój cel, o wiele łatwiej go zrealizować!</p></div>
+        html: `<div class="q-head"><h1>Ile procent chcesz mieć z matmy?</h1><p class="sub">Przesuń suwak. Nie musisz być pewien, to punkt startowy.</p></div>
           <div class="cel-box"><div class="cel-ikona">📐</div><div class="stack"><span class="naz">Matematyka podstawowa <b id="celv">${kal.cel}%</b></span>
           <input type="range" class="suwak zielony" id="cel" min="30" max="100" step="5" value="${kal.cel}" style="--p:${(kal.cel - 30) / 70 * 100}%" aria-label="Cel z matematyki w procentach"></div></div>`,
-        fb: `<b>OK, mamy cel. Teraz dobierzemy narzędzia.</b><span class="muted" id="celfb">${fbCelu(kal.cel)}</span>`, ok: true, cta: 'Damy radę! Dalej!',
+        fb: `<b>OK, mamy cel.</b><span class="muted" id="celfb">${fbCelu(kal.cel)}</span>
+          <span class="muted small">Matura: ${fData(dataMatury(kal.rok), true)}. Zdajesz w innym roku?
+          <select id="rokSel" aria-label="Rok matury">${lataMatury().map(r => `<option value="${r}" ${r === kal.rok ? 'selected' : ''}>${r}</option>`).join('')}</select></span>`, ok: true, cta: 'Dalej',
         bind() {
+          $('rokSel').onchange = e => { kal.rok = +e.target.value; odswiez(); };
           const s = $('cel');
           s.oninput = () => { kal.cel = +s.value; kal.celRuszony = true; s.style.setProperty('--p', (kal.cel - 30) / 70 * 100 + '%'); $('celv').textContent = kal.cel + '%'; $('celfb').textContent = fbCelu(kal.cel); zapiszKal(); };
         }
@@ -284,11 +314,12 @@
     dzialy() {
       const nazwy = kal.klopot.map(id => S.dzial(id).nazwa);
       return {
-        html: `<div class="q-head"><h1>Co w matmie sprawia Ci najwięcej kłopotu?</h1><p class="sub">Zaznacz śmiało. Test zacznie od tych działów i poszuka przyczyny.</p></div>
+        html: `<div class="q-head"><h1>Co w matmie sprawia Ci kłopot?</h1><p class="sub">Nieobowiązkowe. Test zacznie od tych działów.</p></div>
           <div class="chipy">${S.dzialy().map(d => `<button class="chip-sel" data-d="${d.id}" aria-pressed="${kal.klopot.includes(d.id)}">${esc(d.nazwa)}</button>`).join('')}
           <button class="chip-sel" id="nw" aria-pressed="${kal.nieWiemDzialy}">Nie wiem, sprawdźcie mnie</button></div>`,
-        fb: nazwy.length ? `<b>Zapisane.</b><span class="muted">Test zacznie od: ${esc(nazwy.join(', '))}.</span>` : kal.nieWiemDzialy ? '<b>Spoko, test sam to znajdzie.</b>' : '',
-        ok: true, cta: 'Jedziemy dalej!',
+        fb: (nazwy.length ? `<b>Zapisane.</b><span class="muted">Test zacznie od: ${esc(nazwy.join(', '))}.</span>` : kal.nieWiemDzialy ? '<b>Spoko, test sam to znajdzie.</b>' : '<span class="muted">Możesz nic nie zaznaczać. Test sam znajdzie luki.</span>')
+          + '<span class="muted small">Następnie test, ok. 15 minut. Jeśli czegoś nie wiesz, kliknij „Nie wiem”. Nie zgaduj.</span>',
+        ok: true, cta: 'Zaczynam test',
         bind() {
           app.querySelectorAll('[data-d]').forEach(b => b.onclick = () => { const id = b.dataset.d; kal.klopot = kal.klopot.includes(id) ? kal.klopot.filter(x => x !== id) : kal.klopot.concat(id); kal.nieWiemDzialy = false; odswiez(); });
           $('nw').onclick = () => { kal.nieWiemDzialy = !kal.nieWiemDzialy; if (kal.nieWiemDzialy) kal.klopot = []; odswiez(); };
@@ -310,7 +341,7 @@
           <div class="chipy">${[10, 15, 20, 30, 45, 60].map(m => `<button class="chip-sel" data-m="${m}" aria-pressed="${kal.minut === m}">${m} min</button>`).join('')}</div>
           <div class="stack" style="align-items:center"><b>W które dni?</b><div class="dni-tyg">${KOLEJNOSC_DNI.map(d => `<button class="dzien" data-dz="${d}" aria-pressed="${kal.dni.includes(d)}">${DNI[d]}</button>`).join('')}</div></div>`,
         fb: kal.dni.length ? `<b>Przy ${kal.minut} min to ok. ${godzinNauki()} h nauki do matury.</b><span class="muted">Policzymy, co się w tym zmieści. Co 5. dzień zostawiamy wolny na zaległości, żeby plan się nie sypał.</span>` : '<b>Wybierz co najmniej jeden dzień.</b>',
-        ok: kal.dni.length > 0, cta: 'Jedziemy dalej!',
+        ok: kal.dni.length > 0, cta: 'Dalej',
         bind() {
           app.querySelectorAll('[data-m]').forEach(b => b.onclick = () => { kal.minut = +b.dataset.m; odswiez(); });
           app.querySelectorAll('[data-dz]').forEach(b => b.onclick = () => { const d = +b.dataset.dz; kal.dni = kal.dni.includes(d) ? kal.dni.filter(x => x !== d) : kal.dni.concat(d); odswiez(); });
@@ -363,17 +394,16 @@
       ${k.html}
       <div class="feedback" aria-live="polite">${k.fb || ''}</div>
       <div class="cta"><button class="btn-main xl arrow" id="dalej" ${k.ok ? '' : 'disabled'}>${k.cta}</button>
-      ${i > 1 ? '<button class="wstecz" id="wstecz">← Wstecz</button>' : '<button class="btn-link" id="pomin">Pomiń kalibrację, chcę od razu test</button>'}</div>`;
+      <button class="wstecz" id="wstecz">← ${i > 1 ? 'Wstecz' : 'Wróć na start'}</button></div>`;
     k.bind();
     $('dalej').onclick = () => { if (i < kroki.length) go('kalibracja', i + 1); else { zbudujProfil(); go('test'); } };
-    if ($('wstecz')) $('wstecz').onclick = () => go('kalibracja', i - 1);
-    if ($('pomin')) $('pomin').onclick = () => { zbudujProfil(); go('test'); };
+    $('wstecz').onclick = () => (i > 1 ? go('kalibracja', i - 1) : go(''));
   }
 
   function zbudujProfil() {
     if (!kal) kal = nowaKal(false);
     const ankieta = { cel: kal.cel || 70, samoocena: {} };
-    if (!kal.szybka) ankieta.ocena = ocenaZ(kal.skala);
+    if (!kal.szybka && kal.skalaPodana) ankieta.ocena = ocenaZ(kal.skala);
     kal.klopot.forEach(d => { ankieta.samoocena[d] = 'slabo'; });
     if (kal.szybka) { ankieta.dzialyPriorytetowe = kal.szybkaDzialy.slice(); ankieta.tylkoPriorytetowe = true; }
     const org = { dataMatury: dataMatury(kal.rok), minutDziennie: kal.minut, dniTygodnia: kal.dni.slice(), godzina: kal.godzina,
@@ -408,11 +438,10 @@
     const zakres = szybka ? D.profil.szybkaDzialy.map(id => S.dzial(id).nazwa).join(', ') : 'cała matematyka podstawowa';
     app.innerHTML = `<div class="q-head"><span class="eyebrow">Test diagnostyczny</span><h1>Sprawdźmy, gdzie jesteś</h1>
         <p class="sub">${szybka ? 'ok. 8 minut · 10 pytań' : 'ok. 15 minut · 20 pytań'} · ${esc(zakres)}</p></div>
-      <div class="grid3">
-        <div class="card"><span style="font-size:1.8rem">🧭</span><h3>Pytania się dopasowują</h3><p class="muted">Gdy coś nie wyjdzie, schodzimy poziom niżej, żeby znaleźć źródło problemu. Gdy idzie dobrze, wchodzimy wyżej.</p></div>
-        <div class="card"><span style="font-size:1.8rem">🔎</span><h3>Szukamy przyczyny</h3><p class="muted">Każda zła odpowiedź mówi nam, jaki błąd popełniasz, np. mylisz sinus z cosinusem.</p></div>
-        <div class="card"><span style="font-size:1.8rem">🤷</span><h3>„Nie wiem” to też odpowiedź</h3><p class="muted">Nie zgaduj. Zgadywanie psuje diagnozę, a „Nie wiem” pomaga ją ustawić.</p></div>
-      </div>
+      <div class="card"><ul class="stack" style="margin:0;padding-left:20px;gap:8px">
+        <li>Pytania dopasowują się do Ciebie: gdy coś nie wyjdzie, sprawdzamy podstawy.</li>
+        <li><b>Nie wiesz? Kliknij „Nie wiem”.</b> Zgadywanie psuje wynik.</li>
+        <li>Odpowiedzi zapisują się na bieżąco.</li></ul></div>
       <div class="cta"><button class="btn-main xl arrow" id="start">Zaczynamy test</button></div>`;
     $('start').onclick = () => startTest('diagnoza', szybka ? { dzialy: D.profil.szybkaDzialy, max: 10 } : {}, 'wynik');
   }
@@ -527,12 +556,13 @@
       </div>
       <div class="card"><div class="row between"><h3>Twoja mapa mikrokompetencji</h3>${LEGENDA}</div>${mapaHtml(wiedza)}
         <p class="muted small">Kliknij dział, żeby zobaczyć umiejętności. Kółka z obwódką to szacunek: plan sprawdzi je krótkim quizem zamiast uczyć od zera.</p></div>
-      <div class="cta"><button class="btn-main xl arrow" id="plan">${D.planPokazany ? 'Wracam do planu' : 'Robimy plan!'}</button><a class="btn-link" href="#/jak-to-dziala">Jak liczymy wynik?</a></div>`;
+      <div class="cta"><button class="btn-main xl arrow" id="plan">${D.planPokazany ? 'Wróć do planu' : 'Dalej: krok 3, Twój plan'}</button><a class="btn-link" href="#/jak-to-dziala">Jak liczymy wynik?</a></div>
+      <p class="note">Twój wynik i plan zapisują się tylko w tej przeglądarce na tym urządzeniu. Nie używaj trybu prywatnego i nie czyść danych przeglądarki, bo postępy znikną.</p>`;
     $('plan').onclick = () => {
       const pierwszy = !D.planPokazany;
       D.planPokazany = true; zapisz();
-      if (pierwszy && r.plan) toast(`Plan gotowy! ${tematySl(r.plan.podsumowanie.jednostek)} do ${fData(r.plan.podsumowanie.koniecPlanu || D.org.dataMatury)}. Zaczynamy dziś.`);
-      go('dzis');
+      if (pierwszy && r.plan) toast(`Plan gotowy! ${tematySl(r.plan.podsumowanie.jednostek)} do ${fData(r.plan.podsumowanie.koniecPlanu || D.org.dataMatury)}.`);
+      go('plan');
     };
   }
 
@@ -591,6 +621,7 @@
     app.innerHTML = `
       <div class="cols">
         <div class="stack" style="gap:22px">
+          <span class="eyebrow">Krok 4 · Nauka</span>
           <div class="dymek"><div class="awatar">M</div><div class="chmurka">${msg}</div></div>
           <div class="card"><div class="row between"><h2>Twoja ścieżka na dziś</h2><span class="badge">${fData(t, true)}</span></div>
             ${zad ? `<div class="sciezka">${zad}</div>` : '<p class="muted">Brak zadań na dziś.</p>'}
@@ -737,7 +768,7 @@
   }
 
   // ═════════════ PLAN (LISTA DO MATURY) ═════════════
-  let pokazWszystkie = false;
+  let pokazWszystkie = false, ustawieniaOtwarte = false;
   function widokPlan() {
     if (!D) return brakDanych();
     const r = planTeraz();
@@ -746,34 +777,40 @@
     const wlasne = (D.org.blokady || []).map((b, i) => ({ b: b, i: i })).filter(x => x.b.do >= t || x.b.od >= t);
     const tygodnie = S.grupujTygodnie(plan).slice(0, 5);
     app.innerHTML = `
-      <div class="stack" style="gap:6px"><h1>Lista do matury</h1><p class="muted">Wszystko, co dzieli Cię od celu. Temat odhacza się dopiero po zaliczonym quizie (min. 70%), a potem wraca w powtórkach.</p></div>
+      <div class="stack" style="gap:10px"><span class="eyebrow">Krok 3 · Plan</span><h1>Twój plan do matury</h1>
+        <p class="muted">${tematySl(ps.jednostek)} do ${fData(ps.koniecPlanu || D.org.dataMatury, true)}, ${D.org.minutDziennie} min dziennie. Zaczynamy od tematów, które dają najwięcej punktów. Temat odhacza się po zaliczonym quizie (min. 70%).</p>
+        <div class="cta" style="align-items:flex-start"><button class="btn-main xl arrow" id="doNauki">Dalej: krok 4, zacznij naukę</button></div>
+        <div class="row"><a class="btn-small alt" href="#/postepy">📈 Postępy</a><a class="btn-small alt" href="#/kalendarz">🗓️ Dodaj do kalendarza</a></div></div>
       <div class="staty"><div class="stat"><b>${ps.dniDoMatury}</b><span>dni do matury</span></div><div class="stat"><b>${plan.zaliczone.length}</b><span>zaliczone tematy</span></div>
         <div class="stat"><b>${ps.jednostek}</b><span>w planie</span></div><div class="stat"><b>${String(ps.godzinNauki).replace('.', ',')} h</b><span>nauki w planie</span></div></div>
       <div class="cols">
         <div class="card"><h3>Tematy</h3>
           <div class="lista">
             ${plan.zaliczone.map(z => `<div class="poz ok"><span class="box">✓</span><span><span class="t">${esc(z.nazwa)}</span><br><span class="m">zaliczone ${fKrotko(z.data)}${z.powtorka ? ' · powtórka ' + fKrotko(z.powtorka) : ''}</span></span><span class="badge green">zaliczone</span></div>`).join('')}
-            ${plan.jednostki.map((u, i) => `<div class="poz" ${i >= 15 && !pokazWszystkie ? 'hidden' : ''}><span class="box"></span><span><a class="t" href="#/lekcja/${u.komp}" style="color:inherit;text-decoration:none">${esc(u.nazwa)}</a><br><span class="m">${esc(u.dzial)} · ${fKrotko(u.start)}${u.koniec !== u.start ? ' - ' + fKrotko(u.koniec) : ''} · ${esc(u.powod)}</span></span>
+            ${plan.jednostki.map((u, i) => `<div class="poz" ${i >= 8 && !pokazWszystkie ? 'hidden' : ''}><span class="box"></span><span><a class="t" href="#/lekcja/${u.komp}" style="color:inherit;text-decoration:none">${esc(u.nazwa)}</a><br><span class="m">${esc(u.dzial)} · ${fKrotko(u.start)}${u.koniec !== u.start ? ' - ' + fKrotko(u.koniec) : ''} · ${esc(u.powod)}</span></span>
               <span class="badge ${u.typ === 'sprawdzenie' ? 'blue' : u.dostosowanie ? 'yellow' : ''}">${u.typ === 'sprawdzenie' ? 'sprawdzenie 5 min' : u.minuty + ' min'}</span></div>`).join('')}
-            ${plan.jednostki.length > 15 && !pokazWszystkie ? `<button class="btn-ghost" id="wszystkie" style="margin:10px 0">Pokaż wszystkie tematy w planie (${plan.jednostki.length})</button>` : ''}
+            ${plan.jednostki.length > 8 && !pokazWszystkie ? `<button class="btn-ghost" id="wszystkie" style="margin:10px 0">Pokaż wszystkie tematy w planie (${plan.jednostki.length})</button>` : ''}
             ${plan.pominiete.map(u => `<div class="poz poza"><span class="box"></span><span><span class="t">${esc(u.nazwa)}</span><br><span class="m">poza planem: brak czasu</span></span><span class="badge">${u.minuty} min</span></div>`).join('')}
           </div></div>
-        <div class="stack" style="gap:16px">
-          <div class="card"><h3>Ile minut dziennie?</h3>
+        <details class="card ustawienia-planu" id="ustawienia" ${ustawieniaOtwarte ? 'open' : ''}><summary><b>Dopasuj plan</b><span class="small muted"> minuty, dni nauki, dni wolne, więcej czasu</span></summary>
+        <div class="stack" style="gap:16px;margin-top:12px">
+          <div class="card flat"><h3>Ile minut dziennie?</h3>
             <div class="chipy left">${[10, 15, 20, 30, 45, 60].map(m => `<button class="chip-sel" data-m="${m}" aria-pressed="${D.org.minutDziennie === m}">${m}</button>`).join('')}</div>
             <p class="small">${esc(ladneDaty(ps.komunikat))}</p>
             ${ps.pominietych ? `<button class="btn-small alt" data-m="${ps.minutDziennieNaCalosc}">Ustaw ${ps.minutDziennieNaCalosc} min i zmieść wszystko</button>` : ''}</div>
-          <div class="card"><h3>Dni nauki</h3><div class="dni-tyg" style="justify-content:flex-start">${KOLEJNOSC_DNI.map(d => `<button class="dzien" data-dz="${d}" aria-pressed="${D.org.dniTygodnia.includes(d)}">${DNI[d]}</button>`).join('')}</div></div>
-          <div class="card"><h3>Dni bez nauki</h3>
+          <div class="card flat"><h3>Potrzebujesz więcej czasu?</h3>
+            <button class="opcja" id="dys" aria-pressed="${!!(D.org.dysleksja || D.org.dyskalkulia)}" style="padding:12px 16px;min-height:0"><span><b>Mam dysleksję lub dyskalkulię</b><br><span class="small muted">Każdy temat dostanie 25% więcej czasu i najpierw wyjaśnienie.</span></span><span class="ok">✓</span></button></div>
+          <div class="card flat"><h3>Dni nauki</h3><div class="dni-tyg" style="justify-content:flex-start">${KOLEJNOSC_DNI.map(d => `<button class="dzien" data-dz="${d}" aria-pressed="${D.org.dniTygodnia.includes(d)}">${DNI[d]}</button>`).join('')}</div></div>
+          <div class="card flat"><h3>Dni bez nauki</h3>
             <p class="small muted">Święta, Sylwester i Wielkanoc są wolne automatycznie. Co 5. dzień nauki jest buforowy.</p>
             <div class="lista">${wlasne.map(x => `<div class="poz"><span>🌴</span><span><span class="t">${esc(x.b.nazwa)}</span><br><span class="m">${fKrotko(x.b.od)}${x.b.do !== x.b.od ? ' - ' + fKrotko(x.b.do) : ''}</span></span><button class="btn-small alt" data-usun="${x.i}" aria-label="Usuń">✕</button></div>`).join('') || '<p class="muted small">Brak własnych dni wolnych.</p>'}</div>
             <button class="btn-ghost" id="dodaj">+ Dodaj dni bez nauki</button><div id="formWyp" hidden></div></div>
-        </div>
+        </div></details>
       </div>
-      <div class="card"><h3>Najbliższe tygodnie</h3>
+      <details class="card"><summary><b>Najbliższe tygodnie</b><span class="small muted"> co i kiedy</span></summary>
         ${tygodnie.map(w => `<div class="stack" style="gap:6px"><div class="row between"><b>od ${fKrotko(w.tydzienOd)}</b><span class="muted small">${w.minut} min</span></div>
           <div class="row" style="gap:6px">${w.sesje.map(s => `<span class="badge ${s.typ === 'nauka' ? 'blue' : s.typ === 'quiz' ? 'green' : s.typ === 'powtorka' ? 'yellow' : s.typ === 'diagnoza' ? 'red' : ''}" title="${esc(nazwaSesji(s))}">${fKrotko(s.data)} ${IKONA[s.typ]} ${s.typ === 'bufor' ? 'bufor' : esc((s.tytul || '').replace(/^(Quiz|Sprawdzenie): /, '').slice(0, 26))}</span>`).join('')}</div></div>`).join('<hr style="border:0;border-top:1px solid var(--line);margin:4px 0">')}
-      </div>`;
+      </details>`;
     app.querySelectorAll('[data-m]').forEach(b => b.onclick = () => { D.org.minutDziennie = +b.dataset.m; zapisz(); toast('Plan przeliczony dla ' + b.dataset.m + ' min dziennie.'); render(); });
     app.querySelectorAll('[data-dz]').forEach(b => b.onclick = () => {
       const d = +b.dataset.dz, nowe = D.org.dniTygodnia.includes(d) ? D.org.dniTygodnia.filter(x => x !== d) : D.org.dniTygodnia.concat(d);
@@ -783,6 +820,10 @@
     app.querySelectorAll('[data-usun]').forEach(b => b.onclick = () => { D.org.blokady.splice(+b.dataset.usun, 1); zapisz(); toast('Usunięto. Plan przeliczony.'); render(); });
     if ($('wszystkie')) $('wszystkie').onclick = () => { pokazWszystkie = true; const y = window.scrollY; render(); window.scrollTo(0, y); };
     $('dodaj').onclick = () => { const f = $('formWyp'); f.hidden = !f.hidden; if (!f.hidden) formularzWydarzenia(f, plan); };
+    $('doNauki').onclick = () => go('dzis');
+    $('ustawienia').ontoggle = e => { ustawieniaOtwarte = e.target.open; };
+    $('dys').onclick = () => { const on = !(D.org.dysleksja || D.org.dyskalkulia); D.org.dysleksja = on; D.org.dyskalkulia = false; zapisz(); toast(on ? 'Plan przeliczony: więcej czasu na każdy temat.' : 'Plan przeliczony.'); render(); };
+    if (!D.planPokazany) { D.planPokazany = true; zapisz(); rysujGore('plan'); }
   }
 
   // ═════════════ POSTĘPY ═════════════
@@ -961,7 +1002,7 @@
           ['Kalendarz', 'Ręczne wpisywanie', 'Google Calendar pokazuje co i kiedy, z linkiem do lekcji i zapasowym linkiem do materiału']
         ].map(r => `<tr><td><b>${r[0]}</b></td><td>${r[1]}</td><td>${r[2]}</td></tr>`).join('')}</tbody></table></div>
       <div class="card"><h3>Przepływ ucznia</h3>
-        <div class="flow"><span>Kompas (opcjonalnie)</span><i>→</i><span>Kalibracja: 9 pytań</span><i>→</i><span>Test adaptacyjny</span><i>→</i><span>Wynik + mapa</span><i>→</i><span>Plan dnia</span><i>→</i><span>Lekcja z materiałem</span><i>→</i><span>Quiz 70%</span><i>→</i><span>Powtórki</span><i>→</i><span>Diagnoza pełna</span></div>
+        <div class="flow"><span>1. Diagnoza (Kompas)</span><i>→</i><span>2. Kalibracja: 3 pytania</span><i>→</i><span>Test adaptacyjny</span><i>→</i><span>Wynik + mapa</span><i>→</i><span>Plan dnia</span><i>→</i><span>Lekcja z materiałem</span><i>→</i><span>Quiz 70%</span><i>→</i><span>Powtórki</span><i>→</i><span>Diagnoza pełna</span></div>
         <p class="small muted">Szybka ścieżka: „wiem, że chcę poprawić trygonometrię” pomija kalibrację celów, robi test tylko z działu i sięga po brakujące podstawy z innych działów (maks. 2 poziomy w dół).</p></div>
       <div class="grid2">
         <div class="card"><h3>Jak liczymy</h3><ul style="margin:0;padding-left:18px" class="stack small">
@@ -986,10 +1027,11 @@
     const lk = (h, ik, t, o, cls) => `<a class="lk ${cls || ''}" href="${h}"><b>${ik} ${t}</b><span>${o}</span></a>`;
     const ma = !!D;
     app.innerHTML = `
-      <div class="stack" style="gap:6px"><h1>Mapa strony</h1><p class="muted">Wszystkie ekrany w jednym miejscu. ${ma ? '' : 'Ekrany planu wymagają kalibracji albo wczytania ucznia demo (na dole).'}</p></div>
+      <div class="stack" style="gap:6px"><span class="eyebrow">Dla jury i Maturalnych</span><h1>Opis, wszystkie ekrany i demo</h1>
+        <p class="muted">Uczeń widzi tylko 4 kroki: Diagnoza, Test, Plan, Nauka. Tu są wszystkie ekrany, opis algorytmu i narzędzia do pokazu. ${ma ? '' : 'Ekrany planu wymagają testu albo wczytania ucznia demo (na dole).'}</p></div>
       <div class="card"><h3>Ścieżka ucznia</h3><div class="linki">
         ${lk('#/', '🏠', 'Start', 'Strona główna i wyróżniki')}
-        ${lk('#/kalibracja/1', '🎚️', 'Kalibracja', '9 pytań w stylu Maturalnych')}
+        ${lk('#/kalibracja/1', '🎚️', 'Kalibracja', '3 pytania: cel, czas, trudne działy')}
         ${lk('#/szybka', '⚡', 'Szybka ścieżka', 'Wiem, co chcę poprawić')}
         ${lk('#/test', '🧭', 'Test diagnostyczny', 'Adaptacyjny, ok. 15 min')}
         <button class="lk" id="calosc"><b>🎯 Diagnoza całościowa</b><span>Symulacja matury: cała matematyka, 20 pytań</span></button>
@@ -1017,6 +1059,7 @@
           <button class="lk demo" id="d4" ${ma ? '' : 'disabled'}><b>⏭️ Przewiń o 1 dzień bez nauki</b><span>Zobacz, jak plan przelicza zaległość, a seria się przerywa.</span></button>
           <button class="lk demo" id="d5" ${ma && D.demoDzis ? '' : 'disabled'}><b>↩️ Wróć do dzisiejszej daty</b><span>Wyłącza przewijanie czasu.</span></button>
           <button class="lk demo" id="d6"><b>🗑️ Wyczyść dane</b><span>Usuwa plan i odpowiedzi z tej przeglądarki.</span></button>
+          <div class="lk demo" id="d6p" hidden><b>Na pewno usunąć wszystko?</b><span class="row"><button class="btn-small" id="d6t">Tak, usuń</button><button class="btn-small alt" id="d6n">Nie</button></span></div>
         </div></div>`;
     $('calosc').onclick = () => { if (D) startTest('diagnoza', { pelna: true }, 'wynik'); else startKalibracji(false); };
     $('d1').onclick = demoUczen;
@@ -1024,11 +1067,16 @@
     $('d3').onclick = scenariuszKiepsko;
     $('d4').onclick = () => { D.demoDzis = M.dodajDni(dzis(), 1); zapisz(); toast('Przewinięto do ' + fData(dzis(), true) + '. Wczorajsze sesje przeszły na kolejne dni.'); go('dzis'); };
     $('d5').onclick = () => { D.demoDzis = null; zapisz(); toast('Wróciliśmy do dzisiejszej daty.'); render(); };
-    $('d6').onclick = () => {
-      if (!confirm('Usunąć plan i wszystkie odpowiedzi z tej przeglądarki?')) return;
-      try { localStorage.removeItem(KLUCZ); localStorage.removeItem(KLUCZ_KAL); } catch (e) { }
-      D = null; kal = null; T = null; W = null; toast('Dane usunięte.'); go('');
-    };
+    $('d6').onclick = () => { $('d6').hidden = true; $('d6p').hidden = false; };
+    $('d6t').onclick = wyczyscDane;
+    $('d6n').onclick = () => { $('d6').hidden = false; $('d6p').hidden = true; };
+  }
+  // Usuwa wszystkie dane ucznia z tej przeglądarki (plan, kalibrację, postęp materiałów, odpowiedzi Kompasu) i wraca na start.
+  // Potwierdzenie jest na stronie, bo okienka confirm() bywają blokowane.
+  function wyczyscDane() {
+    try { [KLUCZ, KLUCZ_KAL, 'maturalni-answers', 'maturalni-czesci-v1'].forEach(k => localStorage.removeItem(k)); } catch (e) { }
+    location.hash = '#/';
+    location.reload();
   }
 
   // ═════════════ DEMO ═════════════
