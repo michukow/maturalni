@@ -930,3 +930,7 @@ input[type=range].suwak::-moz-range-thumb{width:24px;height:24px;border-radius:5
 .pref-panel .pref-suwak:focus-visible{outline:none;box-shadow:0 0 0 3px rgba(245,196,0,.35)}
 @media (max-width:640px){.pref-panel-glowa{grid-template-columns:1fr}.pref-wizual{max-width:220px}}
 .hero-art img{opacity:.34;object-position:40% 30%}
+
+/* Tabela porównania: na telefonie przewija się w swoim pudełku, strona nie przesuwa się w bok */
+.tabela-wrap{overflow-x:auto;-webkit-overflow-scrolling:touch;margin:0 -4px}
+.tabela-wrap .porownanie{min-width:520px}

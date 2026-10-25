@@ -344,7 +344,7 @@ function viewStart(){
   <div class="podzial"><div class="stack" style="gap:18px;justify-content:center">
   <span class="eyebrow">Diagnoza: osobowość i kierunek</span>
   <h1>Nie wybieraj w ciemno. Wybierz swój <span style="color:var(--brand-blue)">kierunek.</span></h1>
-  <p class="lead">22 krótkie pytania i kilka suwaków, ok. 5 minut. Sprawdź, które przedmioty i kierunki studiów naprawdę pasują do Ciebie.</p>
+  <p class="lead">22 krótkie pytania, kilka suwaków i 2 pytania otwarte, ok. 7 minut. Sprawdź, które przedmioty i kierunki studiów naprawdę pasują do Ciebie.</p>
   <p class="note">Bez stresu: to tylko podpowiedź na start, a nie decyzja na całe życie.</p></div>
   <div class="foto jasne"><img src="assets/img/uczennica.jpg" alt=""><span class="na mono" style="left:18px;bottom:16px">Osobowość i kierunek</span></div></div>
   ${Nauka.duo('go', glowny, n?'reset':'skip', n?'↺ Zacznij test od nowa':'Wiem już, co zdaję: pomiń doradztwo i przejdź do testów')}
@@ -444,6 +444,8 @@ function planCard(p,t,ai){
 }
 
 function viewResult(){
+  /* Bez kompletu odpowiedzi nie ma wyniku: wcześniej ekran liczył „wynik” z pustych odpowiedzi */
+  if(!isSample&&answers.includes(null)){startTest();return}
   const a=isSample?SAMPLE:answers;
   const {t,r}=score(a);
   const alg=pickPaths(r), topLetters=alg.topLetters;
@@ -501,14 +503,14 @@ function viewResult(){
       <div class="formula">dopasowanie = Σ waga × (cecha − 6) / Σ |waga|  →  0–100%</div>
       <p>Wagi oparliśmy na badaniach (Barrick i Mount, 1991; Grant, 2013). To założenia eksperckie, które dostroimy po pilotażu.</p>
       <p>Zasady rekrutacji sprawdziliśmy w uchwałach uczelni na rok 2027/28 tam, gdzie były dostępne. Etykieta przy uczelni mówi, czy dane są aktualne.</p>
-      <button class="btn link" id="again" style="align-self:flex-start">${isSample?"Zrób własny test":"Zrób test od nowa"}</button>
+      ${isSample?'<button class="btn link" id="again" style="align-self:flex-start">Zrób własny test</button>':''}
     </div>
   </details>`;
 
   paths.forEach((p,i)=>$("tab"+i).onclick=()=>{plan=i;app.querySelectorAll(".tab").forEach((b,j)=>b.setAttribute("aria-selected",j===i));$("plan").innerHTML=planCard(paths[i],t,aiPlan(i))});
   bindSubjects();
   $("toMat").onclick=()=>Nauka.startPrzedmiot("mat");
-  $("again").onclick=kompasOdNowa;
+  if($("again"))$("again").onclick=kompasOdNowa;
   if($("again2"))$("again2").onclick=kompasOdNowa;
   $("copy").onclick=()=>{
     const txt=summary(t,r,paths,topLetters.slice(0,3).join(""))+(ai&&ai.podsumowanie?"\n\nAI: "+ai.podsumowanie:""), msg=$("copymsg");
@@ -521,21 +523,18 @@ function viewResult(){
 /* ---------- przedmioty ---------- */
 function viewSubjects(){
   app.innerHTML=`
-  <span class="eyebrow">Krok 2</span>
+  <span class="eyebrow">Test z matematyki</span>
   <h1>Sprawdź swoją wiedzę z matury</h1>
-  <p>Przejdź do testu poziomującego</p>
+  <p>Wybierz przedmiot. Na razie test diagnozujący jest z matematyki, kolejne przedmioty już wkrótce.</p>
   ${subjectGrid([])}
-  <div class="stack">
-    <button class="btn ghost wide" id="toTest">Jednak zrób test predyspozycji</button>
-    <button class="btn link" id="toStart" style="align-self:flex-start">← Wróć na start</button>
-  </div>`;
+  ${Nauka.duo('toMat','Test diagnozujący z matematyki','toTest','Najpierw zrób Diagnozę')}`;
   bindSubjects();
+  $("toMat").onclick=()=>Nauka.startPrzedmiot("mat");
   $("toTest").onclick=startTest;
-  $("toStart").onclick=()=>Nauka.go("");
   from="subjects";
 }
 function summary(t,r,paths,code){
-  const L=["KOMPAS MATURALNI – wynik","Kod zainteresowań: "+code,
+  const L=["MATURALNY MENTOR – wynik Diagnozy","Kod zainteresowań: "+code,
     "Zainteresowania: "+ORDER.map(k=>`${k} ${r[k]}`).join(", "),
     "Osobowość: "+Object.keys(TRAITS).map(k=>`${TRAITS[k].name} ${t[k]}/10`).join("; ")];
   paths.forEach((p,i)=>{const P=PATHS[p.id],ro=rankRoles(P,t);

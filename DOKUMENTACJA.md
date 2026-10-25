@@ -1,4 +1,4 @@
-# Dokumentacja techniczna: plan matury z matematyki + Kompas
+# Dokumentacja techniczna: Maturalny Mentor (Kompas + plan matury z matematyki)
 
 Aplikacja webowa dla maturzystów. Diagnozuje wiedzę z matematyki na poziomie **67 mikrokompetencji z wymagań CKE**, szuka **przyczyny błędów**, prognozuje **wynik matury** i układa **plan nauki**, który sam się przelicza. Do tego Kompas: test predyspozycji, który podpowiada kierunek studiów i przedmioty maturalne.
 
@@ -13,15 +13,15 @@ Uczeń widzi jedną ścieżkę i ma dwa paski nawigacji:
 | Krok | Co robi uczeń | Co dostaje | Ekrany |
 |---|---|---|---|
 | **1. Diagnoza** | 22 pytania o osobowość i zainteresowania (można pominąć) | ścieżkę A i B, kierunki, uczelnie, przedmioty maturalne | `#/kompas`, `#/kompas-test`, `#/kompas-wynik` |
-| **2. Test** (z przedmiotu maturalnego; dostępna matematyka, kolejne przedmioty w przygotowaniu) | 3 pytania (cel z rokiem matury, czas dziennie, trudne działy), potem test adaptacyjny 20 pytań, ok. 15 min | prognozę wyniku matury, przyczyny błędów, mapę mikrokompetencji | `#/kalibracja`, `#/test`, `#/quiz`, `#/wynik` |
+| **2. Test** (z przedmiotu maturalnego; dostępna matematyka, kolejne przedmioty w przygotowaniu) | 2 pytania (cel z rokiem matury, czas dziennie), potem test adaptacyjny 20 pytań, ok. 15 min | prognozę wyniku matury, przyczyny błędów, mapę mikrokompetencji | `#/kalibracja`, `#/test`, `#/quiz`, `#/wynik` |
 | **3. Plan** | przegląda plan, może zmienić minuty, dni, dni wolne, dodać „więcej czasu” (dysleksja/dyskalkulia) | listę tematów z datami, od tych dających najwięcej punktów | `#/plan`, `#/postepy`, `#/kalendarz` |
-| **4. Nauka** | codziennie: materiał (części tematu i fragmenty materiałów Maturalnych), zadanie „Sprawdź się”, quiz zaliczeniowy (70%), powtórki | serię 🔥, zaliczone tematy, aktualizowaną prognozę | `#/dzis`, `#/lekcja`, `#/quiz-wynik`, `#/materialy` |
+| **4. Nauka** | codziennie: materiał (części tematu i fragmenty materiałów Maturalnych), zadanie „Sprawdź się”, quiz zaliczeniowy (70%), powtórki | serię dni nauki, zaliczone tematy, aktualizowaną prognozę | `#/dzis`, `#/lekcja`, `#/quiz-wynik`, `#/materialy` |
 
 **Zasada dwóch przycisków (jak w Duolingo):** na każdym ekranie jeden duży przycisk główny i najwyżej jeden drugi (`duo()` w `app/nauka.js`, style `.btn-duo`). Ekran powitalny nowego ucznia nie ma pasków nawigacji, tylko „Zaczynamy” i „Wiem, co zdaję: od razu test”.
 
 | Ekran | Przycisk główny | Drugi przycisk |
 |---|---|---|
-| Powitanie | Zaczynamy | Wiem, co zdaję: od razu test |
+| Powitanie | Rozpocznij diagnozę | Wiem już, co zdaję: przejdź do testów |
 | Kompas (start) | Zaczynamy / Kontynuuj | Pomiń / Zacznij od nowa |
 | Wynik Kompasu | Dalej: test diagnozujący z matematyki | Kopiuj wynik |
 | Wynik testu | Dalej: Twój plan do matury | - |

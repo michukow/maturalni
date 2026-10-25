@@ -27,6 +27,7 @@
       let j;
       try { j = await r.json(); } catch (e) { j = { ok: false, blad: r.status === 404 || r.status === 405 || r.status === 501 ? 'Brak bramki AI (działa na stronie wdrożonej przez Cloudflare)' : 'Błąd ' + r.status }; }
       j.msKlient = Math.round(performance.now() - t0);
+      if (r.status === 503) j.wylaczone = true;
       return j;
     } catch (e) { return { ok: false, blad: 'Brak połączenia' }; }
   }
@@ -51,16 +52,22 @@
   // ───────────── ekran: 2 pytania otwarte ─────────────
   function widok() {
     const profil = N.kompasProfil ? N.kompasProfil() : null;
-    if (!profil) { N.go('kompas'); return; }
+    if (!profil) { N.kompasStart ? N.kompasStart() : N.go('kompas'); return; }
     let s = stan(profil.klucz);
     if (!s) { s = { klucz: profil.klucz, pytania: null, zrodlo: null, odpowiedzi: ['', ''] }; zapisz(s); }
     if (!s.pytania) {
-      app.innerHTML = `<span class="eyebrow">Krok 1 · Jeszcze 2 pytania</span><h1>Układam pytania specjalnie dla Ciebie</h1>
+      app.innerHTML = `<span class="eyebrow">Osobowość i kierunek · jeszcze 2 pytania</span><h1>Układam pytania specjalnie dla Ciebie</h1>
         <div class="ai-box"><div class="ai-glowa"><span class="ai-ik"></span><b>Analizujemy Twoje odpowiedzi z testu</b><span class="ai-kropki"><i></i><i></i><i></i></span></div>
         <p class="small muted">Szuka tego, czego test zamknięty nie rozstrzygnął.</p></div>`;
       wyslij({ etap: 'pytania', profil: profil }).then(odp => {
         const x = stan(profil.klucz) || s;
         if (odp.ok) { x.pytania = odp.wynik.pytania; x.zrodlo = 'ai'; x.model = odp.model; }
+        else if (odp.wylaczone) {
+          // AI wyłączone (brak klucza): nie prosimy ucznia o odpowiedzi, których nikt nie przeczyta. Od razu wynik z testu.
+          x.pominiete = true; x.wynik = null; x.aiWylaczone = true; zapisz(x);
+          if (N.trasa()[0] === 'kompas-ai') N.go('kompas-wynik');
+          return;
+        }
         else { x.pytania = zapasowe(profil); x.zrodlo = 'zapas'; x.bladPytan = odp.blad; }
         zapisz(x);
         if (N.trasa()[0] === 'kompas-ai') N.render();
@@ -88,7 +95,7 @@
       const odp = [0, 1].map(i => $('o' + i).value.trim());
       if (!odp.some(v => v.length >= 3)) { P.toast('Napisz choć kilka słów albo kliknij „Pomiń”.'); return; }
       x.odpowiedzi = odp; x.pominiete = false; zapisz(x);
-      app.innerHTML = `<span class="eyebrow">Krok 1 · Twój wynik</span><h1>Łączę test z Twoimi odpowiedziami</h1>
+      app.innerHTML = `<span class="eyebrow">Osobowość i kierunek · Twój wynik</span><h1>Łączę test z Twoimi odpowiedziami</h1>
         <div class="ai-box"><div class="ai-glowa"><span class="ai-ik"></span><b>AI pogłębia wynik testu</b><span class="ai-kropki"><i></i><i></i><i></i></span></div></div>`;
       wyslij({
         etap: 'wynik', profil: profil, sciezkiDostepne: N.kompasSciezki(),
@@ -124,6 +131,7 @@
   }
   function zachetaHtml(klucz) {
     const s = stan(klucz);
+    if (s && s.aiWylaczone) return '';
     const blad = s && s.bladWyniku;
     return `<div class="ai-box"><div class="ai-glowa"><span class="ai-ik"></span><b>${blad ? 'AI była niedostępna' : 'Pogłęb wynik: 2 pytania swoimi słowami'}</b></div>
       <p class="small">${blad ? 'Pokazujemy wynik z testu. Możesz spróbować jeszcze raz.' : 'AI zada 2 pytania o to, czego test nie rozstrzygnął, i dopasuje wynik do Ciebie. Ok. 2 minuty.'}</p>

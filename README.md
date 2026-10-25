@@ -1,4 +1,4 @@
-# T06 – Mentor Maturalny
+# T06 – Maturalny Mentor
 
 > Aplikacja, która pomaga maturzyście wybrać kierunek (predyspozycje, przedmioty maturalne, studia), a potem codziennie, w krótkich sesjach, przygotowuje go do matury pod ten wybór.
 
@@ -21,15 +21,15 @@ Demo: **https://maturalni-4l1.pages.dev** · Dokumentacja techniczna: [`DOKUMENT
 - **Jaki problem rozwiązuje:** uczeń wybiera przedmioty maturalne i kierunek studiów „na czuja”, a do matury uczy się bez planu: powtarza to, co już umie, zamiast tego, co daje najwięcej punktów. Nie wie też, dlaczego popełnia błędy, bo często brakuje mu podstawy z wcześniejszego działu.
 - **Jaką konkretną korzyść daje użytkownikowi:** w ok. 20 minut uczeń dostaje dwie ścieżki (plan A i B) z kierunkami, uczelniami i przedmiotami maturalnymi, prognozę wyniku matury z matematyki, listę przyczyn swoich błędów i plan nauki z datami, który sam się przelicza, gdy uczeń opuści dzień.
 - **Główny scenariusz użycia, od rozpoczęcia do uzyskania rezultatu:**
-  1. **Diagnoza (Kompas):** 22 pytania o osobowość i zainteresowania, potem 2 pytania otwarte ułożone przez AI. Wynik: plan A i B, rola, kierunki, uczelnie, przedmioty maturalne.
-  2. **Test z matematyki:** 3 pytania kalibracyjne (cel, czas dziennie, trudne działy) i test adaptacyjny (20 pytań, ok. 15 min). Po złej odpowiedzi AI wskazuje brakującą umiejętność. Wynik: prognoza matury i mapa 67 mikrokompetencji z wymagań CKE.
-  3. **Plan:** lista tematów z datami, od tych, które dają najwięcej punktów.
+  1. **Diagnoza (Kompas):** 22 pytania o osobowość i zainteresowania, suwaki preferencji (przedmioty, zarobki, ambicja, ile chcesz pracować), potem 2 pytania otwarte ułożone przez AI. Wynik: plan A i B, rola, kierunki, uczelnie, przedmioty maturalne.
+  2. **Test z matematyki:** 2 pytania kalibracyjne (cel z rokiem matury, czas dziennie) i test adaptacyjny (20 pytań, ok. 15 min). Po złej odpowiedzi AI wskazuje brakującą umiejętność. Wynik: prognoza matury i mapa 67 mikrokompetencji z wymagań CKE.
+  3. **Plan:** lista tematów z datami: najpierw brakujące podstawy, potem tematy, które dają najwięcej punktów.
   4. **Nauka:** codzienna sesja (materiał, zadanie, quiz zaliczeniowy 70%, powtórki), seria dni i aktualizowana prognoza.
 
 ## Zakres MVP
 
 - **Funkcje działające w przekazywanej wersji:**
-  - Kompas: test 22 pytań (RIASEC i Wielka Piątka), plan A i B, kierunki, uczelnie z zasadami rekrutacji, przedmioty maturalne; 2 pytania otwarte od AI i wynik pogłębiony przez AI.
+  - Kompas: test 22 pytań (RIASEC i Wielka Piątka) i suwaki preferencji, plan A i B, kierunki, uczelnie z zasadami rekrutacji, przedmioty maturalne; 2 pytania otwarte od AI i wynik pogłębiony przez AI.
   - Matematyka: test adaptacyjny, prognoza wyniku, mapa 67 mikrokompetencji z prerekwizytami, AI szukające przyczyny błędu.
   - Plan nauki z datami, dni wolne, „więcej czasu” (dysleksja/dyskalkulia), przeliczanie zaległości.
   - Codzienna nauka: lekcja dnia, quiz zaliczeniowy, powtórki adaptacyjne (2 > 5 > 12 > 30 dni), seria, dostosowanie materiału po 2 nieudanych quizach.
@@ -86,7 +86,7 @@ Aplikacja to statyczna strona (HTML, CSS, czysty JavaScript, bez frameworka i be
 | OpenRouter | wywołania modelu AI (Kompas i analiza błędów) | `OPENROUTER_API_KEY` jako Secret w Cloudflare albo w `.dev.vars`; opcjonalnie `AI_MODEL` | konto na openrouter.ai > Keys; klucz drużyny przekazujemy organizatorowi osobno |
 | Cloudflare Pages | hosting strony i funkcji `functions/api/*` | projekt połączony z repozytorium, wdrożenie po pushu na `main` | konto Cloudflare (darmowy plan wystarcza) |
 | API Maturalnych (`backend.maturalni.com`) | katalog produktów i lekcje do importu | `products/` działa bez tokenu; do `lesson-plans` ewentualnie `MATURALNI_TOKEN` (Secret) i `MATURALNI_NAGLOWEK` | od partnera wyzwania (Maturalni) |
-| Google Fonts | krój Inter | brak | publiczne |
+| Google Fonts | kroje Manrope i Inter | brak | publiczne |
 
 Prywatnych kluczy nie ma w repozytorium. Sekrety trzymamy wyłącznie w ustawieniach Cloudflare albo w lokalnym `.dev.vars` (wykluczonym z wersjonowania). **Potrzebne dane logowania i klucze przekazujemy organizatorowi osobno.**
 
@@ -97,20 +97,22 @@ Prywatnych kluczy nie ma w repozytorium. Sekrety trzymamy wyłącznie w ustawien
 
 | Krok | Co zrobić | Oczekiwany rezultat |
 | :---- | :---- | :---- |
-| 1 | Wejdź na https://maturalni-4l1.pages.dev i kliknij „Zaczynamy” | otwiera się Kompas z pierwszym z 22 pytań |
-| 2 | Odpowiedz na 22 pytania (skala 1–5) | ekran z 2 pytaniami otwartymi od AI (bez AI: 2 pytania standardowe) |
+| 1 | Wejdź na https://maturalni-4l1.pages.dev i kliknij „Rozpocznij diagnozę” | otwiera się Diagnoza z pierwszym z 22 pytań |
+| 2 | Odpowiedz na 22 pytania (skala 1–5), ustaw suwaki preferencji i kliknij „Dalej” | ekran z 2 pytaniami otwartymi od AI (gdy AI chwilowo nie odpowiada: 2 pytania standardowe; gdy AI jest wyłączone: od razu wynik) |
 | 3 | Odpowiedz swoimi słowami, np. „W szkole najlepiej szło mi rozwiązywanie zadań z fizyki na olimpiadzie” | wynik Kompasu: plan A i B z powodem, rola, kierunki, uczelnie, przedmioty maturalne, karta „Wynik pogłębiony przez AI” |
-| 4 | Kliknij „Dalej: test diagnozujący z matematyki”, odpowiedz na 3 pytania kalibracyjne i rozwiąż test (20 pytań); celowo zaznacz kilka złych odpowiedzi | po złej odpowiedzi: przyczyna błędu i wskazówka; następne pytanie sprawdza wskazaną podstawę |
+| 4 | Kliknij „Dalej: test diagnozujący z matematyki”, odpowiedz na 2 pytania kalibracyjne i rozwiąż test (20 pytań); celowo zaznacz kilka złych odpowiedzi | po złej odpowiedzi: przyczyna błędu i wskazówka; następne pytanie sprawdza wskazaną podstawę |
 | 5 | Zakończ test | prognoza wyniku matury, przyczyny błędów, mapa mikrokompetencji |
 | 6 | Kliknij „Dalej: Twój plan do matury”, potem „Dalej: zacznij naukę” | plan tematów z datami; ekran „Dziś” z sesją na N minut |
-| 7 | Przejdź lekcję i quiz zaliczeniowy | zaliczenie od 70%, seria 🔥, zaplanowana powtórka |
+| 7 | Na ekranie „Dziś” kliknij „Zaczynamy”, przejdź lekcję i quiz zaliczeniowy | zaliczenie od 70%, licznik serii dni, zaplanowana powtórka |
 | 8 | Opcjonalnie: `#/mapa` > Narzędzia demo > „Scenariusz: temat nie idzie” | 2 nieudane quizy > cofnięcie do podstawy w matrycy > dostosowany materiał |
 
 ## Obsługa podstawowych błędów
 
 | Sytuacja błędna | Jak ją wywołać | Jak reaguje aplikacja |
 | :---- | :---- | :---- |
-| Brak klucza AI | brak `OPENROUTER_API_KEY` albo `index.html` otwarty z dysku | `GET /api/ai/*` zwraca `gotowe: false`, `POST` zwraca 503; Kompas pokazuje 2 pytania standardowe, a przyczynę błędu wyznaczają reguły z klucza odpowiedzi |
+| Brak klucza AI | brak `OPENROUTER_API_KEY` | `GET /api/ai/*` zwraca `gotowe: false`, `POST` zwraca 503; Kompas pomija pytania otwarte i od razu pokazuje wynik z testu, a przyczynę błędu wyznaczają reguły z klucza odpowiedzi |
+| Strona otwarta z dysku | `index.html` otwarty bez serwera (brak funkcji `/api`) | Kompas pokazuje 2 pytania standardowe, wynik liczy algorytm; przyczynę błędu wyznaczają reguły |
+| Wejście na ekran wyniku bez testu | adres `#/kompas-wynik` w nowej przeglądarce | aplikacja wraca do pytań Diagnozy zamiast liczyć wynik z pustych odpowiedzi |
 | AI nie odpowiada | przekroczony limit czasu (20 s analiza, 25 s Kompas) albo błąd OpenRouter | funkcja zwraca 504/502 z opisem; aplikacja przechodzi na wynik algorytmu i reguły |
 | AI zwraca zły format | odpowiedź nie jest JSON-em, zła liczba pytań, id spoza listy | kontrola na serwerze: wyciąga JSON z tekstu, odrzuca ścieżki, role i kompetencje spoza przesłanych list, przy braku danych wraca do kolejności algorytmu i zapisuje uwagę |
 | Słaba pewność AI | puste, żartobliwe albo sprzeczne odpowiedzi ucznia | Kompas zmienia plany dopiero od pewności 0,6 (nowa ścieżka od 0,7), matematyka przyjmuje przyczynę od 0,7; niżej decyduje algorytm |
@@ -183,7 +185,8 @@ Prywatnych kluczy nie ma w repozytorium. Sekrety trzymamy wyłącznie w ustawien
 | OpenRouter API | https://openrouter.ai | v1 | warunki korzystania OpenRouter, płatność za tokeny | dostęp do modelu |
 | Cloudflare Pages i Pages Functions | https://pages.cloudflare.com | – | warunki Cloudflare, darmowy plan | hosting, funkcje serwerowe |
 | Wrangler | https://developers.cloudflare.com/workers/wrangler/ | aktualna przez `npx` | MIT / Apache 2.0 | uruchomienie lokalne z funkcjami |
-| Krój Inter | Google Fonts | – | SIL Open Font License 1.1 | typografia |
+| Kroje Manrope i Inter | Google Fonts | – | SIL Open Font License 1.1 | typografia |
+| Zdjęcia w `assets/img/` (grupa, mentorka, studenci, uczennica) | `DO_UZUPELNIENIA` – źródło zdjęć | – | `DO_UZUPELNIENIA` – licencja | ilustracje na ekranach startowych i wynikach |
 | API i materiały Maturalnych (Bank schematów, Arkusz CKE, katalog produktów) | https://backend.maturalni.com, FlippingBook | stan z 24.10.2026 | materiały partnera wyzwania, użyte za jego zgodą w ramach wyzwania | katalog, linki i podgląd materiałów |
 | Lekcja wideo demo | Vimeo (materiał Maturalnych) | – | materiał partnera wyzwania | kurs demo |
 | Wymagania egzaminacyjne i arkusze CKE | https://cke.gov.pl | matura 2027 | materiały publiczne CKE | matryca 67 mikrokompetencji, zadania |
@@ -197,6 +200,8 @@ Prywatnych kluczy nie ma w repozytorium. Sekrety trzymamy wyłącznie w ustawien
 3. Kolejne przedmioty maturalne (najpierw polski i angielski), weryfikacja wag działów na arkuszach CKE, powiadomienia push i Google Calendar API.
 
 ## Wersja oceniana
+
+- **Tag wersji ocenianej:** `submission-T06` (do utworzenia po ostatnim commicie: `git tag submission-T06 && git push origin submission-T06`)
 - **Link do wersji oznaczonej tym tagiem:** https://github.com/michukow/maturalni/tree/submission-T06
 
 ## Demonstracja

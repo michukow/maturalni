@@ -156,7 +156,7 @@
   // a ten pasek służy do codziennego poruszania się po aplikacji.
   function rysujDol(n) {
     const zakladki = testZrobiony()
-      ? [['dzis', ik('seria'), 'Dziś'], ['plan', ik('quiz'), 'Plan'], ['materialy', ik('materialy'), 'Materiały'], ['postepy', ik('postepy'), 'Postępy'], [celKroku(1), ik('kompas'), 'Kompas']]
+      ? [['dzis', ik('seria'), 'Dziś'], ['plan', ik('quiz'), 'Plan'], ['materialy', ik('materialy'), 'Materiały'], ['postepy', ik('postepy'), 'Postępy'], [celKroku(1), ik('kompas'), 'Diagnoza']]
       : [['', ik('start'), 'Start'], [celKroku(1), ik('kompas'), 'Diagnoza'], [celKroku(2), ik('test'), 'Test'], ['materialy', ik('materialy'), 'Materiały']];
     const grupa = h => {
       if (h === n) return true;
@@ -251,10 +251,10 @@
         <div class="hero-tekst">
           <span class="eyebrow">Matura 2027 &nbsp;/&nbsp; Dobry plan zaczyna się tutaj</span>
           <h1 class="hero-h">Nie wybieraj w ciemno. Wybierz swój <span class="akcent">kierunek.</span></h1>
-          <p class="lead">22 krótkie pytania. Około 5 minut. Sprawdź, które przedmioty i kierunki studiów naprawdę pasują do Ciebie.</p>
+          <p class="lead">22 krótkie pytania i kilka suwaków. Około 7 minut. Sprawdź, które przedmioty i kierunki studiów naprawdę pasują do Ciebie.</p>
           <div class="hero-cta"><button class="btn-main" id="start">Rozpocznij diagnozę <span class="strz">↗</span></button>
             <button class="btn link" id="mat">Wiem już, co zdaję: przejdź do testów</button></div>
-          <ul class="hero-meta"><li>Bez logowania</li><li>Ok. 5 minut</li><li>Konkretna wskazówka na start</li></ul>
+          <ul class="hero-meta"><li>Bez logowania</li><li>Ok. 7 minut</li><li>Konkretna wskazówka na start</li></ul>
         </div>
         <div class="hero-art" aria-hidden="true">
           <img src="assets/img/studenci.jpg" alt="">
@@ -625,7 +625,7 @@
       <div class="grid2">
         <div class="card"><h3>Gdzie tracisz najwięcej punktów</h3>
           <div class="lista">${p.najwiekszeZyski.map(z => `<div class="poz"><span style="font-size:1.2rem"></span><span><span class="t">${esc(z.nazwa)}</span><br><span class="m">${esc(z.dzial)}</span></span><b style="color:var(--green-ink)">+${String(z.zysk).replace('.', ',')} pkt</b></div>`).join('')}</div>
-          <p class="muted small">Tyle punktów procentowych możesz zyskać, opanowując temat. Plan zaczyna od tematów, które dają najwięcej punktów za minutę nauki.</p></div>
+          <p class="muted small">Tyle punktów procentowych możesz zyskać, opanowując temat. Plan ustawia je według punktów za minutę nauki, a przed każdym tematem wstawia brakujące podstawy.</p></div>
         <div class="card"><div class="row between"><h3>Dlaczego popełniasz błędy</h3><span class="tag-new">Nowość</span></div>
           ${przyczyny.length ? `<div class="lista">${przyczyny.slice(0, 5).map(x => `<div class="poz"><span style="font-size:1.2rem"></span><span><span class="t">${esc(x.przyczyna)}</span><br><span class="m">w temacie: ${esc(x.nazwa)}${x.podstawa ? ' · brakuje podstawy: ' + esc(x.podstawa) : ''}</span></span><span></span></div>`).join('')}</div>`
             : '<p class="muted">Brak błędów do analizy. Świetnie!</p>'}
@@ -658,7 +658,7 @@
     const suma = sesjeDzis.reduce((a, s) => a + s.minuty, 0);
     let msg;
     if (ser.dzisTyp === 'blokada') msg = `Hej${imie()}! Dziś wolne: <b>${esc(ser.dzisNazwa)}</b>. Seria ${ser.dni} się nie przerywa. Odpocznij!`;
-    else if (bufor) msg = `Hej${imie()}! Dziś <b>dzień buforowy</b>. Nadrób zaległości albo odpocznij Seria się nie przerywa.`;
+    else if (bufor) msg = `Hej${imie()}! Dziś <b>dzień buforowy</b>. Nadrób zaległości albo odpocznij. Seria się nie przerywa.`;
     else if (ser.dzisTyp === 'wolne' && !sesjeDzis.length) msg = `Hej${imie()}! Dziś nie masz nauki w planie.${nastepna ? ' Widzimy się ' + fKrotko(nastepna.data) + '!' : ''}`;
     else if (sesjeDzis.length) {
       const glowna = sesjeDzis.find(s => s.typ !== 'powtorka');
@@ -666,7 +666,7 @@
         ? `Hej${imie()}! Na rozgrzewkę <b>5 min powtórki</b>, a potem robimy: <b>${esc(nazwaSesji(glowna))}</b>. ${suma} min i masz to z głowy.`
         : `Hej${imie()}! Dzisiaj robimy: <b>${esc(nazwaSesji(sesjeDzis[0]))}</b>. ${suma} min i masz to z głowy.`;
       if (sesjeDzis.some(s => s.dostosowane)) msg += '<br><span class="small muted">Ostatnio ten temat nie wyszedł, więc przygotowaliśmy prostszy materiał.</span>';
-    } else if (zrobione.length) msg = `Brawo${imie()}! Na dziś wszystko Seria: <b>${dniSl(ser.dni)}</b>.${nastepna ? ' Następnie: ' + esc(nazwaSesji(nastepna)) + ' (' + fKrotko(nastepna.data) + ').' : ''}`;
+    } else if (zrobione.length) msg = `Brawo${imie()}! Na dziś wszystko. Seria: <b>${dniSl(ser.dni)}</b>.${nastepna ? ' Następnie: ' + esc(nazwaSesji(nastepna)) + ' (' + fKrotko(nastepna.data) + ').' : ''}`;
     else msg = `Hej${imie()}! Na dziś nic nie zostało w planie.`;
 
     const zad = zrobione.map(h => `<div class="zad zrobione"><div class="wezel">✓</div><div><div class="tyt">${esc(h.tytul || { quiz: 'Quiz', powtorka: 'Powtórka 5 min', diagnoza: 'Diagnoza pełna', nauka: 'Sesja nauki' }[h.typ])}</div><div class="meta">${h.minuty} min · zrobione</div></div><span></span></div>`)
@@ -779,7 +779,7 @@
       ${dost ? `<div class="callout"><span class="ico"></span><div class="stack" style="gap:6px"><b class="t">Dostosowaliśmy materiał do Ciebie</b>
         <span>${dost.proby ? `Quiz z tego tematu nie wyszedł ${dost.proby === 1 ? 'raz' : dost.proby + ' razy'}.` : 'Wracamy do tematu po wzmocnieniu podstaw.'}${dost.przyczyna ? ` Najczęstszy błąd: <b>${esc(dost.przyczyna)}</b>.` : ''}</span>
         <ul style="margin:0;padding-left:18px">${dost.zmiany.map(z => `<li>${esc(z)}</li>`).join('')}</ul></div></div>` : ''}
-      <div class="callout blue"><span class="ico"></span><span><b>Dziś: ${czesci.length} ${odmiana(czesci.length, 'część', 'części', 'części')}, ok. ${minCz} min.</b> To fragmenty materiałów Maturalnych dobrane do tej umiejętności, a nie cały kurs.
+      <div class="callout blue"><span class="ico"></span><span><b>Dziś: ${czesci.length} ${odmiana(czesci.length, 'część', 'części', 'części')}, ok. ${minCz} min${sesja && sesja.minuty > minCz + 2 ? `, a do ${sesja.minuty} min sesji: zadania z treningu i powtórka przykładów` : ''}.</b> To fragmenty materiałów Maturalnych dobrane do tej umiejętności, a nie cały kurs.
         Cały temat (${wszystkie.length} części) znajdziesz w <a href="#/materialy/${komp}">Materiałach</a>.</span></div>
       <div id="panelLekcji"></div>
       <div class="cta">${sesja ? `<button class="btn-main xl" id="odhacz">Zrobione! Odhaczam sesję ✓</button>${sesja.data !== t ? `<span class="muted small">Ta sesja jest zaplanowana na ${fKrotko(sesja.data)}. Możesz ją zrobić wcześniej.</span>` : ''}${sesja.czesc === sesja.z ? '<span class="muted small">To ostatnia część. Potem quiz zaliczeniowy (5 min, próg 70%).</span>' : ''}`
@@ -846,7 +846,7 @@
     const tygodnie = S.grupujTygodnie(plan).slice(0, 5);
     app.innerHTML = `
       <div class="foto naglowek-foto"><img src="assets/img/mentorka.jpg" alt="" style="object-position:50% 30%"><span class="eyebrow">Plan nauki do matury</span><h1>Twój plan do matury</h1>
-        <p>${tematySl(ps.jednostek)} do ${fData(ps.koniecPlanu || D.org.dataMatury, true)}, ${D.org.minutDziennie} min dziennie. Zaczynamy od tematów, które dają najwięcej punktów. Temat odhacza się po zaliczonym quizie (min. 70%).</p>
+        <p>${tematySl(ps.jednostek)} do ${fData(ps.koniecPlanu || D.org.dataMatury, true)}, ${D.org.minutDziennie} min dziennie. Najpierw podstawy, na których opierają się kolejne tematy, potem to, co daje najwięcej punktów. Temat odhacza się po zaliczonym quizie (min. 70%).</p>
         ${duo('doNauki', D.stan.historiaSesji.length ? 'Przejdź do dzisiejszej nauki' : 'Dalej: zacznij naukę', 'doKal', 'Dodaj plan do kalendarza')}</div>
       <div class="staty"><div class="stat"><b>${ps.dniDoMatury}</b><span>dni do matury</span></div><div class="stat"><b>${plan.zaliczone.length}</b><span>zaliczone tematy</span></div>
         <div class="stat"><b>${ps.jednostek}</b><span>w planie</span></div><div class="stat"><b>${String(ps.godzinNauki).replace('.', ',')} h</b><span>nauki w planie</span></div></div>
@@ -1055,7 +1055,7 @@
     app.innerHTML = `
       <div class="stack" style="gap:6px"><span class="eyebrow">Dla Maturalnych i jury</span><h1>Co wyróżnia ten plan</h1>
         <p class="muted">Diagnoza już istnieje. Problem w tym, że jej wynik niewiele mówi uczniowi. Tu wynik jest punktem wyjścia do planu, który wie, czego brakuje, dlaczego i ile to zajmie.</p></div>
-      <div class="card"><table class="porownanie"><thead><tr><th></th><th>Typowa diagnoza i kurs</th><th>Plan Maturalni</th></tr></thead><tbody>
+      <div class="card"><div class="tabela-wrap"><table class="porownanie"><thead><tr><th></th><th>Typowa diagnoza i kurs</th><th>Plan Maturalni</th></tr></thead><tbody>
         ${[
           ['Wynik', 'Procent z testu, ewentualnie z działu', 'Poziom każdej z 67 mikrokompetencji z wymagań CKE'],
           ['Błąd', '„Źle”', 'AI czyta rozwiązanie ucznia i wskazuje brakującą mikrokompetencję z pewnością. Gdy AI nie jest pewna, decyduje klucz odpowiedzi'],
@@ -1068,7 +1068,7 @@
           ['Życie', 'Plan stały', 'Bufor 20%, święta, studniówka, choroba: plan się przelicza, seria trwa'],
           ['Materiały', 'Cały kurs albo arkusz do przejrzenia', 'W aplikacji: fragment wideo (od-do), notatka, trening i zadania Maturalnych dla jednej umiejętności, w kolejności dopasowanej do stylu nauki'],
           ['Kalendarz', 'Ręczne wpisywanie', 'Google Calendar pokazuje co i kiedy, z linkiem do lekcji i zapasowym linkiem do materiału']
-        ].map(r => `<tr><td><b>${r[0]}</b></td><td>${r[1]}</td><td>${r[2]}</td></tr>`).join('')}</tbody></table></div>
+        ].map(r => `<tr><td><b>${r[0]}</b></td><td>${r[1]}</td><td>${r[2]}</td></tr>`).join('')}</tbody></table></div></div>
       <div class="card"><h3>Przepływ ucznia</h3>
         <div class="flow"><span>1. Diagnoza (Kompas)</span><i>→</i><span>2. Kalibracja: 3 pytania</span><i>→</i><span>Test adaptacyjny</span><i>→</i><span>Wynik + mapa</span><i>→</i><span>Plan dnia</span><i>→</i><span>Lekcja z materiałem</span><i>→</i><span>Quiz 70%</span><i>→</i><span>Powtórki</span><i>→</i><span>Diagnoza pełna</span></div>
         <p class="small muted">Szybka ścieżka: „wiem, że chcę poprawić trygonometrię” pomija kalibrację celów, robi test tylko z działu i sięga po brakujące podstawy z innych działów (maks. 2 poziomy w dół).</p></div>

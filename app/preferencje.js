@@ -37,9 +37,11 @@
   const suwak = (id, v, etykieta) => `<input type="range" class="pref-suwak" id="${id}" min="0" max="3" step="1" value="${v}" aria-label="${esc(etykieta)}" aria-valuetext="${esc(etykieta)}">`;
 
   function widok() {
+    // Suwaki mają sens dopiero po 22 pytaniach; bez nich wracamy do testu
+    if (N.kompasProfil && !N.kompasProfil()) { N.kompasStart ? N.kompasStart() : N.go('kompas'); return; }
     const p = wczytaj() || domyslne();
     app.innerHTML = `
-      <span class="eyebrow">Osobowość i kierunek · ostatni krok</span>
+      <span class="eyebrow">Osobowość i kierunek · Twoje preferencje</span>
       <h1 class="pref-h">Przedmioty szkolne</h1>
       <p>Z którymi przedmiotami szkolnymi wiążesz swoją przyszłość zawodową, a które chcesz wykorzystywać jedynie w minimalnym stopniu? <b>Zaznacz na poniższych suwakach swoje preferencje.</b></p>
       <details class="pref-info"><summary><span class="i">i</span>Co oznaczają poszczególne poziomy przedmiotów?</summary>
