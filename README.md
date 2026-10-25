@@ -1,4 +1,4 @@
-# T06 – Maturalni Plus
+# T06 – Maturalny Mentor
 
 > Aplikacja, która pomaga maturzyście wybrać kierunek (predyspozycje, przedmioty maturalne, studia), a potem codziennie, w krótkich sesjach, przygotowuje go do matury pod ten wybór.
 
