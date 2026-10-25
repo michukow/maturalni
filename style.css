@@ -879,3 +879,28 @@ input[type=range].suwak::-moz-range-thumb{width:24px;height:24px;border-radius:5
 .mentor.bez-foto{grid-template-columns:28px minmax(0,1fr)}
 .mentor.bez-foto .ai-ik{width:18px;height:18px;background:var(--yellow-500);justify-self:center}
 .naglowek-foto .duo{margin:8px 0 0;max-width:420px}
+
+/* Materiały: produkty Maturalnych na samej górze tematu */
+.mat-produkt{position:relative;overflow:hidden;border-radius:var(--radius-panel);padding:18px;color:#fff;isolation:isolate;
+  background:radial-gradient(ellipse at 88% 12%,rgba(39,93,245,.28) 0%,transparent 42%),linear-gradient(135deg,#0B1530 0%,#102657 56%,#173FCC 100%)}
+.mat-produkt::before{content:"";position:absolute;inset:0;z-index:-1;pointer-events:none;
+  background-image:linear-gradient(rgba(120,155,255,.09) 1px,transparent 1px),linear-gradient(90deg,rgba(120,155,255,.09) 1px,transparent 1px);
+  background-size:40px 40px;mask-image:linear-gradient(135deg,#000 0%,transparent 85%);-webkit-mask-image:linear-gradient(135deg,#000 0%,transparent 85%)}
+.mp-glowa{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px}
+.mp-glowa .eyebrow{color:#9FB4EE}
+.mp-glowa .eyebrow::before{background:var(--yellow-500)}
+.mp-glowa img{background:#fff;padding:4px;border-radius:var(--radius-control);width:30px;height:30px}
+.mp-lista{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:10px}
+.mp{display:grid;grid-template-columns:64px minmax(0,1fr);gap:12px;align-items:start;padding:10px;border-radius:var(--radius-control);background:#fff;color:var(--text-primary);text-decoration:none;
+  border:1px solid transparent;transition:transform var(--t),box-shadow var(--t),border-color var(--t)}
+.mp:hover{transform:translateY(-1px);box-shadow:0 8px 24px rgba(0,0,0,.25);border-color:var(--brand-blue);color:var(--text-primary)}
+.mp-okl{position:relative;width:64px;height:84px;border-radius:2px;overflow:hidden;background:var(--ink-950);color:#fff;display:grid;place-items:center}
+.mp-okl .ikona{width:24px;height:24px}
+.mp-okl img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;z-index:1}
+.mp-okl.wideo{background:linear-gradient(135deg,#102657,#275DF5)}
+.mp-tx{display:flex;flex-direction:column;gap:3px;min-width:0}
+.mp-tx .mono{font-size:.66rem;color:var(--brand-blue);letter-spacing:.1em}
+.mp-tx b{font-family:var(--display);font-size:.95rem;line-height:1.25}
+.mp-fr{font-size:.8rem;color:var(--text-secondary);line-height:1.35;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.mp-cta{display:flex;gap:8px;align-items:center;margin-top:4px;font-size:.8rem;font-weight:700;color:var(--brand-blue)}
+.mp-cta{white-space:nowrap}

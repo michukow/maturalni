@@ -56,15 +56,32 @@
     if (i.stan === 'pamiec') return { kl: 'green', ico: '●', t: `Katalog Maturalnych z API, pobrany ${kiedy}: ${i.liczba}${czesc} ${pr}` };
     return { kl: '', ico: '○', t: `Katalog Maturalnych: zapis z API z ${kiedy}${i.blad ? ' (API teraz nie odpowiada)' : ''}` };
   }
+  // Na górze tematu: produkty Maturalnych podpięte do tej mikrokompetencji (kurs wideo, Bank schematów, Arkusz CKE)
+  const ETYKIETA = { wideo: 'Lekcja wideo', tekst: 'Schemat i notatka', arkusz: 'Zadania z arkusza' };
+  function produktyTematu(komp, czesci) {
+    const L = [];
+    czesci.forEach((c, i) => {
+      if (!c.produkt || c.niedostepny || c.typ === 'trening') return;
+      const klucz = c.produktId || c.produkt;
+      if (!L.some(x => x.klucz === klucz)) L.push({ klucz: klucz, c: c, i: i });
+    });
+    if (!L.length) return '';
+    return `<section class="mat-produkt" aria-label="Materiały Maturalnych do tego tematu">
+      <div class="mp-glowa"><span class="eyebrow">Materiały Maturalnych do tego tematu</span><img src="assets/logo.svg" alt="" width="22" height="20"></div>
+      <div class="mp-lista">${L.map(x => `<a class="mp" href="#/materialy/${encodeURIComponent(komp)}/${x.i}">
+        <span class="mp-okl ${x.c.typ}">${x.c.okladka ? `<img src="${esc(x.c.okladka)}" alt="" loading="lazy" onerror="this.remove()">` : ''}${IK[x.c.typ] || ''}</span>
+        <span class="mp-tx"><span class="mono">${ETYKIETA[x.c.typ] || TYP[x.c.typ]} · ${x.c.minuty} min</span><b>${esc(x.c.produkt)}</b>${x.c.premium ? '<span class="badge yellow" style="align-self:flex-start">w Premium</span>' : ''}<span class="mp-fr">${esc(x.c.fragment || '')}</span>
+          <span class="mp-cta">Otwórz w aplikacji →</span></span></a>`).join('')}</div></section>`;
+  }
   function zrodloHtml(c, tekstLinku) {
     if (!c.produkt) return '';
     const okl = c.okladka ? `<img class="okl" src="${esc(c.okladka)}" alt="" onerror="this.outerHTML='<span class=&quot;okl&quot;></span>'">` : `<span class="okl">${IK[c.typ] || ''}</span>`;
     const st = statusKatalogu();
     const znaczki = c.produktId ? (c.niedostepny ? '<span class="badge red">brak w katalogu Maturalnych</span>'
-      : `<span class="badge ${st.kl}" title="${esc(st.t)}">${st.ico} z API Maturalnych</span>${c.premium ? `<span class="badge yellow" title="Wymagany poziom Premium: ${esc(c.premium)}">w Premium</span>` : ''}${c.cena ? `<span class="badge">${esc(M.cenaZl(c.cena))}</span>` : ''}`) : '';
+      : `${c.premium ? '<span class="badge yellow">w Premium</span>' : ''}`) : '';
     return `<div class="zrodlo">${okl}<div class="stack" style="gap:4px"><span class="tiny muted">Materiał Maturalnych</span><b>${esc(c.produkt)}</b><span class="small">${esc(c.fragment || '')}</span>
       ${znaczki ? `<div class="row" style="gap:6px">${znaczki}</div>` : ''}
-      ${c.url ? `<a class="small" href="${esc(c.url)}" target="_blank" rel="noopener">${tekstLinku || 'Otwórz oryginał w nowej karcie (zapas)'} ↗</a>` : ''}</div></div>`;
+      ${c.url ? `<a class="small" href="${esc(c.url)}" target="_blank" rel="noopener">${tekstLinku || 'Otwórz na platformie Maturalnych'} ↗</a>` : ''}</div></div>`;
   }
   function notatkaHtml(bloki) {
     return `<div class="notatka">${bloki.map(b => {
@@ -96,7 +113,7 @@
         <div class="sterowanie"><button id="pp" aria-label="Odtwórz lub wstrzymaj">▶</button><span class="czas" id="cz">${czas(w.od)} / ${czas(w.do)}</span><div class="pasek" id="pas"><i></i></div><span class="badge">podgląd ×10</span></div>
         <div class="os-lekcji"><div class="tor">${seg}</div>
           <span class="opis">Ten fragment to ${Math.round((w.do - w.od) / 60)} min z ${Math.round(dl / 60)}-minutowej lekcji „${esc(w.lekcja || '')}”. Uczysz się tylko tego, czego potrzebujesz.</span></div>
-        ${c.przyklad ? '<p class="tiny muted">Podgląd demo: w wersji produkcyjnej odtwarza się tu fragment lekcji z serwera wideo Maturalnych (Vimeo) od wskazanej sekundy. Po imporcie lekcji z API pojawi się prawdziwy odtwarzacz.</p>' : ''}`;
+`;
     }
     if (c.typ === 'tekst') {
       const osadzone = c.osadz && c.url && !c.niedostepny ? `<div class="stack"><button class="btn-small alt" id="pokaz">Otwórz ${c.zaimportowane ? 'materiał' : 'Bank schematów'} tutaj</button><div id="ramka"></div></div>` : '';
@@ -180,7 +197,7 @@
       const zr = zrobione(c.id);
       el.innerHTML = `<div class="stack" style="gap:16px">
         <div class="odtw"><div class="glowa"><div class="stack" style="gap:2px"><span class="eyebrow">${IK[c.typ]} ${TYP[c.typ]} · część ${a + 1} z ${czesci.length} · ${c.minutySesji || c.minuty} min${c.kontynuacja ? ' · dokończ' : ''}</span><b style="font-size:1.1rem">${esc(c.nazwa)}</b></div>
-          ${c.zaimportowane ? '<span class="badge green">z API Maturalnych</span>' : c.produktId && !c.niedostepny ? '<span class="badge green">materiał Maturalnych</span>' : c.typ === 'wideo' && c.przyklad ? '<span class="badge">wideo demo</span>' : ''}</div>
+          ${c.zaimportowane ? '<span class="badge green">z API Maturalnych</span>' : c.produktId && !c.niedostepny ? '<span class="badge green">materiał Maturalnych</span>' : c.typ === 'wideo' ? '<span class="badge green">materiał Maturalnych</span>' : ''}</div>
           <div class="cialo" id="cialo">${cialoHtml(c, c.kompZrodlo || o.komp)}</div>
           <div class="stopka-odtw"><button class="btn-small ${zr ? 'alt' : ''}" id="zr">${zr ? '✓ Zrobione (cofnij)' : 'Oznacz jako zrobione ✓'}</button>
             <div class="row"><button class="btn-ghost" id="wst" ${a === 0 ? 'disabled' : ''}>← Poprzednia</button><button class="btn-ghost" id="nast" ${a >= czesci.length - 1 ? 'disabled' : ''}>Następna →</button></div></div></div>
@@ -227,11 +244,8 @@
     const czesci = (u && u.materialy && u.materialy.length ? u.materialy : czesciKomp(komp));
     const wszystkie = czesciKomp(komp);
     const ile = id => { const cz = czesciKomp(id); return cz.filter(c => zrobione(c.id)).length + '/' + cz.length; };
-    const info = M.importInfo;
     app.innerHTML = `
-      <div class="row between"><div class="stack" style="gap:4px"><h1>Materiały</h1><p class="muted">Lekcje Maturalnych pocięte na krótkie części: osobno dla każdej z ${S.kompetencje().length} umiejętności. Wideo, notatka, trening i zadania w jednym miejscu.</p></div>
-        <a class="btn-ghost" href="#/import">${info ? 'Import: ' + info.lekcji + ' lekcji' : 'Integracja z API Maturalnych'}</a></div>
-      <a href="#/import" class="small" id="katalogStatus" style="margin-top:-8px">${statusKatalogu().ico} ${esc(statusKatalogu().t)}</a>
+      <div class="stack" style="gap:4px"><h1>Materiały</h1><p class="muted">Lekcje Maturalnych pocięte na krótkie części: osobno dla każdej z ${S.kompetencje().length} umiejętności. Wideo, notatka, trening i zadania w jednym miejscu.</p></div>
       <div class="kurs">
         <nav class="kurs-menu" aria-label="Działy i umiejętności"><input type="search" id="szukaj" placeholder="Szukaj tematu…" aria-label="Szukaj tematu">
           ${S.dzialy().map(d => {
@@ -240,6 +254,7 @@
               <i class="kr ${st[x.id] ? st[x.id].status + (st[x.id].pewny ? '' : ' szac') : ''}"></i><span>${esc(x.nazwa)}${x.id === dzisKomp ? ' <span class="dzis-tag">DZIŚ</span>' : ''}</span><small>${ile(x.id)}</small></a>`).join('')}</details>`;
           }).join('')}</nav>
         <div class="stack" style="gap:16px">
+          ${produktyTematu(komp, czesci)}
           <div class="okruszki"><a href="#/materialy">Materiały</a><span>›</span><span>${esc(S.dzial(k.dzial).nazwa)}</span><span>›</span><span>${esc(k.nazwa)}</span></div>
           <div class="stack" style="gap:8px"><h2 style="font-size:1.7rem">${esc(k.nazwa)}</h2>
             <div class="row"><span class="badge ${k.poziom === 1 ? 'green' : k.poziom === 2 ? 'yellow' : 'red'}">${POZIOM[k.poziom]}</span><span class="badge">wymaganie CKE ${esc(k.cke)}</span>
