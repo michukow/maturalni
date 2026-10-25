@@ -371,9 +371,9 @@ function viewQuiz(){
   <span class="eyebrow">${partA?"O Tobie":"Co lubisz?"}</span>
   <h2 class="qtext" id="qt">${esc(text)}</h2>
   <div class="answers" role="radiogroup" aria-labelledby="qt">
-    ${ANSWERS.map((l,i)=>`<button class="ans" role="radio" id="a${i+1}" data-v="${i+1}" aria-checked="${answers[idx]===i+1}"><span class="dot"></span>${l}</button>`).join("")}
+    ${ANSWERS.map((l,i)=>`<button class="ans" role="radio" id="a${i+1}" data-v="${i+1}" aria-checked="${answers[idx]===i+1}"><span class="lit">${"ABCDE"[i]}</span><span class="tx">${l}</span><span class="dot"></span></button>`).join("")}
   </div>
-  <p class="hint">Na komputerze możesz odpowiadać klawiszami 1–5.</p>`;
+  <p class="hint">Na komputerze możesz odpowiadać klawiszami A–E.</p>`;
   app.querySelectorAll(".ans").forEach(b=>b.onclick=()=>answer(+b.dataset.v));
   $("back").onclick=back;
   if($("odNowa"))$("odNowa").onclick=kompasOdNowa;
@@ -392,7 +392,9 @@ function answer(v){
 function back(){if(idx===0)go("start");else{idx--;render()}}
 document.addEventListener("keydown",e=>{
   if(Nauka.trasa()[0]!=="kompas-test"||e.metaKey||e.ctrlKey||e.altKey)return;
-  if(/^[1-5]$/.test(e.key)){e.preventDefault();answer(+e.key)}
+  const lit="abcde".indexOf(e.key.toLowerCase());
+  if(e.key.length===1&&lit>-1){e.preventDefault();answer(lit+1)}
+  else if(/^[1-5]$/.test(e.key)){e.preventDefault();answer(+e.key)}
   else if(e.key==="ArrowLeft"){e.preventDefault();back()}
 });
 
