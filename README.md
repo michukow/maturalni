@@ -190,12 +190,6 @@ Prywatnych kluczy nie ma w repozytorium. Sekrety trzymamy wyłącznie w ustawien
 | Zasady rekrutacji uczelni | uchwały rekrutacyjne uczelni | 2026/27 i 2027/28 | dokumenty publiczne | dane w Kompasie (status przy uczelni) |
 | Modele RIASEC (Holland) i Wielkiej Piątki | literatura psychologiczna | – | koncepcje publiczne; pytania sformułował zespół | test zamknięty Kompasu |
 
-### Elementy istniejące przed wydarzeniem
-
-| Element i jego źródło lub autor | Co istniało przed wydarzeniem | Co zmieniono lub dodano podczas wydarzenia | Licencja lub warunki |
-| :---- | :---- | :---- | :---- |
-| `DO_UZUPELNIENIA` | `DO_UZUPELNIENIA` | `DO_UZUPELNIENIA` | `DO_UZUPELNIENIA` |
-
 ## Najbliższe kroki wdrożeniowe
 
 1. Pilotaż z uczniami Maturalnych: zestaw testowy AI z 200+ prawdziwych rozwiązań ocenionych przez egzaminatora i pomiar trafności Kompasu.
