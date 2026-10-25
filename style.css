@@ -909,28 +909,10 @@ input[type=range].suwak::-moz-range-thumb{width:24px;height:24px;border-radius:5
 .krok-nav .nr .kw{display:block;width:8px;height:8px;border:2px solid currentColor}
 .etap .nr{text-transform:uppercase}
 
-/* Preferencje: panel „Ty i Twoja przyszła praca” w granacie z wizualem */
-.pref-panel{position:relative;overflow:hidden;isolation:isolate;border-radius:var(--radius-panel);padding:24px;margin-top:10px;color:#fff;display:flex;flex-direction:column;gap:20px;
-  background:radial-gradient(ellipse at 88% 12%,rgba(39,93,245,.30) 0%,transparent 45%),linear-gradient(135deg,#0B1530 0%,#102657 60%,#173FCC 100%)}
-.pref-panel::before{content:"";position:absolute;inset:0;z-index:-1;pointer-events:none;
-  background-image:linear-gradient(rgba(120,155,255,.09) 1px,transparent 1px),linear-gradient(90deg,rgba(120,155,255,.09) 1px,transparent 1px);
-  background-size:40px 40px;mask-image:linear-gradient(135deg,#000 0%,transparent 90%);-webkit-mask-image:linear-gradient(135deg,#000 0%,transparent 90%)}
-.pref-panel-glowa{display:grid;grid-template-columns:minmax(0,1fr) 240px;gap:20px;align-items:center}
-.pref-panel h2{color:#fff}
-.pref-panel p{color:#C9D4F2}
-.pref-panel .eyebrow{color:#9FB4EE}
-.pref-panel .eyebrow::before{background:var(--yellow-500)}
-.pref-wizual{width:100%;height:auto}
-.pref-panel .pref-nazwa b{color:#fff}
-.pref-panel .pref-wart{color:var(--yellow-500)}
-.pref-panel .pref-konce span{background:rgba(255,255,255,.12);color:#DCE4F8}
-.pref-panel .pref-suwak{background:linear-gradient(90deg,var(--yellow-500) var(--p,33%),rgba(255,255,255,.2) var(--p,33%))}
-.pref-panel .pref-suwak::-webkit-slider-thumb{background:#fff;border-color:var(--yellow-500)}
-.pref-panel .pref-suwak::-moz-range-thumb{background:#fff;border-color:var(--yellow-500)}
-.pref-panel .pref-suwak:focus-visible{outline:none;box-shadow:0 0 0 3px rgba(245,196,0,.35)}
-@media (max-width:640px){.pref-panel-glowa{grid-template-columns:1fr}.pref-wizual{max-width:220px}}
 .hero-art img{opacity:.34;object-position:40% 30%}
 
 /* Tabela porównania: na telefonie przewija się w swoim pudełku, strona nie przesuwa się w bok */
 .tabela-wrap{overflow-x:auto;-webkit-overflow-scrolling:touch;margin:0 -4px}
 .tabela-wrap .porownanie{min-width:520px}
+/* Preferencje: druga sekcja wygląda tak samo jak „Przedmioty szkolne”, oddzielona cienką linią */
+.pref-lista + h2.pref-h{margin-top:28px;padding-top:24px;border-top:1px solid var(--line)}
