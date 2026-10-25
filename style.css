@@ -859,3 +859,23 @@ input[type=range].suwak::-webkit-slider-thumb{width:24px;height:24px;border-radi
 .toast{border-radius:var(--radius-control);background:var(--ink-950)}
 .stopka{font-family:var(--font);color:var(--text-muted)}
 @media (prefers-reduced-motion:reduce){.foto img,.btn-main,.btn-duo,.opcja,.ans,.odp{transition:none!important;transform:none!important}}
+
+/* Zaokrąglenia tam, gdzie lepiej wyglądają: testy, suwaki, mapa mikrokompetencji */
+.kr{border-radius:50%}
+.odp,.ans,.kom,.adapt{border-radius:10px}
+.ans .dot{border-radius:50%}
+.ans[aria-checked="true"] .dot::after{content:"";width:8px;height:8px;border-radius:50%;background:#fff}
+.odp .lit{border-radius:50%}
+.ans[aria-checked="true"],.opcja[aria-pressed="true"],.kafel[aria-pressed="true"],.chip-sel[aria-pressed="true"]{box-shadow:0 0 0 1px var(--brand-blue)}
+input[type=range].suwak.zielony{height:10px;border-radius:99px}
+input[type=range].suwak::-webkit-slider-thumb{width:30px;height:30px;border-radius:50%;background:#fff;border:4px solid var(--brand-blue)}
+input[type=range].suwak::-moz-range-thumb{width:24px;height:24px;border-radius:50%;background:#fff;border:4px solid var(--brand-blue)}
+.pref-suwak{height:10px;border-radius:99px}
+.pref-suwak::-webkit-slider-thumb{width:28px;height:28px;border-radius:50%}
+.pref-suwak::-moz-range-thumb{width:22px;height:22px;border-radius:50%}
+.prog .pkt{border-radius:50%}
+.dymek .logo-awatar{background:#fff;border:1px solid var(--border-subtle);display:grid;place-items:center}
+.dymek .logo-awatar img{width:36px;height:auto;object-fit:contain;filter:none}
+.mentor.bez-foto{grid-template-columns:28px minmax(0,1fr)}
+.mentor.bez-foto .ai-ik{width:18px;height:18px;background:var(--yellow-500);justify-self:center}
+.naglowek-foto .duo{margin:8px 0 0;max-width:420px}

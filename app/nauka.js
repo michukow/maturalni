@@ -540,7 +540,7 @@
         : `<div class="kom nie"><b class="t">Nie tym razem.</b><span>Poprawna odpowiedź: <b>${esc(r.poprawnaOdpowiedz)}</b>.</span>
             ${r.przyczyna ? `<span>Ten wybór zwykle oznacza: <b>${esc(r.przyczyna)}</b>.</span>` : ''}
             ${r.podstawa ? `<span class="muted small">Sprawdzimy też podstawę: ${esc(r.podstawa)}.</span>` : ''}</div>
-            <div class="ai-box" id="aiBox"></div>`;
+            ${aiWTescie() ? '<div class="ai-box" id="aiBox"></div>' : ''}`;
     }
     app.innerHTML = `${krokiHtml(q.numer, q.z, 'Pytanie')}
       <div class="row" style="justify-content:center"><span class="badge blue">${nazwa}</span><span class="badge">${esc(q.dzial)}</span>
@@ -557,13 +557,16 @@
     app.querySelectorAll('.odp:not([disabled])').forEach(b => b.onclick = () => odpowiedzQuiz(+b.dataset.idx));
     if ($('nw')) $('nw').onclick = () => odpowiedzQuiz(-1);
     if ($('dalej')) { $('dalej').onclick = dalejQuiz; $('dalej').focus({ preventScroll: true }); }
-    if (o && root.AIUI) root.AIUI.poBledzie(T, q, o);
+    if (o && root.AIUI && aiWTescie()) root.AIUI.poBledzie(T, q, o);
     if ($('testOdNowa')) $('testOdNowa').onclick = () => {
       // pierwsza diagnoza od nowa: świeży stan wiedzy z tej samej kalibracji (odpowiedzi z przerwanego testu nie liczą się)
       const opcje = T.opcje, po = T.po;
       zbudujProfil(); startTest('diagnoza', opcje, po); toast('Zaczynamy test od nowa.');
     };
   }
+  // Analiza przyczyny błędu przez AI: tylko w cyklicznych testach, gdy plan nauki już jest
+  // (diagnoza pełna, quizy, powtórki). Pierwszy test z przedmiotu zostaje na regułach.
+  function aiWTescie() { return !!T && (T.typ !== 'diagnoza' || !!T.opcje.pelna); }
   function odpowiedzQuiz(idx) {
     if (!T || T.odp) return;
     T.odp = { idx: idx, r: S.odpowiedz(D.stan, T.sesja, T.pyt.id, idx, dzis()) };
@@ -629,7 +632,7 @@
           <p class="muted small">Zwykły test mówi „źle”. My mówimy, jaki to błąd i której podstawy brakuje. Plan zaczyna od niej.</p></div>
       </div>
       <div class="card"><div class="row between"><h3>Twoja mapa mikrokompetencji</h3>${LEGENDA}</div>${mapaHtml(wiedza)}
-        <p class="muted small">Kliknij dział, żeby zobaczyć umiejętności. Kwadraty z obwódką to szacunek: plan sprawdzi je krótkim quizem zamiast uczyć od zera.</p></div>
+        <p class="muted small">Kliknij dział, żeby zobaczyć umiejętności. Kółka z obwódką to szacunek: plan sprawdzi je krótkim quizem zamiast uczyć od zera.</p></div>
       ${duo('plan', D.planPokazany ? 'Wróć do planu' : 'Dalej: Twój plan do matury', null)}
       <p class="note">Twój wynik i plan zapisują się tylko w tej przeglądarce na tym urządzeniu. Nie używaj trybu prywatnego i nie czyść danych przeglądarki, bo postępy znikną.</p>`;
     $('plan').onclick = () => {
@@ -697,7 +700,7 @@
       <div class="cols">
         <div class="stack" style="gap:22px">
           <span class="eyebrow">Krok 4 · Nauka</span>
-          <div class="dymek"><div class="awatar"><img src="assets/img/mentorka.jpg" alt="Twoja mentorka"></div><div class="chmurka">${msg}</div></div>
+          <div class="dymek"><div class="awatar logo-awatar"><img src="assets/logo.svg" alt=""></div><div class="chmurka">${msg}</div></div>
           <div class="card"><div class="row between"><h2>Twoja ścieżka na dziś</h2><span class="badge">${fData(t, true)}</span></div>
             ${zad ? `<div class="sciezka">${zad}</div>` : '<p class="muted">Brak zadań na dziś.</p>'}
           </div>
@@ -842,8 +845,8 @@
     const wlasne = (D.org.blokady || []).map((b, i) => ({ b: b, i: i })).filter(x => x.b.do >= t || x.b.od >= t);
     const tygodnie = S.grupujTygodnie(plan).slice(0, 5);
     app.innerHTML = `
-      <div class="stack" style="gap:10px"><span class="eyebrow">Krok 3 · Plan</span><h1>Twój plan do matury</h1>
-        <p class="muted">${tematySl(ps.jednostek)} do ${fData(ps.koniecPlanu || D.org.dataMatury, true)}, ${D.org.minutDziennie} min dziennie. Zaczynamy od tematów, które dają najwięcej punktów. Temat odhacza się po zaliczonym quizie (min. 70%).</p>
+      <div class="foto naglowek-foto"><img src="assets/img/mentorka.jpg" alt="" style="object-position:50% 30%"><span class="eyebrow">03 / Plan</span><h1>Twój plan do matury</h1>
+        <p>${tematySl(ps.jednostek)} do ${fData(ps.koniecPlanu || D.org.dataMatury, true)}, ${D.org.minutDziennie} min dziennie. Zaczynamy od tematów, które dają najwięcej punktów. Temat odhacza się po zaliczonym quizie (min. 70%).</p>
         ${duo('doNauki', D.stan.historiaSesji.length ? 'Przejdź do dzisiejszej nauki' : 'Dalej: zacznij naukę', 'doKal', 'Dodaj plan do kalendarza')}</div>
       <div class="staty"><div class="stat"><b>${ps.dniDoMatury}</b><span>dni do matury</span></div><div class="stat"><b>${plan.zaliczone.length}</b><span>zaliczone tematy</span></div>
         <div class="stat"><b>${ps.jednostek}</b><span>w planie</span></div><div class="stat"><b>${String(ps.godzinNauki).replace('.', ',')} h</b><span>nauki w planie</span></div></div>
