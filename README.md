@@ -202,4 +202,5 @@ Prywatnych kluczy nie ma w repozytorium. Sekrety trzymamy wyłącznie w ustawien
 ## Demonstracja
 
 - **Adres działającego demo:** https://maturalni-4l1.pages.dev (widok dla jury: `#/mapa`)
-- **Slajdy lub nagranie zapasowe:** `DO_UZUPELNIENIA`
+- **Slajdy:** `https://canva.link/kydkpyqzkto1ca2`
+- **Nagrania:** `[DO UZUPEŁNIENIA]`
