@@ -39,7 +39,7 @@
   function widok() {
     const p = wczytaj() || domyslne();
     app.innerHTML = `
-      <span class="eyebrow">01 / Diagnoza · ostatni krok testu</span>
+      <span class="eyebrow">Osobowość i kierunek · ostatni krok</span>
       <h1 class="pref-h">Przedmioty szkolne</h1>
       <p>Z którymi przedmiotami szkolnymi wiążesz swoją przyszłość zawodową, a które chcesz wykorzystywać jedynie w minimalnym stopniu? <b>Zaznacz na poniższych suwakach swoje preferencje.</b></p>
       <details class="pref-info"><summary><span class="i">i</span>Co oznaczają poszczególne poziomy przedmiotów?</summary>
@@ -48,12 +48,21 @@
           <div class="pref-nazwa"><b>${esc(n)}</b><span class="pref-wart" id="w-${id}">${POZIOMY[p.przedmioty[id]]}</span></div>
           ${suwak('s-' + id, p.przedmioty[id], n + ': ' + POZIOMY[p.przedmioty[id]])}
           <div class="pref-konce"><span>Podstawowy</span><span>Ekspert</span></div></div>`).join('')}</div>
-      <h2 class="pref-h">Ty i Twoja przyszła praca</h2>
-      <p>Tu też nie ma dobrych ani złych odpowiedzi. Pomoże nam to dobrać kierunki i ustawić cel na maturze.</p>
+      <section class="pref-panel">
+        <div class="pref-panel-glowa"><div class="stack" style="gap:8px"><span class="eyebrow">Twoje ambicje</span><h2>Ty i Twoja przyszła praca</h2>
+          <p>Tu też nie ma dobrych ani złych odpowiedzi. Pomoże nam to dobrać kierunki i ustawić cel na maturze.</p></div>
+          <svg class="pref-wizual" viewBox="0 0 240 150" aria-hidden="true">
+            <defs><linearGradient id="pwg" x1="0" y1="1" x2="1" y2="0"><stop offset="0" stop-color="#275DF5" stop-opacity=".15"/><stop offset="1" stop-color="#275DF5" stop-opacity=".6"/></linearGradient></defs>
+            <path d="M10 140 L70 112 L130 84 L230 20 L230 140 Z" fill="url(#pwg)"/>
+            <path d="M10 140 L70 112 L130 84 L230 20" fill="none" stroke="#F5C400" stroke-width="2.5"/>
+            <g fill="#0B1530" stroke="#F5C400" stroke-width="2.5"><rect x="64" y="106" width="12" height="12"/><rect x="124" y="78" width="12" height="12"/><rect x="223" y="13" width="14" height="14" fill="#F5C400"/></g>
+            <g font-family="ui-monospace,Menlo,monospace" font-size="9" fill="#9FB4EE" letter-spacing="1"><text x="44" y="134">MATURA</text><text x="110" y="106">STUDIA</text><text x="190" y="44">PRACA</text></g>
+          </svg></div>
       <div class="pref-lista">${PRACA.map(x => `<div class="pref-wiersz">
           <div class="pref-nazwa"><b>${esc(x.t)}</b><span class="pref-wart" id="w-${x.id}">${esc(x.poz[p[x.id]])}</span></div>
           ${suwak('s-' + x.id, p[x.id], x.t + ' ' + x.poz[p[x.id]])}
           <div class="pref-konce"><span>${esc(x.od)}</span><span>${esc(x.do)}</span></div></div>`).join('')}</div>
+      </section>
       ${N.duo('dalejP', 'Dalej', 'wsteczP', '← Wstecz')}
       <button class="btn link" id="odNowaP" style="align-self:center">↺ Zacznij test od nowa</button>`;
     const ustaw = (id, v, tekst) => { const s = $('s-' + id); s.style.setProperty('--p', (v / 3 * 100) + '%'); s.setAttribute('aria-valuetext', tekst); $('w-' + id).textContent = tekst; };

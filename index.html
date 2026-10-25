@@ -342,11 +342,11 @@ function viewStart(){
   const glowny = done?"Zobacz swój wynik":resume?`Kontynuuj (pytanie ${n+1} z ${Q.length})`:"Zaczynamy";
   app.innerHTML=`
   <div class="podzial"><div class="stack" style="gap:18px;justify-content:center">
-  <span class="eyebrow">01 / Diagnoza</span>
+  <span class="eyebrow">Diagnoza: osobowość i kierunek</span>
   <h1>Nie wybieraj w ciemno. Wybierz swój <span style="color:var(--brand-blue)">kierunek.</span></h1>
   <p class="lead">22 krótkie pytania i kilka suwaków, ok. 5 minut. Sprawdź, które przedmioty i kierunki studiów naprawdę pasują do Ciebie.</p>
   <p class="note">Bez stresu: to tylko podpowiedź na start, a nie decyzja na całe życie.</p></div>
-  <div class="foto jasne"><img src="assets/img/uczennica.jpg" alt=""><span class="na mono" style="left:18px;bottom:16px">diagnoza / 01</span></div></div>
+  <div class="foto jasne"><img src="assets/img/uczennica.jpg" alt=""><span class="na mono" style="left:18px;bottom:16px">Osobowość i kierunek</span></div></div>
   ${Nauka.duo('go', glowny, n?'reset':'skip', n?'↺ Zacznij test od nowa':'Wiem już, co zdaję: pomiń doradztwo i przejdź do testów')}
   ${n?'<button class="btn link" id="skip2" style="align-self:center">Wiem już, co zdaję: pomiń doradztwo i przejdź do testów →</button>':''}`;
   $("go").onclick=startTest;
@@ -456,8 +456,8 @@ function viewResult(){
   const topInt=ORDER.slice().sort((x,y)=>r[y]-r[x]).slice(0,2);
 
   app.innerHTML=`
-  <div class="foto naglowek-foto"><img src="assets/img/grupa.jpg" alt="">
-  <span class="eyebrow">${isSample?"Przykładowy wynik":"01 / Twój wynik"}</span>
+  <div class="foto naglowek-foto jasne"><img src="assets/img/para.jpg" alt="" style="object-position:60% 30%">
+  <span class="eyebrow">${isSample?"Przykładowy wynik":"Twój wynik: osobowość i kierunek"}</span>
   <h1>Pasuje do Ciebie ścieżka ${P0.name.toLowerCase()}</h1>
   <p>Najbardziej ciekawi Cię ${FRIENDLY[topInt[0]]} oraz ${FRIENDLY[topInt[1]]}. Masz dwa plany do porównania.</p></div>
   ${ai?KompasAI.kartaHtml(ai,id=>PATHS[id]?PATHS[id].name.toLowerCase():id):(!isSample&&window.KompasAI?KompasAI.zachetaHtml(a.join("")):"")}

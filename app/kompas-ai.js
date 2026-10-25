@@ -67,7 +67,7 @@
       });
       return;
     }
-    app.innerHTML = `<span class="eyebrow">01 / Diagnoza · jeszcze 2 pytania</span>
+    app.innerHTML = `<span class="eyebrow">Osobowość i kierunek · jeszcze 2 pytania</span>
       <h1>Opowiedz swoimi słowami</h1>
       <div class="mentor bez-foto"><span class="ai-ik"></span><div class="stack" style="gap:2px"><span class="mono">Twój mentor</span><b>Dwa pytania tylko dla Ciebie</b><span>Ułożone na podstawie Twoich odpowiedzi z testu.</span></div></div>
       <p class="lead">Test zamknięty nie wszystko wyłapie. Odpowiedz w 1-3 zdaniach: co robisz, co lubisz, co Cię zniechęca. Możesz pominąć.</p>

@@ -105,10 +105,10 @@
   // Pasek kroków pokazuje postęp, dolny pasek (rysujDol) służy do codziennej nawigacji.
   // Pozostałe ekrany (opis, matryca, AI, demo) są na stronie dla jury.
   const KROKI = [
-    { nr: 1, nazwa: 'Diagnoza', opis: 'osobowość i kierunki' },
-    { nr: 2, nazwa: 'Test', opis: 'z przedmiotu' },
-    { nr: 3, nazwa: 'Plan', opis: 'do matury' },
-    { nr: 4, nazwa: 'Nauka', opis: 'materiał i quiz' }
+    { nr: 1, nazwa: 'Osobowość i kierunek', opis: 'diagnoza predyspozycji' },
+    { nr: 2, nazwa: 'Test z matematyki', opis: 'poziom i prognoza wyniku' },
+    { nr: 3, nazwa: 'Plan do matury', opis: 'nauka dzień po dniu' },
+    { nr: 4, nazwa: 'Nauka', opis: 'materiały i quizy' }
   ];
   function kompasZrobiony() {
     try { const a = JSON.parse(localStorage.getItem('maturalni-answers')); return Array.isArray(a) && a.length > 0 && a.every(v => v !== null); } catch (e) { return false; }
@@ -147,7 +147,7 @@
         const zr = krokZrobiony(k.nr), otw = krokOtwarty(k.nr);
         return `<button class="krok-nav ${zr ? 'zrobiony' : ''} ${otw ? '' : 'zamkniety'}" data-krok="${k.nr}" ${akt === k.nr ? 'aria-current="step"' : ''}
           aria-label="Krok ${k.nr}: ${k.nazwa}${zr ? ', zrobione' : ''}${otw ? '' : ', najpierw zrób test'}">
-          <span class="nr">${zr ? '✓' : otw ? '0' + k.nr : ik('zamek')}</span><span class="tx"><b>${k.nazwa}</b><small>${k.opis}</small></span></button>`;
+          <span class="nr">${zr ? '✓' : otw ? '<i class="kw"></i>' : ik('zamek')}</span><span class="tx"><b>${k.nazwa}</b><small>${k.opis}</small></span></button>`;
       }).join('')}</nav>`}`;
     $('topbar').querySelectorAll('[data-krok]').forEach(b => b.onclick = () => idzDoKroku(+b.dataset.krok));
     rysujDol(n);
@@ -260,14 +260,14 @@
           <img src="assets/img/studenci.jpg" alt="">
           <span class="wielka">22</span>
           <svg class="skos" viewBox="0 0 100 100" preserveAspectRatio="none"><line x1="0" y1="100" x2="100" y2="34" stroke="rgba(120,155,255,.55)" stroke-width=".25"/><line x1="0" y1="100" x2="100" y2="34" stroke="rgba(120,155,255,.18)" stroke-width="2"/></svg>
-          <div class="podpis"><span class="zolty"></span><p>Najpierw poznaj siebie.<br>Potem wybierz przedmioty.</p><span class="mono">diagnoza / 01</span></div>
+          <div class="podpis"><span class="zolty"></span><p>Najpierw poznaj siebie.<br>Potem wybierz przedmioty.</p><span class="mono">Diagnoza osobowości i kierunku</span></div>
         </div>
       </section>
       <section class="etapy" aria-label="Jak to działa">
-        <div class="etap"><span class="nr">01</span><b>Diagnoza</b><span>Kim jesteś i jaki kierunek do Ciebie pasuje</span></div>
-        <div class="etap"><span class="nr">02</span><b>Test</b><span>Jak stoisz z przedmiotem, z prognozą wyniku</span></div>
-        <div class="etap"><span class="nr">03</span><b>Plan</b><span>Tylko to, czego brakuje, rozpisane na dni</span></div>
-        <div class="etap"><span class="nr">04</span><b>Nauka</b><span>Materiały Maturalnych i quiz zamiast zgadywania</span></div>
+        <div class="etap"><span class="nr">Diagnoza</span><b>Osobowość i kierunek</b><span>Kim jesteś i jaki kierunek do Ciebie pasuje</span></div>
+        <div class="etap"><span class="nr">Test</span><b>Test z matematyki</b><span>Jak stoisz z przedmiotem, z prognozą wyniku</span></div>
+        <div class="etap"><span class="nr">Plan</span><b>Plan do matury</b><span>Tylko to, czego brakuje, rozpisane na dni</span></div>
+        <div class="etap"><span class="nr">Nauka</span><b>Nauka z Maturalnymi</b><span>Materiały Maturalnych i quiz zamiast zgadywania</span></div>
       </section>`;
     $('start').onclick = () => (root.Nauka.kompasStart ? root.Nauka.kompasStart() : go('kompas'));
     $('mat').onclick = () => startKalibracji(false);
@@ -504,7 +504,7 @@
     if (!D) return brakDanych();
     const szybka = D.profil && D.profil.szybka;
     const zakres = szybka ? D.profil.szybkaDzialy.map(id => S.dzial(id).nazwa).join(', ') : 'cała matematyka podstawowa';
-    app.innerHTML = `<div class="foto naglowek-foto jasne"><img src="assets/img/grupa.jpg" alt=""><span class="eyebrow">02 / Test diagnostyczny</span><h1>Sprawdźmy, gdzie jesteś</h1>
+    app.innerHTML = `<div class="foto naglowek-foto jasne"><img src="assets/img/grupa.jpg" alt=""><span class="eyebrow">Test z matematyki</span><h1>Sprawdźmy, gdzie jesteś</h1>
         <p>${szybka ? 'ok. 8 minut · 10 pytań' : 'ok. 15 minut · 20 pytań'} · ${esc(zakres)}</p></div>
       <div class="card"><ul class="stack" style="margin:0;padding-left:20px;gap:8px">
         <li>Pytania dopasowują się do Ciebie: gdy coś nie wyjdzie, sprawdzamy podstawy.</li>
@@ -611,7 +611,7 @@
     const pelna = W && W.opcje && W.opcje.pelna;
     const poprzednia = D.stan.prognozy.length > 1 ? D.stan.prognozy[D.stan.prognozy.length - 2] : null;
     app.innerHTML = `
-      <div class="foto naglowek-foto"><img src="assets/img/studenci.jpg" alt=""><span class="eyebrow">02 / ${pelna ? 'Diagnoza pełna' : szybka ? 'Wynik testu' : 'Wynik diagnozy'}</span>
+      <div class="foto naglowek-foto"><img src="assets/img/studenci.jpg" alt=""><span class="eyebrow">${pelna ? 'Diagnoza pełna z matematyki' : 'Test z matematyki · wynik'}</span>
         <h1>Na dziś masz ok. <span style="color:var(--yellow-500)">${p.wynik}%</span> z matury z matematyki</h1>
         <p>${p.cel ? (p.wynik >= p.cel ? 'Jesteś na poziomie swojego celu. Pilnujemy, żeby tak zostało.' : `Twój cel to ${p.cel}%. Brakuje ok. ${p.cel - p.wynik} pkt proc. i wiemy dokładnie, gdzie ich szukać.`) : ''}
         ${pelna && poprzednia ? `<br><b style="color:${p.wynik >= poprzednia.wynik ? '#7FE0AE' : '#FF9C9C'}">${p.wynik >= poprzednia.wynik ? '▲ +' : '▼ '}${p.wynik - poprzednia.wynik} pkt proc. od poprzedniej diagnozy</b>` : ''}</p></div>
@@ -699,7 +699,7 @@
     app.innerHTML = `
       <div class="cols">
         <div class="stack" style="gap:22px">
-          <span class="eyebrow">Krok 4 · Nauka</span>
+          <span class="eyebrow">Nauka z Maturalnymi · dziś</span>
           <div class="dymek"><div class="awatar logo-awatar"><img src="assets/logo.svg" alt=""></div><div class="chmurka">${msg}</div></div>
           <div class="card"><div class="row between"><h2>Twoja ścieżka na dziś</h2><span class="badge">${fData(t, true)}</span></div>
             ${zad ? `<div class="sciezka">${zad}</div>` : '<p class="muted">Brak zadań na dziś.</p>'}
@@ -845,7 +845,7 @@
     const wlasne = (D.org.blokady || []).map((b, i) => ({ b: b, i: i })).filter(x => x.b.do >= t || x.b.od >= t);
     const tygodnie = S.grupujTygodnie(plan).slice(0, 5);
     app.innerHTML = `
-      <div class="foto naglowek-foto"><img src="assets/img/mentorka.jpg" alt="" style="object-position:50% 30%"><span class="eyebrow">03 / Plan</span><h1>Twój plan do matury</h1>
+      <div class="foto naglowek-foto"><img src="assets/img/mentorka.jpg" alt="" style="object-position:50% 30%"><span class="eyebrow">Plan nauki do matury</span><h1>Twój plan do matury</h1>
         <p>${tematySl(ps.jednostek)} do ${fData(ps.koniecPlanu || D.org.dataMatury, true)}, ${D.org.minutDziennie} min dziennie. Zaczynamy od tematów, które dają najwięcej punktów. Temat odhacza się po zaliczonym quizie (min. 70%).</p>
         ${duo('doNauki', D.stan.historiaSesji.length ? 'Przejdź do dzisiejszej nauki' : 'Dalej: zacznij naukę', 'doKal', 'Dodaj plan do kalendarza')}</div>
       <div class="staty"><div class="stat"><b>${ps.dniDoMatury}</b><span>dni do matury</span></div><div class="stat"><b>${plan.zaliczone.length}</b><span>zaliczone tematy</span></div>
