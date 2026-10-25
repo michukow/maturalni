@@ -58,7 +58,7 @@ Szczegóły kroku 4: quiz zaliczeniowy (próg 70%), powtórki adaptacyjne (2 > 5
 | 3 | Matematyka, po złej odpowiedzi i po 2 nieudanych quizach | zadanie, odpowiedź, opis ucznia, temat i podstawy | brakująca mikrokompetencja z pewnością, opis, wskazówka | silnik: tylko id z listy, od 70% (`silnik.zastosujAI`) | `functions/api/ai/analiza.js` |
 
 - **Kompas**: test zamknięty liczy algorytm (RIASEC i Wielka Piątka). Po ostatnim pytaniu ekran `#/kompas-ai` pokazuje 2 pytania od AI, potem wynik Kompasu ma kartę „Wynik pogłębiony przez AI”, powód przy każdym planie i rolę wskazaną przez AI. Uczeń zawsze widzi, co wskazał sam test. Kod ekranu: `app/kompas-ai.js`, dane dla AI: `Nauka.kompasProfil()` w `index.html`.
-- **Testy Kompasu** (`#/ai`): 7 przypadków z kryteriami (prompt 1: 2 pytania, bez tak/nie i żargonu; prompt 2: zgodne odpowiedzi nie zmieniają planu, mocny dowód zmienia, puste odpowiedzi i manipulacja nic nie zmieniają).
+- **Testy Kompasu** (`#/testy-ai`, narzędzie zespołu, niepodlinkowane w aplikacji): 7 przypadków z kryteriami (prompt 1: 2 pytania, bez tak/nie i żargonu; prompt 2: zgodne odpowiedzi nie zmieniają planu, mocny dowód zmienia, puste odpowiedzi i manipulacja nic nie zmieniają).
 
 **Matematyka (prompt 3):**
 
@@ -69,7 +69,7 @@ Szczegóły kroku 4: quiz zaliczeniowy (próg 70%), powtórki adaptacyjne (2 > 5
 - **Model**: domyślnie `google/gemini-3.6-flash`, temperatura 0,1, odpowiedź JSON. Zmiana: zmienna `AI_MODEL` w Cloudflare.
 - **Logika i prompt**: `functions/api/ai/analiza.js` (serwer). Ekrany i testy: `app/ai.js`.
 - **Klucz**: Cloudflare > Workers & Pages > maturalni > Settings > Variables and Secrets > Add > `OPENROUTER_API_KEY`, typ **Secret**. Nigdy w kodzie, README, na Discordzie ani w formularzu.
-- **Testy jakości** (`#/ai`): 27 przypadków o znanej przyczynie. A: typowe, klucz wystarcza (10). B: opis ucznia zmienia przyczynę (7). C: nietypowe, np. „Nie wiem”, manipulacja, tekst bez sensu, zgadywanie, zły klik, angielski (8). T: analiza tematu po 2 porażkach (2). Mierzymy trafność reguł, samej AI i systemu (AI, gdy pewna, inaczej reguły), liczbę „pewnych, ale błędnych” odpowiedzi AI, wstrzymania, czas i koszt. Wyniki można pobrać jako JSON.
+- **Testy jakości** (`#/testy-ai`, narzędzie zespołu, niepodlinkowane w aplikacji): 27 przypadków o znanej przyczynie. A: typowe, klucz wystarcza (10). B: opis ucznia zmienia przyczynę (7). C: nietypowe, np. „Nie wiem”, manipulacja, tekst bez sensu, zgadywanie, zły klik, angielski (8). T: analiza tematu po 2 porażkach (2). Mierzymy trafność reguł, samej AI i systemu (AI, gdy pewna, inaczej reguły), liczbę „pewnych, ale błędnych” odpowiedzi AI, wstrzymania, czas i koszt. Wyniki można pobrać jako JSON.
 - **Ograniczenia**: zestaw testowy przygotował zespół (to nie są odpowiedzi prawdziwych uczniów), próba jest mała, AI nie wskaże przyczyny spoza tematu i jego podstaw, bez opisu ucznia AI wie niewiele więcej niż klucz odpowiedzi.
 
 ## Uruchomienie

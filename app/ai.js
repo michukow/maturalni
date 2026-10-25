@@ -6,7 +6,7 @@
  *     a w teście adaptacyjnym od razu kieruje następne pytanie do tej podstawy.
  *  2. Po 2 nieudanych quizach z tematu: AI czyta wszystkie błędy i wskazuje, do której podstawy wrócić.
  * AI proponuje, silnik decyduje (silnik.zastosujAI): tylko id z listy kandydatów i pewność >= 0,7. Inaczej działają reguły.
- * Ekran #/ai: opis AI i testy jakości (zestaw przypadków o znanej przyczynie, AI kontra reguły).
+ * Ekran #/testy-ai (tylko dla zespołu, niepodlinkowany): testy jakości AI na prawdziwym modelu, liczby do prezentacji.
  */
 (function (root) {
   'use strict';
@@ -251,40 +251,16 @@
     return z;
   }
 
-  // ───────────── ekran #/ai ─────────────
+  // ───────────── ekran #/testy-ai (narzędzie zespołu) ─────────────
   function widokAI() {
     let zapis = null;
     try { zapis = JSON.parse(localStorage.getItem(KLUCZ_TESTOW)); } catch (e) { zapis = null; }
     const nazwa = id => (S.kompetencja(id) || {}).nazwa || id;
     const kk = id => id ? `<span title="${esc(nazwa(id))}">${esc(id)}</span>` : '<span class="muted">brak</span>';
     app.innerHTML = `
-      <div class="stack" style="gap:6px"><span class="eyebrow">AI i jakość</span><h1>Jak używamy AI</h1>
-        <p class="muted">AI robi to, czego nie zrobią reguły: rozumie, co uczeń pisze swoimi słowami. Działa w dwóch miejscach: w Kompasie (kim jesteś i dokąd iść) i w matematyce (dlaczego pojawia się błąd). Liczenie (wyniki testu, plan, daty, powtórki, prognoza) zostaje w algorytmie, bo musi być dokładne, szybkie i darmowe.</p></div>
+      <div class="stack" style="gap:6px"><span class="eyebrow">Narzędzie zespołu (poza aplikacją ucznia)</span><h1>Testy jakości AI</h1>
+        <p class="muted">Uruchamia zestawy testowe na prawdziwym modelu i daje liczby do prezentacji. Ekran nie jest podlinkowany w aplikacji.</p></div>
       <div class="callout ${stanAI && stanAI.gotowe ? 'green' : 'yellow'}" id="aiStatus"><span class="ico">✨</span><span>Sprawdzam, czy AI jest włączona…</span></div>
-      <div class="card"><h3>3 prompty systemowe</h3><div style="overflow-x:auto"><table class="import-tab"><thead><tr><th>#</th><th>Gdzie i kiedy</th><th>AI dostaje</th><th>AI zwraca</th><th>Kto decyduje</th><th>Plik</th></tr></thead><tbody>
-        <tr><td><b>1</b></td><td>Kompas, po 22 pytaniach zamkniętych</td><td>wynik algorytmu: cechy, zainteresowania, plan A i B, odpowiedzi</td><td>2 pytania otwarte o to, czego test nie rozstrzygnął</td><td>AI (bez AI: 2 pytania standardowe)</td><td><span class="kod">functions/api/ai/kompas.js</span></td></tr>
-        <tr><td><b>2</b></td><td>Kompas, po odpowiedziach swoimi słowami</td><td>wynik algorytmu, lista ścieżek i ról, pytania i odpowiedzi ucznia</td><td>opis, niuanse, rola, następny krok, kolejność planów z pewnością</td><td>aplikacja: zmiana planów od ${proc(root.KompasAI ? root.KompasAI.PROG.zmiana : 0.6)}% pewności, nowa ścieżka od ${proc(root.KompasAI ? root.KompasAI.PROG.nowa : 0.7)}%</td><td><span class="kod">functions/api/ai/kompas.js</span></td></tr>
-        <tr><td><b>3</b></td><td>Matematyka, po złej odpowiedzi i po 2 nieudanych quizach</td><td>zadanie, odpowiedź, opis ucznia, temat i jego podstawy</td><td>brakująca mikrokompetencja z pewnością, opis, wskazówka</td><td>silnik: tylko id z listy, od ${proc(S.KONFIG.progPewnosciAI)}% pewności</td><td><span class="kod">functions/api/ai/analiza.js</span></td></tr>
-      </tbody></table></div></div>
-      <div class="grid2">
-        <div class="card"><h3>Kompas: prompty 1 i 2</h3><ul class="stack small" style="margin:0;padding-left:18px">
-          <li><b>Test zamknięty liczy algorytm</b> (zainteresowania RIASEC i cechy Wielkiej Piątki). AI dostaje gotowy wynik, nie liczy go od nowa.</li>
-          <li><b>Prompt 1</b> szuka niepewności w wyniku: remisów, odpowiedzi „Nie wiem”, sprzeczności. Na tej podstawie układa 2 pytania otwarte o konkretne sytuacje.</li>
-          <li><b>Prompt 2</b> łączy wynik testu z odpowiedziami ucznia: opis jego słowami, czego test nie pokazał, rola, krok na ten tydzień.</li>
-          <li><b>Plany A i B</b> zmieniają się tylko przy mocnym dowodzie w odpowiedziach. Uczeń zawsze widzi, co wskazał sam test.</li></ul></div>
-        <div class="card"><h3>Matematyka: prompt 3</h3><ul class="stack small" style="margin:0;padding-left:18px">
-          <li><b>Po złej odpowiedzi</b> (test i quiz): AI wskazuje brakującą mikrokompetencję i daje wskazówkę. W teście adaptacyjnym następne pytanie od razu sprawdza tę podstawę.</li>
-          <li><b>Po 2 nieudanych quizach</b>: AI czyta wszystkie błędy z tematu i wskazuje, do której podstawy wrócić. Plan i lekcja zmieniają się automatycznie.</li>
-          <li><b>Uczeń może dopisać</b>, jak liczył. Wtedy AI widzi tok rozumowania, a nie tylko kliknięcie.</li>
-          <li><b>AI proponuje, silnik decyduje</b>: przyjmujemy tylko identyfikator z listy kandydatów (temat i jego podstawy) przy pewności od ${proc(S.KONFIG.progPewnosciAI)}%. Inaczej działa klucz odpowiedzi.</li></ul></div>
-        <div class="card"><h3>Przepływ danych</h3>
-          <div class="flow"><span>Uczeń: odpowiedź + opcjonalny opis</span><i>→</i><span>Silnik: temat, kandydaci, klucz błędu</span><i>→</i><span>Bramka Cloudflare (klucz API tylko tu)</span><i>→</i><span>OpenRouter: model</span><i>→</i><span>Kontrola JSON</span><i>→</i><span>Silnik: przyjąć czy nie</span></div>
-          <ul class="stack small" style="margin:10px 0 0;padding-left:18px">
-            <li><b>Model:</b> <span class="kod" id="aiModel">${esc((stanAI && stanAI.model) || 'google/gemini-3.6-flash')}</span>, temperatura 0,1, odpowiedź JSON. Zmiana modelu: zmienna AI_MODEL w Cloudflare.</li>
-            <li><b>Identyfikatory:</b> AI zwraca tylko id z naszej matrycy (np. <span class="kod">TR-02</span>). Inne odrzuca serwer i silnik.</li>
-            <li><b>Logika i prompty:</b> <span class="kod">functions/api/ai/analiza.js</span> i <span class="kod">kompas.js</span> (serwer). Decyzje: <span class="kod">silnik.zastosujAI</span>, <span class="kod">KompasAI.przyjmij</span>. Ekrany: <span class="kod">app/ai.js</span>, <span class="kod">app/kompas-ai.js</span>.</li>
-            <li><b>Dane:</b> odpowiedzi z testów i tekst ucznia. Bez imienia ani innych danych osobowych.</li></ul></div>
-      </div>
       <div class="card"><div class="row between"><div class="stack" style="gap:4px"><h3>Testy jakości</h3>
           <span class="small muted">${PRZYPADKI.length} przypadków o znanej przyczynie: ${Object.keys(GRUPY).map(g => g + ' ' + GRUPY[g].toLowerCase() + ' (' + PRZYPADKI.filter(c => c.grupa === g).length + ')').join(', ')}.</span></div>
           <button class="btn-small" id="aiTestuj">▶ Uruchom testy</button></div>
@@ -294,14 +270,7 @@
           <span class="small muted">${KOMPAS_TESTY.length} przypadków: ${KOMPAS_TESTY.filter(c => c.etap === 'pytania').length} dla promptu 1, ${KOMPAS_TESTY.filter(c => c.etap === 'wynik').length} dla promptu 2.</span></div>
           <button class="btn-small" id="aiTestujK">▶ Uruchom testy</button></div>
         <p class="small muted">Kryteria. Prompt 1: dokładnie 2 pytania, bez pytań tak/nie, bez żargonu, do 200 znaków. Prompt 2: odpowiedzi zgodne z testem nie zmieniają planu A. Mocny dowód zmienia plan A. Puste odpowiedzi i manipulacja niczego nie zmieniają (przy pustych pewność do 40%).</p>
-        <div id="aiPostepK"></div><div id="aiWynikiK"></div></div>
-      <div class="card"><h3>Ograniczenia</h3><ul class="stack small" style="margin:0;padding-left:18px">
-        <li>Zestaw testowy przygotował zespół. To nie są odpowiedzi prawdziwych uczniów. Grupa B celowo sprawdza sytuacje, w których klucz odpowiedzi nie wystarcza.</li>
-        <li>${PRZYPADKI.length} przypadków to mała próba: wynik pokazuje kierunek, a nie dokładność w produkcji. Następny krok: 200+ anonimowych rozwiązań uczniów Maturalnych ocenionych przez egzaminatora.</li>
-        <li>AI wybiera tylko spośród tematu i jego podstaw (2 poziomy w dół). Jeśli przyczyna leży dalej, AI powinna się wstrzymać, a decydują reguły.</li>
-        <li>Bez opisu ucznia AI ma niewiele więcej informacji niż klucz odpowiedzi. Największa wartość jest wtedy, gdy uczeń dopisze, jak liczył.</li>
-        <li>Gdy AI nie odpowie (brak sieci, limit, błąd), aplikacja działa dalej na regułach. Uczeń widzi informację, że AI jest niedostępna.</li>
-        <li>Kompas: AI nie zastępuje rozmowy z doradcą. Opis i niuanse opierają się na 2 krótkich odpowiedziach, więc zmiana planu wymaga wysokiej pewności, a uczeń zawsze widzi wynik samego testu.</li></ul></div>`;
+        <div id="aiPostepK"></div><div id="aiWynikiK"></div></div>`;
 
     sprawdzStan().then(s => {
       const b = $('aiStatus'); if (!b) return;
@@ -375,6 +344,6 @@
     };
   }
 
-  N.rejestruj({ ai: widokAI });
+  N.rejestruj({ 'testy-ai': widokAI });
   root.AIUI = { poBledzie: poBledzie, poPorazce: poPorazce, analizuj: analizuj, sprawdzStan: sprawdzStan, PRZYPADKI: PRZYPADKI, _test: { daneSprawy: daneSprawy, regulaSprawy: regulaSprawy, podsumuj: podsumuj } };
 })(window);

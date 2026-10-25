@@ -51,7 +51,7 @@
 
   // ───────────── router ─────────────
   const TRASY = {}, KOMPAS = new Set();
-  const SZEROKIE = new Set(['', 'dzis', 'plan', 'postepy', 'powiadomienia', 'jak-to-dziala', 'mapa', 'matryca', 'wynik', 'kalendarz', 'materialy', 'import', 'ai']);
+  const SZEROKIE = new Set(['', 'dzis', 'plan', 'postepy', 'powiadomienia', 'jak-to-dziala', 'mapa', 'matryca', 'wynik', 'kalendarz', 'materialy', 'import', 'testy-ai']);
   function rejestruj(t, kompasowe) { Object.assign(TRASY, t); (kompasowe || []).forEach(k => KOMPAS.add(k)); }
   function trasa() {
     const h = decodeURIComponent(location.hash.replace(/^#\/?/, ''));
@@ -1025,7 +1025,7 @@
         <div class="card"><h3>Jak liczymy</h3><ul style="margin:0;padding-left:18px" class="stack small">
           <li><b>Poziom umiejętności</b> to udział trafień z uwzględnieniem pewności. Kalibracja daje słaby szacunek startowy, test go weryfikuje. Od 70% opanowane, poniżej 40% luka.</li>
           <li><b>Test</b> pyta tam, gdzie spodziewana luka kosztuje najwięcej punktów, a wiemy najmniej. Każdy dział dostaje min. jedno pytanie.</li>
-          <li><b>Przyczyna błędu</b>: AI analizuje odpowiedź i opis rozwiązania ucznia i wskazuje brakującą podstawę (<a href="#/ai">jak i z jaką trafnością</a>). Zapasowo: każda zła odpowiedź w banku pytań jest opisana.</li>
+          <li><b>Przyczyna błędu</b>: AI analizuje odpowiedź i opis rozwiązania ucznia i wskazuje brakującą podstawę. Zapasowo: każda zła odpowiedź w banku pytań jest opisana.</li>
           <li><b>Prognoza</b> to suma poziomów ważona udziałem w punktach matury. Przedział zwęża się z każdą odpowiedzią.</li>
           <li><b>Plan</b> sortuje tematy według punktów na minutę, wstawia podstawy przed tematy zależne i rozkłada je na dni z 20% buforem.</li>
         </ul></div>
@@ -1064,7 +1064,6 @@
         ${lk('#/kompas', '🧑‍🎓', 'Kompas', 'Diagnoza osobowości i predyspozycji')}
         ${lk('#/przedmioty', '📚', 'Przedmioty maturalne', 'Wybór przedmiotu do diagnozy')}
         ${lk('#/jak-to-dziala', '💡', 'Jak to działa', 'Wyróżniki, algorytm, wartość dla Maturalnych')}
-        ${lk('#/ai', '✨', 'AI i jakość', 'Rola AI, przepływ danych, model, testy jakości')}
         ${lk('#/matryca', '🧩', 'Matryca mikrokompetencji', '67 umiejętności z wymagań CKE')}
         ${lk('#/import', '🔄', 'Import materiałów', 'Lekcje z API Maturalnych > mikrokompetencje')}
       </div></div>
