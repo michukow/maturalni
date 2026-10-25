@@ -17,7 +17,19 @@ Uczeń widzi jedną ścieżkę i ma dwa paski nawigacji:
 | **3. Plan** | przegląda plan, może zmienić minuty, dni, dni wolne, dodać „więcej czasu” (dysleksja/dyskalkulia) | listę tematów z datami, od tych dających najwięcej punktów | `#/plan`, `#/postepy`, `#/kalendarz` |
 | **4. Nauka** | codziennie: materiał (części tematu i fragmenty materiałów Maturalnych), zadanie „Sprawdź się”, quiz zaliczeniowy (70%), powtórki | serię 🔥, zaliczone tematy, aktualizowaną prognozę | `#/dzis`, `#/lekcja`, `#/quiz-wynik`, `#/materialy` |
 
-Przejścia: wynik Kompasu > „Dalej: krok 2”, wynik testu > „Dalej: krok 3”, plan > „Dalej: krok 4”. Start ma jeden przycisk „Zaczynam” i jeden link dla osób, które wiedzą, co zdają (od razu krok 2).
+**Zasada dwóch przycisków (jak w Duolingo):** na każdym ekranie jeden duży przycisk główny i najwyżej jeden drugi (`duo()` w `app/nauka.js`, style `.btn-duo`). Ekran powitalny nowego ucznia nie ma pasków nawigacji, tylko „Zaczynamy” i „Wiem, co zdaję: od razu test”.
+
+| Ekran | Przycisk główny | Drugi przycisk |
+|---|---|---|
+| Powitanie | Zaczynamy | Wiem, co zdaję: od razu test |
+| Kompas (start) | Zaczynamy / Kontynuuj | Pomiń / Zacznij od nowa |
+| Wynik Kompasu | Dalej: test diagnozujący z matematyki | Kopiuj wynik |
+| Wynik testu | Dalej: Twój plan do matury | - |
+| Plan | Dalej: zacznij naukę | Dodaj plan do kalendarza |
+| Dziś | Zaczynamy · N min | Nie dam rady dzisiaj |
+| Powrót ucznia | Kontynuuj naukę | Zacznij od nowa |
+
+Rzadziej używane opcje (dni wolne, minuty dziennie, „więcej czasu”) są zwinięte w Planie w „Dopasuj plan”.
 
 Szczegóły kroku 4: quiz zaliczeniowy (próg 70%), powtórki adaptacyjne (2 > 5 > 12 > 30 dni, po błędzie wcześniej), diagnoza pełna co ok. miesiąc (nowa prognoza). Gdy temat nie idzie: materiał dostosowany automatycznie (najpierw wyjaśnienie, rozgrzewka z podstawy, nowe pytania).
 

@@ -336,23 +336,15 @@ function startTest(){isSample=false;idx=answers.includes(null)?answers.indexOf(n
 function viewStart(){
   const n = answers.filter(v=>v!==null).length;
   const resume = n>0 && n<Q.length, done = n===Q.length;
+  const glowny = done?"Zobacz swój wynik":resume?`Kontynuuj (pytanie ${n+1} z ${Q.length})`:"Zaczynamy";
   app.innerHTML=`
-  <span class="eyebrow">Krok 1 · Diagnoza osobowości i predyspozycji</span>
-  <h1>Kompas Maturalni</h1>
-  <p class="lead">Sprawdź w 5 minut, jaki kierunek studiów do Ciebie pasuje i jakie przedmioty zdawać na maturze. Potem od razu robimy plan z matmy.</p>
-  <ul class="facts"><li>22 krótkie pytania</li><li>ok. 5 minut</li><li>bez logowania</li></ul>
-  <div class="stack">
-    <button class="btn wide" id="go">${done?"Zobacz swój wynik":resume?`Kontynuuj (pytanie ${n+1} z ${Q.length})`:"Zaczynam"}</button>
-    <div class="row" style="justify-content:space-between">
-      <button class="btn link" id="sample">Pokaż przykładowy wynik</button>
-      <button class="btn link" id="skip">Pomiń, przejdź do testu diagnozującego</button>
-    </div>
-    ${n?'<button class="btn link" id="reset" style="align-self:flex-start">Zacznij od nowa</button>':""}
-  </div>
-  <p class="note">Nie ma dobrych ani złych odpowiedzi. Wynik to podpowiedź na start, nie wyrok. Warto o nim porozmawiać z doradcą zawodowym.</p>`;
+  <span class="eyebrow">Krok 1 · Diagnoza</span>
+  <h1>Kto Ty jesteś i dokąd chcesz iść?</h1>
+  <p class="lead">22 krótkie pytania o Ciebie, ok. 5 minut. Dostajesz pasujące kierunki studiów i przedmioty do zdawania na maturze.</p>
+  <p class="note">Nie ma dobrych ani złych odpowiedzi. Wynik to podpowiedź na start, nie wyrok.</p>
+  ${Nauka.duo('go', glowny, n?'reset':'skip', n?'Zacznij od nowa':'Pomiń, przejdź do testu diagnozującego')}`;
   $("go").onclick=startTest;
-  $("sample").onclick=()=>{isSample=true;plan=0;go("result")};
-  $("skip").onclick=()=>Nauka.startPrzedmiot("mat");
+  if($("skip"))$("skip").onclick=()=>Nauka.startPrzedmiot("mat");
   if($("reset"))$("reset").onclick=()=>{answers=Array(Q.length).fill(null);save();startTest()};
 }
 
@@ -467,21 +459,14 @@ function viewResult(){
     </div>
   </section>
 
-  <section class="stack">
-    <span class="eyebrow">Krok 2</span>
-    <h2>Sprawdź swoją wiedzę z matury</h2>
-    <p class="muted">Test sprawdza, jak stoisz z przedmiotem maturalnym, i daje prognozę wyniku oraz plan nauki. Prosty test, ok. 15 min.</p>
-    <button class="btn wide" id="toMat">Dalej: Krok 2 | Test diagnozujący</button>
-    <p class="small muted">Kolejne przedmioty już wkrótce:</p>
-    <span class="legend"><i></i> rekomendowane dla Twoich planów</span>
-    ${subjectGrid(rec)}
+  <section class="card">
+    <h2>Twoje przedmioty maturalne</h2>
+    <div class="chips">${SUBJECTS.filter(x=>rec.includes(x.id)).map(x=>`<span class="chip req">${x.n}${x.active?" · test gotowy":""}</span>`).join("")}</div>
+    <p class="small muted">Test diagnozujący sprawdza, jak stoisz z przedmiotem, i daje prognozę wyniku oraz plan nauki. Zaczynamy od matematyki, kolejne przedmioty już wkrótce.</p>
   </section>
 
-  <div class="row">
-    <button class="btn ghost" id="copy">Kopiuj wynik</button>
-    <button class="btn link" id="again">${isSample?"Zrób własny test":"Zrób test od nowa"}</button>
-    <span id="copymsg" class="muted small" role="status"></span>
-  </div>
+  ${Nauka.duo('toMat', 'Dalej: test diagnozujący z matematyki', 'copy', 'Kopiuj wynik')}
+  <span id="copymsg" class="muted small center" role="status"></span>
   <div id="fallback"></div>
 
   <details class="more">
@@ -492,6 +477,7 @@ function viewResult(){
       <div class="formula">dopasowanie = Σ waga × (cecha − 6) / Σ |waga|  →  0–100%</div>
       <p>Wagi oparliśmy na badaniach (Barrick i Mount, 1991; Grant, 2013). To założenia eksperckie, które dostroimy po pilotażu.</p>
       <p>Zasady rekrutacji sprawdziliśmy w uchwałach uczelni na rok 2027/28 tam, gdzie były dostępne. Etykieta przy uczelni mówi, czy dane są aktualne.</p>
+      <button class="btn link" id="again" style="align-self:flex-start">${isSample?"Zrób własny test":"Zrób test od nowa"}</button>
     </div>
   </details>`;
 
@@ -535,6 +521,7 @@ function summary(t,r,paths,code){
 }
 Nauka.rejestruj({kompas:viewStart, "kompas-test":viewQuiz, "kompas-wynik":viewResult, przedmioty:viewSubjects}, ["kompas","kompas-test","kompas-wynik","przedmioty"]);
 Nauka.kompasStart=startTest;
+Nauka.kompasPrzyklad=()=>{isSample=true;plan=0;go("result")};
 Nauka.start();
 </script>
 </body>

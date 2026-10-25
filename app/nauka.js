@@ -115,14 +115,17 @@
   function rysujGore(n) {
     const s = D ? seria() : null;
     const akt = krokTrasy(n);
-    $('topbar').innerHTML = `<div class="in"><a class="logo" href="#/"><i>M</i>Kompas Maturalni</a><span style="flex:1"></span>
+    // Ekran powitalny nowego ucznia: bez pasków, tylko dwa przyciski (jak w Duolingo).
+    const powitanie = !D && !TRASY[n] || (!D && n === '');
+    document.body.classList.toggle('powitanie', powitanie);
+    $('topbar').innerHTML = `<div class="in"><a class="logo" href="#/"><i>M</i>Maturalni Plus</a><span style="flex:1"></span>
       ${s ? `<a class="pill-fire ${s.dni ? '' : 'off'}" href="#/dzis" title="Seria: dni nauki z rzędu">🔥 ${s.dni}</a>` : ''}</div>
-      <nav class="sciezka-krokow" aria-label="Twoja ścieżka">${KROKI.map(k => {
+      ${powitanie ? '' : `<nav class="sciezka-krokow" aria-label="Twoja ścieżka">${KROKI.map(k => {
         const zr = krokZrobiony(k.nr), otw = krokOtwarty(k.nr);
         return `<button class="krok-nav ${zr ? 'zrobiony' : ''} ${otw ? '' : 'zamkniety'}" data-krok="${k.nr}" ${akt === k.nr ? 'aria-current="step"' : ''}
           aria-label="Krok ${k.nr}: ${k.nazwa}${zr ? ', zrobione' : ''}${otw ? '' : ', najpierw zrób test'}">
           <span class="nr">${zr ? '✓' : otw ? k.nr : '🔒'}</span><span class="tx"><b>${k.nazwa}</b><small>${k.opis}</small></span></button>`;
-      }).join('')}</nav>`;
+      }).join('')}</nav>`}`;
     $('topbar').querySelectorAll('[data-krok]').forEach(b => b.onclick = () => idzDoKroku(+b.dataset.krok));
     rysujDol(n);
   }
@@ -146,7 +149,7 @@
     bar.style.gridTemplateColumns = `repeat(${zakladki.length}, minmax(0, 1fr))`;
     bar.innerHTML = zakladki.map(([h, ik, t]) => `<a href="#/${h}" ${grupa(h) ? 'aria-current="page"' : ''}><span aria-hidden="true">${ik}</span>${t}</a>`).join('');
     // W trakcie testu, Kompasu i kalibracji chowamy pasek, żeby nic nie rozpraszało i nie dało się przypadkiem wyjść.
-    bar.hidden = n === 'quiz' || n === 'kompas-test' || n === 'kalibracja';
+    bar.hidden = n === 'quiz' || n === 'kompas-test' || n === 'kalibracja' || document.body.classList.contains('powitanie');
     document.body.classList.toggle('bez-dolu', bar.hidden);
   }
   function rysujStopke() {
@@ -157,6 +160,10 @@
   function toast(msg, ms) { const t = $('toast'); t.innerHTML = msg; t.hidden = false; clearTimeout(toastT); toastT = setTimeout(() => { t.hidden = true; }, ms || 4200); }
 
   // ───────────── wspólne elementy ─────────────
+  // Zasada jak w Duolingo: na ekranie jeden duży przycisk główny i najwyżej jeden drugi, ten sam rozmiar, jeden pod drugim.
+  function duo(idGl, txtGl, idDr, txtDr) {
+    return `<div class="duo"><button class="btn-duo" id="${idGl}">${txtGl}</button>${idDr ? `<button class="btn-duo alt" id="${idDr}">${txtDr}</button>` : ''}</div>`;
+  }
   function krokiHtml(i, n, opis) {
     return `<div class="kroki"><div class="top"><span>${opis || 'Krok'} ${i} z ${n}</span><b>${zacheta(i - 1, n)}</b></div>
       <div class="bar" role="progressbar" aria-valuemin="0" aria-valuemax="${n}" aria-valuenow="${i}"><i style="width:${i / n * 100}%"></i></div></div>`;
@@ -203,32 +210,26 @@
     if (D) {
       const s = seria();
       app.innerHTML = `
-        <section class="stack" style="align-items:center;text-align:center;gap:16px;padding:24px 0 8px">
-          <span class="eyebrow">Witaj z powrotem${imie()}</span>
-          <h1 style="max-width:18ch">Masz już swój plan. Seria: ${dniSl(s.dni)} 🔥</h1>
-          <button class="btn-main xl arrow" id="dzis">Przejdź do dzisiejszej nauki</button>
-          <button class="btn-link" id="nowa">Zacznij wszystko od nowa</button>
+        <section class="powitanie-box">
+          <div class="maskotka" aria-hidden="true">🔥</div>
+          <h1>Witaj z powrotem${imie()}! Seria: ${dniSl(s.dni)}.</h1>
+          ${duo('dzis', 'Kontynuuj naukę', 'nowa', 'Zacznij od nowa')}
           <div class="card yellow" id="potw" hidden><b>Na pewno? Usuniemy Twój plan i wszystkie odpowiedzi z tej przeglądarki.</b>
-            <div class="row" style="justify-content:center"><button class="btn-small" id="tak">Tak, usuń i zacznij od nowa</button><button class="btn-small alt" id="nie">Nie, zostaw</button></div></div>
+            ${duo('tak', 'Tak, usuń wszystko', 'nie', 'Nie, zostaw')}</div>
         </section>`;
       $('dzis').onclick = () => go('dzis');
-      $('nowa').onclick = () => { $('potw').hidden = false; $('nowa').hidden = true; };
-      $('nie').onclick = () => { $('potw').hidden = true; $('nowa').hidden = false; };
+      $('nowa').onclick = () => { $('potw').hidden = false; $('nowa').hidden = true; $('dzis').hidden = true; };
+      $('nie').onclick = () => { $('potw').hidden = true; $('nowa').hidden = false; $('dzis').hidden = false; };
       $('tak').onclick = wyczyscDane;
       return;
     }
     app.innerHTML = `
-      <section class="stack" style="align-items:center;text-align:center;gap:18px;padding:16px 0 8px">
-        <span class="small muted">Dla maturzystów · matura 2027</span>
-        <h1 style="font-size:clamp(2rem,5.6vw,3.2rem);max-width:17ch">Od tego, kim jesteś, <span class="hl">do planu na maturę.</span></h1>
-        <ol class="kroki-start">
-          <li><b>Diagnoza</b><span>22 pytania o Ciebie. Dostajesz pasujące kierunki studiów i przedmioty do zdawania. Ok. 5 min.</span></li>
-          <li><b>Test z przedmiotu maturalnego</b><span>Zaczynamy od matematyki, kolejne przedmioty już wkrótce. 3 pytania o cel i czas, potem test. Dostajesz prognozę wyniku matury. Ok. 15 min.</span></li>
-          <li><b>Plan</b><span>Układamy plan do matury: tylko to, czego Ci brakuje.</span></li>
-          <li><b>Nauka</b><span>Każdego dnia krótki materiał, fragment kursu Maturalnych i quiz.</span></li>
-        </ol>
-        <button class="btn-main xl arrow" id="start">Zaczynam</button>
-        <button class="btn-link" id="mat">Wiem już, co zdaję: przejdź od razu do testu z matematyki</button>
+      <section class="powitanie-box">
+        <div class="maskotka" aria-hidden="true">M</div>
+        <h1>Matura bez zgadywania.</h1>
+        <p class="lead">Sprawdzimy, kim jesteś i jak stoisz z przedmiotem. Potem dostaniesz plan na każdy dzień do matury.</p>
+        ${duo('start', 'Zaczynamy', 'mat', 'Wiem, co zdaję: od razu test')}
+        <p class="small muted">Bez logowania · ok. 20 minut na start</p>
       </section>`;
     $('start').onclick = () => (root.Nauka.kompasStart ? root.Nauka.kompasStart() : go('kompas'));
     $('mat').onclick = () => startKalibracji(false);
@@ -581,7 +582,7 @@
       </div>
       <div class="card"><div class="row between"><h3>Twoja mapa mikrokompetencji</h3>${LEGENDA}</div>${mapaHtml(wiedza)}
         <p class="muted small">Kliknij dział, żeby zobaczyć umiejętności. Kółka z obwódką to szacunek: plan sprawdzi je krótkim quizem zamiast uczyć od zera.</p></div>
-      <div class="cta"><button class="btn-main xl arrow" id="plan">${D.planPokazany ? 'Wróć do planu' : 'Dalej: krok 3, Twój plan'}</button><a class="btn-link" href="#/jak-to-dziala">Jak liczymy wynik?</a></div>
+      ${duo('plan', D.planPokazany ? 'Wróć do planu' : 'Dalej: Twój plan do matury', null)}
       <p class="note">Twój wynik i plan zapisują się tylko w tej przeglądarce na tym urządzeniu. Nie używaj trybu prywatnego i nie czyść danych przeglądarki, bo postępy znikną.</p>`;
     $('plan').onclick = () => {
       const pierwszy = !D.planPokazany;
@@ -620,7 +621,7 @@
     const zad = zrobione.map(h => `<div class="zad zrobione"><div class="wezel">✓</div><div><div class="tyt">${esc(h.tytul || { quiz: 'Quiz', powtorka: 'Powtórka 5 min', diagnoza: 'Diagnoza pełna', nauka: 'Sesja nauki' }[h.typ])}</div><div class="meta">${h.minuty} min · zrobione</div></div><span></span></div>`)
       .concat(sesjeDzis.map((s, i) => `<div class="zad ${i === 0 ? 'teraz' : ''}"><div class="wezel">${IKONA[s.typ]}</div>
         <div><div class="tyt">${esc(nazwaSesji(s))}</div><div class="meta">${s.minuty} min · ${s.start}${s.czesci && s.czesci.length ? ' · ' + s.czesci.map(c => (root.Kurs ? root.Kurs.IK[c.typ] : '') + ' ' + esc(root.Kurs ? root.Kurs.TYP[c.typ] : c.typ)).join(' + ') : s.powod ? ' · ' + esc(s.powod) : ''}${s.dostosowane ? ' · <b style="color:var(--yellow-ink)">materiał dostosowany</b>' : ''}</div></div>
-        <button class="btn-small ${i === 0 ? '' : 'alt'}" data-s="${i}">${i === 0 ? 'Start' : 'Zrób'}</button></div>`)).join('');
+        <span></span></div>`)).join('');
 
     // tydzień
     const pon = M.dodajDni(t, -((M.dzienTygodnia(t) + 6) % 7));
@@ -638,6 +639,7 @@
     }).join('');
 
     const wolnyWTygodniu = (D.org.blokady || []).some(b => b.zamrozenie && b.od <= t && M.roznicaDni(b.od, t) < 7);
+    const nastepnaDowolna = plan.sesje.find(x => x.data > t && x.typ !== 'bufor');
     const kolejne = [];
     for (let i = 1; i <= 14 && kolejne.length < 3; i++) {
       const d = M.dodajDni(t, i), ss = plan.sesje.filter(s => s.data === d && s.typ !== 'bufor');
@@ -650,8 +652,10 @@
           <div class="dymek"><div class="awatar">M</div><div class="chmurka">${msg}</div></div>
           <div class="card"><div class="row between"><h2>Twoja ścieżka na dziś</h2><span class="badge">${fData(t, true)}</span></div>
             ${zad ? `<div class="sciezka">${zad}</div>` : '<p class="muted">Brak zadań na dziś.</p>'}
-            ${sesjeDzis.length ? '' : `<button class="btn-ghost" id="ekstra">Mam ochotę na więcej: zrób następną sesję wcześniej</button>`}
           </div>
+          ${sesjeDzis.length ? duo('startDzis', `Zaczynamy · ${suma} min`, ser.dzisTyp === 'nauka' && !wolnyWTygodniu ? 'wolne' : null, 'Nie dam rady dzisiaj')
+            : nastepnaDowolna ? duo('ekstra', 'Mam ochotę na więcej: następna sesja', null) : ''}
+          ${wolnyWTygodniu && sesjeDzis.length ? '<span class="tiny muted center">Dzień wolny na żądanie: 1 w tygodniu, już wykorzystany.</span>' : ''}
           <div class="card"><div class="row between"><h3>Ten tydzień</h3><span class="muted small">🔥 nauka · 🌴 wolne · ⏸ bufor · liczba = minuty w planie</span></div><div class="tydzien">${tydzien}</div></div>
           ${kolejne.length ? `<div class="card flat"><h3>Najbliższe dni</h3><div class="lista">${kolejne.map(k => `<div class="poz"><span>${IKONA[k.ss.find(s => s.typ !== 'powtorka') ? k.ss.find(s => s.typ !== 'powtorka').typ : 'powtorka']}</span><span><span class="t">${esc(k.ss.map(nazwaSesji).join(' + '))}</span><br><span class="m">${fKrotko(k.d)} · ${k.ss.reduce((a, s) => a + s.minuty, 0)} min</span></span><span></span></div>`).join('')}</div></div>` : ''}
         </div>
@@ -662,26 +666,14 @@
             <div class="row" style="align-items:flex-end;gap:12px"><span class="liczba">${pg.wynik}%</span><span class="muted">teraz</span><span style="font-weight:800;color:var(--green-ink);font-size:1.4rem">→ ${ps.prognozaPoPlanie}%</span><span class="muted">po planie</span></div>
             <div class="mini-bar"><i class="po" style="width:${ps.prognozaPoPlanie}%"></i><i style="width:${pg.wynik}%"></i></div>
             <p class="small muted">Cel: ${pg.cel || '-'}% · pewność: ${pg.pewnosc}${plan.terminyDiagnoz[0] ? ' · następna diagnoza pełna: ' + fKrotko(plan.terminyDiagnoz[0]) : ''}</p></div>
-          <div class="card"><h3>Plan do matury</h3>
-            <div class="grid2 zawsze" style="gap:10px"><div class="stat"><b>${ps.dniDoMatury}</b><span>dni do matury</span></div><div class="stat"><b>${ps.jednostek}</b><span>${odmiana(ps.jednostek, 'temat', 'tematy', 'tematów')} w planie</span></div>
-              <div class="stat"><b>${String(ps.godzinNauki).replace('.', ',')} h</b><span>nauki łącznie</span></div><div class="stat"><b>${ps.sprawdzen}</b><span>szybkich sprawdzeń</span></div></div>
-            <p class="small">${esc(ladneDaty(ps.komunikat))}</p>
-            <div class="stack" style="gap:8px">
-              <button class="btn-ghost" id="wolne" ${wolnyWTygodniu || ser.dzisTyp !== 'nauka' ? 'disabled' : ''}>😮‍💨 Nie dam rady dzisiaj</button>
-              ${wolnyWTygodniu ? '<span class="tiny muted">Dzień wolny na żądanie: 1 w tygodniu, już wykorzystany.</span>' : ''}
-              <button class="btn-ghost" id="wypadlo">📅 Coś mi wypadło (choroba, wyjazd, impreza)</button>
-              <div id="formWyp" hidden></div>
-              <a class="btn-ghost" href="#/kalendarz">🗓️ Dodaj plan do Google Calendar</a>
-            </div></div>
         </div>
       </div>`;
-    app.querySelectorAll('[data-s]').forEach(b => b.onclick = () => startSesji(sesjeEkranu[+b.dataset.s]));
-    if ($('ekstra')) $('ekstra').onclick = () => { const s = plan.sesje.find(x => x.data > t && x.typ !== 'bufor'); if (s) startSesji(s); };
-    $('wolne').onclick = () => {
+    if ($('startDzis')) $('startDzis').onclick = () => startSesji(sesjeEkranu[0]);
+    if ($('ekstra')) $('ekstra').onclick = () => startSesji(nastepnaDowolna);
+    if ($('wolne')) $('wolne').onclick = () => {
       D.org.blokady.push({ od: t, do: t, nazwa: 'Dzień wolny', zamrozenie: true }); zapisz();
       toast('Przełożyliśmy dzisiejsze sesje na kolejne dni. Seria zostaje 🧊'); render();
     };
-    $('wypadlo').onclick = () => { const f = $('formWyp'); f.hidden = !f.hidden; if (!f.hidden) formularzWydarzenia(f, plan); };
   }
   function formularzWydarzenia(el, plan) {
     const t = dzis();
@@ -804,8 +796,7 @@
     app.innerHTML = `
       <div class="stack" style="gap:10px"><span class="eyebrow">Krok 3 · Plan</span><h1>Twój plan do matury</h1>
         <p class="muted">${tematySl(ps.jednostek)} do ${fData(ps.koniecPlanu || D.org.dataMatury, true)}, ${D.org.minutDziennie} min dziennie. Zaczynamy od tematów, które dają najwięcej punktów. Temat odhacza się po zaliczonym quizie (min. 70%).</p>
-        <div class="cta" style="align-items:flex-start"><button class="btn-main xl arrow" id="doNauki">Dalej: krok 4, zacznij naukę</button></div>
-        <div class="row"><a class="btn-small alt" href="#/postepy">📈 Postępy</a><a class="btn-small alt" href="#/kalendarz">🗓️ Dodaj do kalendarza</a></div></div>
+        ${duo('doNauki', D.stan.historiaSesji.length ? 'Przejdź do dzisiejszej nauki' : 'Dalej: zacznij naukę', 'doKal', 'Dodaj plan do kalendarza')}</div>
       <div class="staty"><div class="stat"><b>${ps.dniDoMatury}</b><span>dni do matury</span></div><div class="stat"><b>${plan.zaliczone.length}</b><span>zaliczone tematy</span></div>
         <div class="stat"><b>${ps.jednostek}</b><span>w planie</span></div><div class="stat"><b>${String(ps.godzinNauki).replace('.', ',')} h</b><span>nauki w planie</span></div></div>
       <div class="cols">
@@ -814,7 +805,7 @@
             ${plan.zaliczone.map(z => `<div class="poz ok"><span class="box">✓</span><span><span class="t">${esc(z.nazwa)}</span><br><span class="m">zaliczone ${fKrotko(z.data)}${z.powtorka ? ' · powtórka ' + fKrotko(z.powtorka) : ''}</span></span><span class="badge green">zaliczone</span></div>`).join('')}
             ${plan.jednostki.map((u, i) => `<div class="poz" ${i >= 8 && !pokazWszystkie ? 'hidden' : ''}><span class="box"></span><span><a class="t" href="#/lekcja/${u.komp}" style="color:inherit;text-decoration:none">${esc(u.nazwa)}</a><br><span class="m">${esc(u.dzial)} · ${fKrotko(u.start)}${u.koniec !== u.start ? ' - ' + fKrotko(u.koniec) : ''} · ${esc(u.powod)}</span></span>
               <span class="badge ${u.typ === 'sprawdzenie' ? 'blue' : u.dostosowanie ? 'yellow' : ''}">${u.typ === 'sprawdzenie' ? 'sprawdzenie 5 min' : u.minuty + ' min'}</span></div>`).join('')}
-            ${plan.jednostki.length > 8 && !pokazWszystkie ? `<button class="btn-ghost" id="wszystkie" style="margin:10px 0">Pokaż wszystkie tematy w planie (${plan.jednostki.length})</button>` : ''}
+            ${plan.jednostki.length > 8 && !pokazWszystkie ? `<button class="btn-link" id="wszystkie" style="margin:10px 0">Pokaż wszystkie tematy w planie (${plan.jednostki.length})</button>` : ''}
             ${plan.pominiete.map(u => `<div class="poz poza"><span class="box"></span><span><span class="t">${esc(u.nazwa)}</span><br><span class="m">poza planem: brak czasu</span></span><span class="badge">${u.minuty} min</span></div>`).join('')}
           </div></div>
         <details class="card ustawienia-planu" id="ustawienia" ${ustawieniaOtwarte ? 'open' : ''}><summary><b>Dopasuj plan</b><span class="small muted"> minuty, dni nauki, dni wolne, więcej czasu</span></summary>
@@ -829,7 +820,7 @@
           <div class="card flat"><h3>Dni bez nauki</h3>
             <p class="small muted">Święta, Sylwester i Wielkanoc są wolne automatycznie. Co 5. dzień nauki jest buforowy.</p>
             <div class="lista">${wlasne.map(x => `<div class="poz"><span>🌴</span><span><span class="t">${esc(x.b.nazwa)}</span><br><span class="m">${fKrotko(x.b.od)}${x.b.do !== x.b.od ? ' - ' + fKrotko(x.b.do) : ''}</span></span><button class="btn-small alt" data-usun="${x.i}" aria-label="Usuń">✕</button></div>`).join('') || '<p class="muted small">Brak własnych dni wolnych.</p>'}</div>
-            <button class="btn-ghost" id="dodaj">+ Dodaj dni bez nauki</button><div id="formWyp" hidden></div></div>
+            <button class="btn-ghost" id="dodaj">+ Coś mi wypadło: dodaj dni bez nauki</button><div id="formWyp" hidden></div></div>
         </div></details>
       </div>
       <details class="card"><summary><b>Najbliższe tygodnie</b><span class="small muted"> co i kiedy</span></summary>
@@ -846,6 +837,7 @@
     if ($('wszystkie')) $('wszystkie').onclick = () => { pokazWszystkie = true; const y = window.scrollY; render(); window.scrollTo(0, y); };
     $('dodaj').onclick = () => { const f = $('formWyp'); f.hidden = !f.hidden; if (!f.hidden) formularzWydarzenia(f, plan); };
     $('doNauki').onclick = () => go('dzis');
+    $('doKal').onclick = () => go('kalendarz');
     $('ustawienia').ontoggle = e => { ustawieniaOtwarte = e.target.open; };
     $('dys').onclick = () => { const on = !(D.org.dysleksja || D.org.dyskalkulia); D.org.dysleksja = on; D.org.dyskalkulia = false; zapisz(); toast(on ? 'Plan przeliczony: więcej czasu na każdy temat.' : 'Plan przeliczony.'); render(); };
     if (!D.planPokazany) { D.planPokazany = true; zapisz(); rysujGore('plan'); }
@@ -1191,7 +1183,7 @@
   });
 
   root.Nauka = {
-    rejestruj: rejestruj, render: render, go: go, trasa: trasa, start: render, startPrzedmiot: startPrzedmiot, zacheta: zacheta, silnik: S,
+    rejestruj: rejestruj, render: render, go: go, trasa: trasa, start: render, startPrzedmiot: startPrzedmiot, zacheta: zacheta, silnik: S, duo: duo,
     pomoc: { S: S, esc: esc, dane: () => D, zapisz: zapisz, dzis: dzis, planTeraz: planTeraz, toast: toast, go: go, render: render, fData: fData, fKrotko: fKrotko, odmiana: odmiana, startTest: startTest }
   };
 })(window);
