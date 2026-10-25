@@ -57,19 +57,19 @@
     const a = o.ai || {};
     let gora;
     if (a.stan === 'trwa') {
-      gora = `<div class="ai-glowa"><span class="ai-ik">✨</span><b>AI szuka przyczyny błędu</b><span class="ai-kropki"><i></i><i></i><i></i></span></div>`;
+      gora = `<div class="ai-glowa"><span class="ai-ik"></span><b>AI szuka przyczyny błędu</b><span class="ai-kropki"><i></i><i></i><i></i></span></div>`;
     } else if (a.odp && a.odp.ok) {
       const w = a.odp.wynik, z = a.zast || {};
-      gora = `<div class="ai-glowa"><span class="ai-ik">✨</span><b>AI: przyczyna błędu</b>
+      gora = `<div class="ai-glowa"><span class="ai-ik"></span><b>AI: przyczyna błędu</b>
           <span class="badge ${z.przyjete ? 'green' : 'yellow'}">${z.przyjete ? 'pewność ' + proc(w.pewnosc) + '%' : 'niepewna (' + proc(w.pewnosc) + '%), decyduje klucz'}</span></div>
         ${w.opis ? `<p>${esc(w.opis)}</p>` : ''}
-        ${z.przyjete && z.pre ? `<p class="small">🧩 Brakuje podstawy: <b>${esc(z.podstawa)}</b>.${z.zmianaTestu || (T.sesja.adaptacyjny && T.aiNa === z.pre) ? ' Następne pytanie sprawdzi właśnie ją.' : ''}</p>`
-          : z.przyjete ? `<p class="small">🎯 Podstawy są w porządku, błąd dotyczy samego tematu.</p>` : ''}
-        ${w.wskazowka ? `<div class="ai-rada">💡 ${esc(w.wskazowka)}</div>` : ''}`;
+        ${z.przyjete && z.pre ? `<p class="small">Brakuje podstawy: <b>${esc(z.podstawa)}</b>.${z.zmianaTestu || (T.sesja.adaptacyjny && T.aiNa === z.pre) ? ' Następne pytanie sprawdzi właśnie ją.' : ''}</p>`
+          : z.przyjete ? `<p class="small">Podstawy są w porządku, błąd dotyczy samego tematu.</p>` : ''}
+        ${w.wskazowka ? `<div class="ai-rada">${esc(w.wskazowka)}</div>` : ''}`;
     } else {
-      gora = `<div class="ai-glowa"><span class="ai-ik">✨</span><span class="muted small">AI teraz niedostępna (${esc((a.odp && a.odp.blad) || 'brak odpowiedzi')}). Przyczynę wskazał klucz odpowiedzi.</span></div>`;
+      gora = `<div class="ai-glowa"><span class="ai-ik"></span><span class="muted small">AI teraz niedostępna (${esc((a.odp && a.odp.blad) || 'brak odpowiedzi')}). Przyczynę wskazał klucz odpowiedzi.</span></div>`;
     }
-    const dopisz = a.stan === 'trwa' || !(a.odp && a.odp.ok) ? '' : `<details class="ai-dopisz" ${a.tekst ? 'open' : ''}><summary>✍️ Dopisz, jak liczyłeś(-aś): AI oceni dokładniej</summary>
+    const dopisz = a.stan === 'trwa' || !(a.odp && a.odp.ok) ? '' : `<details class="ai-dopisz" ${a.tekst ? 'open' : ''}><summary>Dopisz, jak liczyłeś(-aś): AI oceni dokładniej</summary>
         <textarea id="aiTekst" maxlength="600" rows="3" placeholder="np. sin 30° = √3/2, więc 10 · √3/2 = 5√3">${esc(a.tekst || '')}</textarea>
         <button class="btn-small alt" id="aiPonow">Przeanalizuj moje rozwiązanie</button></details>`;
     box.innerHTML = gora + dopisz;
@@ -93,13 +93,13 @@
     if (!wpis) return;
     const rysuj = () => {
       const a = W.ai || {};
-      if (a.stan === 'trwa') { box.innerHTML = '<div class="ai-box"><div class="ai-glowa"><span class="ai-ik">✨</span><b>AI analizuje wszystkie Twoje błędy z tego tematu</b><span class="ai-kropki"><i></i><i></i><i></i></span></div></div>'; return; }
-      if (!a.odp || !a.odp.ok) { box.innerHTML = `<div class="ai-box"><div class="ai-glowa"><span class="ai-ik">✨</span><span class="muted small">AI teraz niedostępna (${esc((a.odp && a.odp.blad) || 'brak odpowiedzi')}). Plan dostosowały reguły.</span></div></div>`; return; }
+      if (a.stan === 'trwa') { box.innerHTML = '<div class="ai-box"><div class="ai-glowa"><span class="ai-ik"></span><b>AI analizuje wszystkie Twoje błędy z tego tematu</b><span class="ai-kropki"><i></i><i></i><i></i></span></div></div>'; return; }
+      if (!a.odp || !a.odp.ok) { box.innerHTML = `<div class="ai-box"><div class="ai-glowa"><span class="ai-ik"></span><span class="muted small">AI teraz niedostępna (${esc((a.odp && a.odp.blad) || 'brak odpowiedzi')}). Plan dostosowały reguły.</span></div></div>`; return; }
       const w = a.odp.wynik, z = a.zast || {};
-      box.innerHTML = `<div class="ai-box"><div class="ai-glowa"><span class="ai-ik">✨</span><b>AI: w czym jest problem</b><span class="badge ${z.przyjete ? 'green' : 'yellow'}">${z.przyjete ? 'pewność ' + proc(w.pewnosc) + '%' : 'niepewna, plan dostosowały reguły'}</span></div>
+      box.innerHTML = `<div class="ai-box"><div class="ai-glowa"><span class="ai-ik"></span><b>AI: w czym jest problem</b><span class="badge ${z.przyjete ? 'green' : 'yellow'}">${z.przyjete ? 'pewność ' + proc(w.pewnosc) + '%' : 'niepewna, plan dostosowały reguły'}</span></div>
         ${w.opis ? `<p>${esc(w.opis)}</p>` : ''}
-        ${z.przyjete && z.podstawa ? `<p class="small">🧩 Wracamy do podstawy: <b>${esc(z.podstawa.nazwa)}</b>. Rozgrzewka w lekcji będzie właśnie z niej.</p>` : z.przyjete ? '<p class="small">🎯 Podstawy są w porządku: zmieniamy sposób wyjaśnienia samego tematu.</p>' : ''}
-        ${w.wskazowka ? `<div class="ai-rada">💡 ${esc(w.wskazowka)}</div>` : ''}</div>`;
+        ${z.przyjete && z.podstawa ? `<p class="small">Wracamy do podstawy: <b>${esc(z.podstawa.nazwa)}</b>. Rozgrzewka w lekcji będzie właśnie z niej.</p>` : z.przyjete ? '<p class="small">Podstawy są w porządku: zmieniamy sposób wyjaśnienia samego tematu.</p>' : ''}
+        ${w.wskazowka ? `<div class="ai-rada">${esc(w.wskazowka)}</div>` : ''}</div>`;
     };
     if (!W.ai) {
       W.ai = { stan: 'trwa' };
@@ -260,7 +260,7 @@
     app.innerHTML = `
       <div class="stack" style="gap:6px"><span class="eyebrow">Narzędzie zespołu (poza aplikacją ucznia)</span><h1>Testy jakości AI</h1>
         <p class="muted">Uruchamia zestawy testowe na prawdziwym modelu i daje liczby do prezentacji. Ekran nie jest podlinkowany w aplikacji.</p></div>
-      <div class="callout ${stanAI && stanAI.gotowe ? 'green' : 'yellow'}" id="aiStatus"><span class="ico">✨</span><span>Sprawdzam, czy AI jest włączona…</span></div>
+      <div class="callout ${stanAI && stanAI.gotowe ? 'green' : 'yellow'}" id="aiStatus"><span class="ico"></span><span>Sprawdzam, czy AI jest włączona…</span></div>
       <div class="card"><div class="row between"><div class="stack" style="gap:4px"><h3>Testy jakości</h3>
           <span class="small muted">${PRZYPADKI.length} przypadków o znanej przyczynie: ${Object.keys(GRUPY).map(g => g + ' ' + GRUPY[g].toLowerCase() + ' (' + PRZYPADKI.filter(c => c.grupa === g).length + ')').join(', ')}.</span></div>
           <button class="btn-small" id="aiTestuj">▶ Uruchom testy</button></div>
@@ -275,7 +275,7 @@
     sprawdzStan().then(s => {
       const b = $('aiStatus'); if (!b) return;
       b.className = 'callout ' + (s.gotowe ? 'green' : 'yellow');
-      b.innerHTML = `<span class="ico">✨</span><span>${s.gotowe ? `<b>AI włączona.</b> Model: ${esc(s.model)}.` : `<b>AI wyłączona:</b> ${esc(s.blad || 'brak klucza OPENROUTER_API_KEY w Cloudflare')}. Aplikacja działa na regułach.`}</span>`;
+      b.innerHTML = `<span class="ico"></span><span>${s.gotowe ? `<b>AI włączona.</b> Model: ${esc(s.model)}.` : `<b>AI wyłączona:</b> ${esc(s.blad || 'brak klucza OPENROUTER_API_KEY w Cloudflare')}. Aplikacja działa na regułach.`}</span>`;
       if (s.model && $('aiModel')) $('aiModel').textContent = s.model;
     });
     const pokazWyniki = z => {
@@ -298,9 +298,9 @@
             <td><b>${esc(w.id)}</b></td>
             <td class="small">${c.grupa === 'T' ? esc(c.opis) : esc((c.opis ? c.opis + ': ' : '') + S.pytanie(c.pytanie).tresc.slice(0, 60) + '…')}${c.tekst ? `<br><span class="tiny muted">„${esc(c.tekst)}”</span>` : ''}</td>
             <td>${c.ok.map(kk).join(' / ')}</td>
-            <td>${kk(w.regula)} ${w.okRegula ? '✅' : '❌'}</td>
-            <td>${w.ai ? kk(w.ai.komp) + ' (' + proc(w.ai.pewnosc) + '%)' : '<span class="muted">' + esc(w.blad || 'brak') + '</span>'} ${w.okAI ? '✅' : '❌'}</td>
-            <td>${kk(w.system)} ${w.okSystem ? '✅' : '❌'}${w.pewnaBledna ? ' ⚠️' : ''}</td>
+            <td>${kk(w.regula)} ${w.okRegula ? 'OK' : 'BŁĄD'}</td>
+            <td>${w.ai ? kk(w.ai.komp) + ' (' + proc(w.ai.pewnosc) + '%)' : '<span class="muted">' + esc(w.blad || 'brak') + '</span>'} ${w.okAI ? 'OK' : 'BŁĄD'}</td>
+            <td>${kk(w.system)} ${w.okSystem ? 'OK' : 'BŁĄD'}${w.pewnaBledna ? '' : ''}</td>
             <td class="tiny">${w.ai ? esc(w.ai.opis) : ''}</td></tr>`; }).join('')}</tbody></table></div></details>
         <div class="row"><button class="btn-small alt" id="aiPobierz">Pobierz wyniki (JSON)</button></div>`;
       $('aiPobierz').onclick = () => {
@@ -320,7 +320,7 @@
           <td class="small">${w.etap === 'pytania' ? '2 dobre pytania otwarte' : esc(w.oczekiwane || '')}</td>
           <td class="small">${w.blad ? '<span class="muted">' + esc(w.blad) + '</span>' : w.etap === 'pytania' ? (w.pytania || []).map(p => '„' + esc(p.tresc) + '”').join('<br>') + (w.uwagi && w.uwagi.length ? '<br><b>' + esc(w.uwagi.join(', ')) + '</b>' : '')
             : `plan A: <b>${esc(nz(w.final[0]))}</b> · wniosek AI: ${esc(w.ai.wniosek)} (${proc(w.ai.pewnosc)}%)<br><span class="tiny muted">${esc(w.ai.podsumowanie || '')}</span>`}</td>
-          <td>${w.ok ? '✅' : '❌'}</td></tr>`).join('')}</tbody></table></div>`;
+          <td>${w.ok ? 'OK' : 'BŁĄD'}</td></tr>`).join('')}</tbody></table></div>`;
     };
     let zapisK = null;
     try { zapisK = JSON.parse(localStorage.getItem(KLUCZ_TESTOW + '-kompas')); } catch (e) { zapisK = null; }

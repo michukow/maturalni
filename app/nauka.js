@@ -15,7 +15,30 @@
   const MIESIACE = ['stycznia', 'lutego', 'marca', 'kwietnia', 'maja', 'czerwca', 'lipca', 'sierpnia', 'września', 'października', 'listopada', 'grudnia'];
   const DNI = ['nd', 'pn', 'wt', 'śr', 'cz', 'pt', 'sb'];
   const KOLEJNOSC_DNI = [1, 2, 3, 4, 5, 6, 0];
-  const IKONA = { nauka: '📘', quiz: '✅', powtorka: '🔁', diagnoza: '🎯', bufor: '⏸' };
+
+  // Ikony liniowe (SVG) zamiast emotek. Wspólne dla całej aplikacji: Nauka.pomoc.ik(nazwa).
+  const SVG_IK = {
+    nauka: '<path d="M4 5h6a3 3 0 0 1 3 3v12a2 2 0 0 0-2-2H4zM20 5h-6a3 3 0 0 0-3 3v12a2 2 0 0 1 2-2h7z"/>',
+    quiz: '<path d="M4 4h16v16H4z"/><path d="M8 12l3 3 5-6"/>',
+    powtorka: '<path d="M4 12a8 8 0 0 1 14-5.3L20 9M20 12a8 8 0 0 1-14 5.3L4 15M20 4v5h-5M4 20v-5h5"/>',
+    diagnoza: '<path d="M5 5h14v14H5z"/><path d="M12 2v6M12 16v6M2 12h6M16 12h6"/>',
+    bufor: '<path d="M9 5v14M15 5v14"/>',
+    wideo: '<path d="M7 5l12 7-12 7z"/>',
+    tekst: '<path d="M6 3h9l4 4v14H6zM14 3v5h5M9 13h7M9 17h7"/>',
+    trening: '<path d="M4 20l4-1L19 8l-3-3L5 16zM14 7l3 3"/>',
+    arkusz: '<path d="M4 3h16v18H4z"/><path d="M8 8h8M8 12h8M8 16h5"/>',
+    zamek: '<path d="M5 11h14v10H5z"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/>',
+    seria: '<path d="M5 20v-6M10 20V9M15 20V5M20 20v-9"/>',
+    start: '<path d="M3 11l9-7 9 7v9h-6v-6H9v6H3z"/>',
+    kompas: '<path d="M5 5h14v14H5z"/><path d="M12 2v6M12 16v6M2 12h6M16 12h6"/>',
+    materialy: '<path d="M12 3l9 5-9 5-9-5z"/><path d="M3 13l9 5 9-5"/>',
+    postepy: '<path d="M4 4v16h16"/><path d="M8 15l4-5 3 3 5-7"/>',
+    test: '<path d="M4 3h16v18H4z"/><path d="M8 8h8M8 12h8M8 16h5"/>',
+    grupa: '<path d="M3 20v-3a4 4 0 0 1 4-4h4a4 4 0 0 1 4 4v3M9 9a3 3 0 1 0 0-.01M17 13a3 3 0 0 1 4 3v4M15 4.5a3 3 0 0 1 0 5.6"/>',
+    iskra: '<path d="M12 2l2.6 7.4L22 12l-7.4 2.6L12 22l-2.6-7.4L2 12l7.4-2.6z" fill="currentColor" stroke="none"/>'
+  };
+  function ik(n, cls) { return '<svg class="ikona ' + (cls || '') + '" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="square">' + (SVG_IK[n] || SVG_IK.nauka) + '</svg>'; }
+  const IKONA = { nauka: ik('nauka'), quiz: ik('quiz'), powtorka: ik('powtorka'), diagnoza: ik('diagnoza'), bufor: ik('bufor') };
   const POZIOM = ['', 'łatwe', 'średnie', 'trudne'];
   const DATY_MATURY = { 2027: '2027-05-05' }; // harmonogram CKE: matematyka PP, 5 maja 2027, 9:00
 
@@ -119,12 +142,12 @@
     const powitanie = !D && !TRASY[n] || (!D && n === '');
     document.body.classList.toggle('powitanie', powitanie);
     $('topbar').innerHTML = `<div class="in"><a class="logo" href="#/"><img src="assets/logo.svg" alt="" width="30" height="27">Maturalny Mentor</a><span style="flex:1"></span>
-      ${s ? `<a class="pill-fire ${s.dni ? '' : 'off'}" href="#/dzis" title="Seria: dni nauki z rzędu">🔥 ${s.dni}</a>` : ''}</div>
+      ${s ? `<a class="pill-fire ${s.dni ? '' : 'off'}" href="#/dzis" title="Seria: dni nauki z rzędu">${ik('seria')} Seria ${s.dni}</a>` : ''}${powitanie ? '<a class="small" href="#/jak-to-dziala" style="color:var(--text-primary);text-decoration:none">Jak to działa</a>' : ''}</div>
       ${powitanie ? '' : `<nav class="sciezka-krokow" aria-label="Twoja ścieżka">${KROKI.map(k => {
         const zr = krokZrobiony(k.nr), otw = krokOtwarty(k.nr);
         return `<button class="krok-nav ${zr ? 'zrobiony' : ''} ${otw ? '' : 'zamkniety'}" data-krok="${k.nr}" ${akt === k.nr ? 'aria-current="step"' : ''}
           aria-label="Krok ${k.nr}: ${k.nazwa}${zr ? ', zrobione' : ''}${otw ? '' : ', najpierw zrób test'}">
-          <span class="nr">${zr ? '✓' : otw ? k.nr : '🔒'}</span><span class="tx"><b>${k.nazwa}</b><small>${k.opis}</small></span></button>`;
+          <span class="nr">${zr ? '✓' : otw ? '0' + k.nr : ik('zamek')}</span><span class="tx"><b>${k.nazwa}</b><small>${k.opis}</small></span></button>`;
       }).join('')}</nav>`}`;
     $('topbar').querySelectorAll('[data-krok]').forEach(b => b.onclick = () => idzDoKroku(+b.dataset.krok));
     rysujDol(n);
@@ -133,8 +156,8 @@
   // a ten pasek służy do codziennego poruszania się po aplikacji.
   function rysujDol(n) {
     const zakladki = testZrobiony()
-      ? [['dzis', '🔥', 'Dziś'], ['plan', '✅', 'Plan'], ['materialy', '📚', 'Materiały'], ['postepy', '📈', 'Postępy'], [celKroku(1), '🧭', 'Kompas']]
-      : [['', '🏠', 'Start'], [celKroku(1), '🧭', 'Diagnoza'], [celKroku(2), '📝', 'Test'], ['materialy', '📚', 'Materiały']];
+      ? [['dzis', ik('seria'), 'Dziś'], ['plan', ik('quiz'), 'Plan'], ['materialy', ik('materialy'), 'Materiały'], ['postepy', ik('postepy'), 'Postępy'], [celKroku(1), ik('kompas'), 'Kompas']]
+      : [['', ik('start'), 'Start'], [celKroku(1), ik('kompas'), 'Diagnoza'], [celKroku(2), ik('test'), 'Test'], ['materialy', ik('materialy'), 'Materiały']];
     const grupa = h => {
       if (h === n) return true;
       if (h === 'dzis') return ['lekcja', 'quiz-wynik'].includes(n) || (n === 'quiz' && krokTrasy(n) === 4);
@@ -211,7 +234,7 @@
       const s = seria();
       app.innerHTML = `
         <section class="powitanie-box">
-          <div class="maskotka" aria-hidden="true">🔥</div>
+          <div class="maskotka logo-duze" aria-hidden="true"><img src="assets/logo.svg" alt=""></div>
           <h1>Witaj z powrotem${imie()}! Seria: ${dniSl(s.dni)}.</h1>
           ${duo('dzis', 'Kontynuuj naukę', 'nowa', 'Zacznij od nowa')}
           <div class="card yellow" id="potw" hidden><b>Na pewno? Usuniemy Twój plan i wszystkie odpowiedzi z tej przeglądarki.</b>
@@ -224,13 +247,27 @@
       return;
     }
     app.innerHTML = `
-      <section class="powitanie-box">
-        <div class="maskotka logo-duze" aria-hidden="true"><img src="assets/logo.svg" alt=""></div>
-        <h1>Nie wiesz, od czego zacząć? Namierzmy Twój cel.</h1>
-        <p class="lead">22 szybkie pytania i kilka suwaków, ok. 5 minut. Dopasujemy do Ciebie kierunki studiów i podpowiemy, które przedmioty warto zdawać.</p>
-        <p class="small muted">Bez stresu: to tylko podpowiedź na start, a nie decyzja na całe życie.</p>
-        ${duo('start', 'Zaczynamy', 'mat', 'Wiem już, co zdaję: pomiń doradztwo i przejdź do testów')}
-        <p class="small muted">Bez logowania</p>
+      <section class="hero">
+        <div class="hero-tekst">
+          <span class="eyebrow">Matura 2027 &nbsp;/&nbsp; Dobry plan zaczyna się tutaj</span>
+          <h1 class="hero-h">Nie wybieraj w ciemno. Wybierz swój <span class="akcent">kierunek.</span></h1>
+          <p class="lead">22 krótkie pytania. Około 5 minut. Sprawdź, które przedmioty i kierunki studiów naprawdę pasują do Ciebie.</p>
+          <div class="hero-cta"><button class="btn-main" id="start">Rozpocznij diagnozę <span class="strz">↗</span></button>
+            <button class="btn link" id="mat">Wiem już, co zdaję: przejdź do testów</button></div>
+          <ul class="hero-meta"><li>Bez logowania</li><li>Ok. 5 minut</li><li>Konkretna wskazówka na start</li></ul>
+        </div>
+        <div class="hero-art" aria-hidden="true">
+          <img src="assets/img/studenci.jpg" alt="">
+          <span class="wielka">22</span>
+          <svg class="skos" viewBox="0 0 100 100" preserveAspectRatio="none"><line x1="0" y1="100" x2="100" y2="34" stroke="rgba(120,155,255,.55)" stroke-width=".25"/><line x1="0" y1="100" x2="100" y2="34" stroke="rgba(120,155,255,.18)" stroke-width="2"/></svg>
+          <div class="podpis"><span class="zolty"></span><p>Najpierw poznaj siebie.<br>Potem wybierz przedmioty.</p><span class="mono">diagnoza / 01</span></div>
+        </div>
+      </section>
+      <section class="etapy" aria-label="Jak to działa">
+        <div class="etap"><span class="nr">01</span><b>Diagnoza</b><span>Kim jesteś i jaki kierunek do Ciebie pasuje</span></div>
+        <div class="etap"><span class="nr">02</span><b>Test</b><span>Jak stoisz z przedmiotem, z prognozą wyniku</span></div>
+        <div class="etap"><span class="nr">03</span><b>Plan</b><span>Tylko to, czego brakuje, rozpisane na dni</span></div>
+        <div class="etap"><span class="nr">04</span><b>Nauka</b><span>Materiały Maturalnych i quiz zamiast zgadywania</span></div>
       </section>`;
     $('start').onclick = () => (root.Nauka.kompasStart ? root.Nauka.kompasStart() : go('kompas'));
     $('mat').onclick = () => startKalibracji(false);
@@ -265,10 +302,10 @@
     { t: 'Jeszcze nie wiem – chcę mieć jak najwięcej opcji po maturze', cel: 70 }
   ];
   const STYLE = [
-    { id: 'wideo', ill: '📱', t: 'Oglądając konkretne video wyjaśnienia', fb: ['Rozumiem. Jesteś wzrokowcem.', 'Najpierw podsuniemy Ci krótkie wyjaśnienie, potem zadania.'] },
-    { id: 'arkusz', ill: '📝', t: 'Rozwiązując zadania, testy i arkusze', fb: ['Rozumiem. Uczysz się w działaniu.', 'Każdy temat zaczniesz od zadań z arkuszy CKE.'] },
-    { id: 'teoria', ill: '📖', t: 'Czytając skondensowane notatki i opracowania', fb: ['Rozumiem. Lubisz konkret.', 'Najpierw schemat i gotowiec, potem zadania.'] },
-    { id: 'grupa', ill: '💬', t: 'Słuchając i dyskutując z ludźmi w grupie', fb: ['Rozumiem. Jesteś typem społecznym.', 'Mamy aktywną społeczność i grupowe sesje nauki. Razem łatwiej się uczyć!'] }
+    { id: 'wideo', ill: ik('wideo'), t: 'Oglądając konkretne video wyjaśnienia', fb: ['Rozumiem. Jesteś wzrokowcem.', 'Najpierw podsuniemy Ci krótkie wyjaśnienie, potem zadania.'] },
+    { id: 'arkusz', ill: ik('arkusz'), t: 'Rozwiązując zadania, testy i arkusze', fb: ['Rozumiem. Uczysz się w działaniu.', 'Każdy temat zaczniesz od zadań z arkuszy CKE.'] },
+    { id: 'teoria', ill: ik('tekst'), t: 'Czytając skondensowane notatki i opracowania', fb: ['Rozumiem. Lubisz konkret.', 'Najpierw schemat i gotowiec, potem zadania.'] },
+    { id: 'grupa', ill: ik('grupa'), t: 'Słuchając i dyskutując z ludźmi w grupie', fb: ['Rozumiem. Jesteś typem społecznym.', 'Mamy aktywną społeczność i grupowe sesje nauki. Razem łatwiej się uczyć!'] }
   ];
   function godzinNauki() {
     const dni = Math.max(0, M.roznicaDni(dzis(), dataMatury(kal.rok)));
@@ -299,7 +336,7 @@
         html: `<div class="q-head"><h1>W którym roku zdajesz maturę?</h1><p class="sub">Pomoże nam to określić plan nauki.</p></div>
           <div class="lata">${lataMatury().map(r => `<button class="rok" data-rok="${r}" aria-pressed="${r === kal.rok}">${r}</button>`).join('')}</div>
           <div class="os"><span>${fData(dzis(), true)}</span><span class="kropka"></span><span class="linia"></span><span>matura ${fData(dm)}</span></div>
-          <div class="center"><span class="pill-dni">📅 ${ile} dni</span></div>`,
+          <div class="center"><span class="pill-dni">${ile} dni</span></div>`,
         fb: `<b>Super! Mamy jeszcze ${ile} dni!</b><span class="muted small">${DATY_MATURY[kal.rok] ? 'Matematyka podstawowa: ' + fData(dm, true) + ', godz. 9:00 (harmonogram CKE).' : 'Termin szacunkowy. CKE ogłasza harmonogram w sierpniu roku przed maturą.'}</span>`,
         ok: true, cta: 'Jedziemy dalej!',
         bind() { app.querySelectorAll('[data-rok]').forEach(b => b.onclick = () => { kal.rok = +b.dataset.rok; odswiez(); }); }
@@ -308,7 +345,7 @@
     skala() {
       const f = fbSkali(kal.skala);
       return {
-        html: `<div class="q-head"><h1>Gdzie widzisz siebie na szkolnej skali z matmy?</h1><p class="sub">Nie zdradzimy tej informacji nikomu! 🤐</p></div>
+        html: `<div class="q-head"><h1>Gdzie widzisz siebie na szkolnej skali z matmy?</h1><p class="sub">Nie zdradzimy tej informacji nikomu!</p></div>
           <div class="suwak-box"><div class="suwak-etykiety"><span>Walczę o przetrwanie ↘</span><span>↙ Jestem w czołówce</span></div>
           <input type="range" class="suwak" id="sk" min="0" max="100" step="1" value="${kal.skala}" style="--p:${kal.skala}%" aria-label="Twoje miejsce na szkolnej skali"></div>`,
         fb: `<b>${f[0]}</b><span class="muted">${f[1]}</span>`, ok: true, cta: 'Jedziemy dalej!',
@@ -329,7 +366,7 @@
     wynik() {
       return {
         html: `<div class="q-head"><h1>Ile procent chcesz mieć z matmy?</h1><p class="sub">${kal.zPreferencji && !kal.celRuszony ? 'Ustawiliśmy start według Twojej ambicji z Diagnozy. Przesuń suwak, jeśli chcesz inaczej.' : 'Przesuń suwak. Nie musisz być pewien(-na), to punkt startowy.'}</p></div>
-          <div class="cel-box"><div class="cel-ikona">📐</div><div class="stack"><span class="naz">Matematyka podstawowa <b id="celv">${kal.cel}%</b></span>
+          <div class="cel-box"><div class="cel-ikona">${ik('postepy')}</div><div class="stack"><span class="naz">Matematyka podstawowa <b id="celv">${kal.cel}%</b></span>
           <input type="range" class="suwak zielony" id="cel" min="30" max="100" step="5" value="${kal.cel}" style="--p:${(kal.cel - 30) / 70 * 100}%" aria-label="Cel z matematyki w procentach"></div></div>`,
         fb: `<b>OK, mamy cel.</b><span class="muted" id="celfb">${fbCelu(kal.cel)}</span>
           <span class="muted small">Matura: ${fData(dataMatury(kal.rok), true)}. Zdajesz w innym roku?
@@ -388,8 +425,8 @@
             <button class="opcja" id="dk" aria-pressed="${kal.dyskalkulia}"><span><b>Mam dyskalkulię</b><br><span class="muted small">Więcej czasu na temat, krok po kroku</span></span><span class="ok">✓</span></button>
           </div>
           <div class="grid2"><label class="pole">Kiedy masz studniówkę? (opcjonalnie)<input type="date" id="st" value="${esc(kal.studniowka)}"></label>
-          <div class="callout green"><span class="ico">🎄</span><span>Święta, Sylwester i Wielkanoc są już w planie jako dni wolne.</span></div></div>`,
-        fb: dys ? '<b>Każdy temat dostanie 25% więcej czasu.</b><span class="muted">I najpierw krótkie wyjaśnienie, potem zadania.</span>' : kal.studniowka ? '<b>Studniówka zapisana. Tego dnia i dzień po masz wolne 🎉</b>' : '<b>Jeśli nic z tych rzeczy, po prostu jedziemy dalej.</b>',
+          <div class="callout green"><span class="ico"></span><span>Święta, Sylwester i Wielkanoc są już w planie jako dni wolne.</span></div></div>`,
+        fb: dys ? '<b>Każdy temat dostanie 25% więcej czasu.</b><span class="muted">I najpierw krótkie wyjaśnienie, potem zadania.</span>' : kal.studniowka ? '<b>Studniówka zapisana. Tego dnia i dzień po masz wolne</b>' : '<b>Jeśli nic z tych rzeczy, po prostu jedziemy dalej.</b>',
         ok: true, cta: 'Jedziemy dalej!',
         bind() {
           $('dl').onclick = () => { kal.dysleksja = !kal.dysleksja; odswiez(); };
@@ -404,12 +441,12 @@
         html: `<div class="q-head"><h1>O której mamy Ci przypominać?</h1><p class="sub">Jedno krótkie powiadomienie dziennie. Konkretnie: co dziś robimy i ile to zajmie.</p></div>
           <div class="chipy">${['07:00', '15:00', '16:00', '17:00', '18:00', '19:00', '20:00', '21:00'].map(g => `<button class="chip-sel" data-g="${g}" aria-pressed="${kal.godzina === g}">${g}</button>`).join('')}</div>
           <div class="grid2" style="align-items:center"><label class="pole">Jak masz na imię? (opcjonalnie)<input type="text" id="im" maxlength="24" value="${esc(kal.imie)}" placeholder="np. Ola" autocomplete="given-name"></label>
-          <div style="background:linear-gradient(160deg,#3B6CF6,#7A5CF0);padding:16px;border-radius:20px">${pushHtml('Hej' + (kal.imie ? ' ' + esc(kal.imie) : '') + '! 👋', ' Dzisiaj robimy: ' + esc(temat) + '. ' + kal.minut + ' min i masz to z głowy.', kal.godzina)}</div></div>`,
+          <div style="background:linear-gradient(160deg,#3B6CF6,#7A5CF0);padding:16px;border-radius:20px">${pushHtml('Hej' + (kal.imie ? ' ' + esc(kal.imie) : '') + '!', ' Dzisiaj robimy: ' + esc(temat) + '. ' + kal.minut + ' min i masz to z głowy.', kal.godzina)}</div></div>`,
         fb: '<b>Ostatni krok: krótki test.</b><span class="muted">Bez stresu. Jeśli czegoś nie wiesz, kliknij „Nie wiem”. To też pomaga ustawić plan.</span>',
         ok: true, cta: 'Robimy test!',
         bind() {
           app.querySelectorAll('[data-g]').forEach(b => b.onclick = () => { kal.godzina = b.dataset.g; odswiez(); });
-          $('im').oninput = e => { kal.imie = e.target.value.trim(); zapiszKal(); app.querySelector('.push .msg b').textContent = 'Hej' + (kal.imie ? ' ' + kal.imie : '') + '! 👋'; };
+          $('im').oninput = e => { kal.imie = e.target.value.trim(); zapiszKal(); app.querySelector('.push .msg b').textContent = 'Hej' + (kal.imie ? ' ' + kal.imie : '') + '!'; };
         }
       };
     }
@@ -467,8 +504,8 @@
     if (!D) return brakDanych();
     const szybka = D.profil && D.profil.szybka;
     const zakres = szybka ? D.profil.szybkaDzialy.map(id => S.dzial(id).nazwa).join(', ') : 'cała matematyka podstawowa';
-    app.innerHTML = `<div class="q-head"><span class="eyebrow">Test diagnostyczny</span><h1>Sprawdźmy, gdzie jesteś</h1>
-        <p class="sub">${szybka ? 'ok. 8 minut · 10 pytań' : 'ok. 15 minut · 20 pytań'} · ${esc(zakres)}</p></div>
+    app.innerHTML = `<div class="foto naglowek-foto jasne"><img src="assets/img/grupa.jpg" alt=""><span class="eyebrow">02 / Test diagnostyczny</span><h1>Sprawdźmy, gdzie jesteś</h1>
+        <p>${szybka ? 'ok. 8 minut · 10 pytań' : 'ok. 15 minut · 20 pytań'} · ${esc(zakres)}</p></div>
       <div class="card"><ul class="stack" style="margin:0;padding-left:20px;gap:8px">
         <li>Pytania dopasowują się do Ciebie: gdy coś nie wyjdzie, sprawdzamy podstawy.</li>
         <li><b>Nie wiesz? Kliknij „Nie wiem”.</b> Zgadywanie psuje wynik.</li>
@@ -492,7 +529,7 @@
     }
     const q = T.pyt, o = T.odp;
     const nazwa = { diagnoza: T.opcje.pelna ? 'Diagnoza pełna' : 'Test diagnostyczny', jednostka: T.opcje.sprawdzenie ? 'Szybkie sprawdzenie' : 'Quiz zaliczeniowy', powtorka: 'Powtórka 5 min' }[T.typ];
-    const baner = q.powod === 'cofniecie' && T.aiNa === q.komp ? '<div class="adapt dol ai">✨ AI wskazała przyczynę błędu: sprawdzamy tę podstawę</div>'
+    const baner = q.powod === 'cofniecie' && T.aiNa === q.komp ? '<div class="adapt dol ai">AI wskazała przyczynę błędu: sprawdzamy tę podstawę</div>'
       : q.powod === 'cofniecie' ? '<div class="adapt dol">↓ Schodzimy poziom niżej: sprawdzamy, czy problem nie leży w podstawach</div>'
       : q.powod === 'wyzej' ? '<div class="adapt gora">↑ Dobrze idzie, wchodzimy poziom wyżej</div>' : '';
     let kom = '';
@@ -501,7 +538,7 @@
       kom = r.poprawna ? `<div class="kom ok"><b class="t">Dobrze! ✓</b>${T.typ === 'diagnoza' ? '<span class="muted small">Zapisujemy: ta umiejętność wygląda na opanowaną.</span>' : ''}</div>`
         : r.nieWiem ? `<div class="kom nw"><b class="t">Spoko, zapisaliśmy.</b><span>Poprawna odpowiedź: <b>${esc(r.poprawnaOdpowiedz)}</b>. Właśnie po to jest test: plan to uwzględni.</span></div>`
         : `<div class="kom nie"><b class="t">Nie tym razem.</b><span>Poprawna odpowiedź: <b>${esc(r.poprawnaOdpowiedz)}</b>.</span>
-            ${r.przyczyna ? `<span>🔎 Ten wybór zwykle oznacza: <b>${esc(r.przyczyna)}</b>.</span>` : ''}
+            ${r.przyczyna ? `<span>Ten wybór zwykle oznacza: <b>${esc(r.przyczyna)}</b>.</span>` : ''}
             ${r.podstawa ? `<span class="muted small">Sprawdzimy też podstawę: ${esc(r.podstawa)}.</span>` : ''}</div>
             <div class="ai-box" id="aiBox"></div>`;
     }
@@ -515,7 +552,7 @@
         return `<button class="odp ${cls}" data-idx="${a.idx}" ${o ? 'disabled' : ''}><span class="lit">${'ABCD'[n]}</span>${esc(a.tekst)}</button>`;
       }).join('')}</div>
       ${o ? kom + `<div class="cta"><button class="btn-main xl arrow" id="dalej">${q.numer >= q.z ? 'Zobacz wynik' : 'Dalej'}</button></div>`
-          : '<div class="center"><button class="btn-ghost" id="nw">Nie wiem 🤷</button></div><p class="hint">Na komputerze: klawisze 1-4, a potem Enter.</p>'}
+          : '<div class="center"><button class="btn-ghost" id="nw">Nie wiem</button></div><p class="hint">Na komputerze: klawisze 1-4, a potem Enter.</p>'}
       ${T.typ === 'diagnoza' && !T.opcje.pelna && kal && q.numer > 1 ? '<div class="center"><button class="btn link" id="testOdNowa">↺ Zacznij test od nowa</button></div>' : ''}`;
     app.querySelectorAll('.odp:not([disabled])').forEach(b => b.onclick = () => odpowiedzQuiz(+b.dataset.idx));
     if ($('nw')) $('nw').onclick = () => odpowiedzQuiz(-1);
@@ -571,10 +608,10 @@
     const pelna = W && W.opcje && W.opcje.pelna;
     const poprzednia = D.stan.prognozy.length > 1 ? D.stan.prognozy[D.stan.prognozy.length - 2] : null;
     app.innerHTML = `
-      <div class="q-head"><span class="eyebrow">${pelna ? 'Diagnoza pełna' : szybka ? 'Wynik testu' : 'Wynik diagnozy'}</span>
-        <h1>Na dziś masz ok. <span class="hl">${p.wynik}%</span> z matury z matematyki</h1>
-        <p class="sub">${p.cel ? (p.wynik >= p.cel ? 'Jesteś na poziomie swojego celu. Pilnujemy, żeby tak zostało.' : `Twój cel to ${p.cel}%. Brakuje ok. ${p.cel - p.wynik} pkt proc. i wiemy dokładnie, gdzie ich szukać.`) : ''}
-        ${pelna && poprzednia ? `<br><b style="color:${p.wynik >= poprzednia.wynik ? 'var(--green-ink)' : 'var(--red-ink)'}">${p.wynik >= poprzednia.wynik ? '▲ +' : '▼ '}${p.wynik - poprzednia.wynik} pkt proc. od poprzedniej diagnozy</b>` : ''}</p></div>
+      <div class="foto naglowek-foto"><img src="assets/img/studenci.jpg" alt=""><span class="eyebrow">02 / ${pelna ? 'Diagnoza pełna' : szybka ? 'Wynik testu' : 'Wynik diagnozy'}</span>
+        <h1>Na dziś masz ok. <span style="color:var(--yellow-500)">${p.wynik}%</span> z matury z matematyki</h1>
+        <p>${p.cel ? (p.wynik >= p.cel ? 'Jesteś na poziomie swojego celu. Pilnujemy, żeby tak zostało.' : `Twój cel to ${p.cel}%. Brakuje ok. ${p.cel - p.wynik} pkt proc. i wiemy dokładnie, gdzie ich szukać.`) : ''}
+        ${pelna && poprzednia ? `<br><b style="color:${p.wynik >= poprzednia.wynik ? '#7FE0AE' : '#FF9C9C'}">${p.wynik >= poprzednia.wynik ? '▲ +' : '▼ '}${p.wynik - poprzednia.wynik} pkt proc. od poprzedniej diagnozy</b>` : ''}</p></div>
       <div class="card">
         ${progBar(p, poPlanie)}
         <div class="row"><span class="badge ${p.pewnosc === 'wysoka' ? 'green' : p.pewnosc === 'średnia' ? 'blue' : 'yellow'}">Pewność prognozy: ${p.pewnosc}</span>
@@ -584,15 +621,15 @@
       </div>
       <div class="grid2">
         <div class="card"><h3>Gdzie tracisz najwięcej punktów</h3>
-          <div class="lista">${p.najwiekszeZyski.map(z => `<div class="poz"><span style="font-size:1.2rem">📍</span><span><span class="t">${esc(z.nazwa)}</span><br><span class="m">${esc(z.dzial)}</span></span><b style="color:var(--green-ink)">+${String(z.zysk).replace('.', ',')} pkt</b></div>`).join('')}</div>
+          <div class="lista">${p.najwiekszeZyski.map(z => `<div class="poz"><span style="font-size:1.2rem"></span><span><span class="t">${esc(z.nazwa)}</span><br><span class="m">${esc(z.dzial)}</span></span><b style="color:var(--green-ink)">+${String(z.zysk).replace('.', ',')} pkt</b></div>`).join('')}</div>
           <p class="muted small">Tyle punktów procentowych możesz zyskać, opanowując temat. Plan zaczyna od tematów, które dają najwięcej punktów za minutę nauki.</p></div>
         <div class="card"><div class="row between"><h3>Dlaczego popełniasz błędy</h3><span class="tag-new">Nowość</span></div>
-          ${przyczyny.length ? `<div class="lista">${przyczyny.slice(0, 5).map(x => `<div class="poz"><span style="font-size:1.2rem">🔎</span><span><span class="t">${esc(x.przyczyna)}</span><br><span class="m">w temacie: ${esc(x.nazwa)}${x.podstawa ? ' · brakuje podstawy: ' + esc(x.podstawa) : ''}</span></span><span></span></div>`).join('')}</div>`
+          ${przyczyny.length ? `<div class="lista">${przyczyny.slice(0, 5).map(x => `<div class="poz"><span style="font-size:1.2rem"></span><span><span class="t">${esc(x.przyczyna)}</span><br><span class="m">w temacie: ${esc(x.nazwa)}${x.podstawa ? ' · brakuje podstawy: ' + esc(x.podstawa) : ''}</span></span><span></span></div>`).join('')}</div>`
             : '<p class="muted">Brak błędów do analizy. Świetnie!</p>'}
           <p class="muted small">Zwykły test mówi „źle”. My mówimy, jaki to błąd i której podstawy brakuje. Plan zaczyna od niej.</p></div>
       </div>
       <div class="card"><div class="row between"><h3>Twoja mapa mikrokompetencji</h3>${LEGENDA}</div>${mapaHtml(wiedza)}
-        <p class="muted small">Kliknij dział, żeby zobaczyć umiejętności. Kółka z obwódką to szacunek: plan sprawdzi je krótkim quizem zamiast uczyć od zera.</p></div>
+        <p class="muted small">Kliknij dział, żeby zobaczyć umiejętności. Kwadraty z obwódką to szacunek: plan sprawdzi je krótkim quizem zamiast uczyć od zera.</p></div>
       ${duo('plan', D.planPokazany ? 'Wróć do planu' : 'Dalej: Twój plan do matury', null)}
       <p class="note">Twój wynik i plan zapisują się tylko w tej przeglądarce na tym urządzeniu. Nie używaj trybu prywatnego i nie czyść danych przeglądarki, bo postępy znikną.</p>`;
     $('plan').onclick = () => {
@@ -617,8 +654,8 @@
     const nastepna = plan.sesje.find(s => s.data > t && (s.typ === 'nauka' || s.typ === 'quiz'));
     const suma = sesjeDzis.reduce((a, s) => a + s.minuty, 0);
     let msg;
-    if (ser.dzisTyp === 'blokada') msg = `Hej${imie()}! Dziś wolne: <b>${esc(ser.dzisNazwa)}</b>. Seria 🔥 ${ser.dni} się nie przerywa. Odpocznij!`;
-    else if (bufor) msg = `Hej${imie()}! Dziś <b>dzień buforowy</b>. Nadrób zaległości albo odpocznij 😌 Seria się nie przerywa.`;
+    if (ser.dzisTyp === 'blokada') msg = `Hej${imie()}! Dziś wolne: <b>${esc(ser.dzisNazwa)}</b>. Seria ${ser.dni} się nie przerywa. Odpocznij!`;
+    else if (bufor) msg = `Hej${imie()}! Dziś <b>dzień buforowy</b>. Nadrób zaległości albo odpocznij Seria się nie przerywa.`;
     else if (ser.dzisTyp === 'wolne' && !sesjeDzis.length) msg = `Hej${imie()}! Dziś nie masz nauki w planie.${nastepna ? ' Widzimy się ' + fKrotko(nastepna.data) + '!' : ''}`;
     else if (sesjeDzis.length) {
       const glowna = sesjeDzis.find(s => s.typ !== 'powtorka');
@@ -626,7 +663,7 @@
         ? `Hej${imie()}! Na rozgrzewkę <b>5 min powtórki</b>, a potem robimy: <b>${esc(nazwaSesji(glowna))}</b>. ${suma} min i masz to z głowy.`
         : `Hej${imie()}! Dzisiaj robimy: <b>${esc(nazwaSesji(sesjeDzis[0]))}</b>. ${suma} min i masz to z głowy.`;
       if (sesjeDzis.some(s => s.dostosowane)) msg += '<br><span class="small muted">Ostatnio ten temat nie wyszedł, więc przygotowaliśmy prostszy materiał.</span>';
-    } else if (zrobione.length) msg = `Brawo${imie()}! Na dziś wszystko 🎉 Seria: <b>${dniSl(ser.dni)}</b>.${nastepna ? ' Następnie: ' + esc(nazwaSesji(nastepna)) + ' (' + fKrotko(nastepna.data) + ').' : ''}`;
+    } else if (zrobione.length) msg = `Brawo${imie()}! Na dziś wszystko Seria: <b>${dniSl(ser.dni)}</b>.${nastepna ? ' Następnie: ' + esc(nazwaSesji(nastepna)) + ' (' + fKrotko(nastepna.data) + ').' : ''}`;
     else msg = `Hej${imie()}! Na dziś nic nie zostało w planie.`;
 
     const zad = zrobione.map(h => `<div class="zad zrobione"><div class="wezel">✓</div><div><div class="tyt">${esc(h.tytul || { quiz: 'Quiz', powtorka: 'Powtórka 5 min', diagnoza: 'Diagnoza pełna', nauka: 'Sesja nauki' }[h.typ])}</div><div class="meta">${h.minuty} min · zrobione</div></div><span></span></div>`)
@@ -640,13 +677,13 @@
     const tydzien = [0, 1, 2, 3, 4, 5, 6].map(i => {
       const d = M.dodajDni(pon, i), info = mapa[d], akt = D.stan.aktywneDni[d];
       const typ = info ? info.typ : 'przed';
-      let cls = '', ik = '·';
-      if (akt) { cls = 'akt'; ik = '🔥'; }
-      else if (typ === 'blokada') { cls = 'blok'; ik = '🌴'; }
-      else if (typ === 'bufor') { cls = 'buf'; ik = '⏸'; }
-      else if (typ === 'nauka' && d < t) { cls = 'minal'; ik = '✕'; }
-      else if (typ === 'nauka') { const m = plan.sesje.filter(s => s.data === d).reduce((a, s) => a + s.minuty, 0); ik = m ? m + '′' : '·'; }
-      return `<div class="tdz ${cls} ${d === t ? 'dzis' : ''}" title="${fData(d)}${info && info.nazwa ? ': ' + esc(info.nazwa) : ''}"><span class="k">${ik}</span>${DNI[M.dzienTygodnia(d)]}</div>`;
+      let cls = '', zn = '·';
+      if (akt) { cls = 'akt'; zn = '✓'; }
+      else if (typ === 'blokada') { cls = 'blok'; zn = '×'; }
+      else if (typ === 'bufor') { cls = 'buf'; zn = '‖'; }
+      else if (typ === 'nauka' && d < t) { cls = 'minal'; zn = '✕'; }
+      else if (typ === 'nauka') { const m = plan.sesje.filter(s => s.data === d).reduce((a, s) => a + s.minuty, 0); zn = m ? m + '′' : '·'; }
+      return `<div class="tdz ${cls} ${d === t ? 'dzis' : ''}" title="${fData(d)}${info && info.nazwa ? ': ' + esc(info.nazwa) : ''}"><span class="k">${zn}</span>${DNI[M.dzienTygodnia(d)]}</div>`;
     }).join('');
 
     const wolnyWTygodniu = (D.org.blokady || []).some(b => b.zamrozenie && b.od <= t && M.roznicaDni(b.od, t) < 7);
@@ -660,18 +697,18 @@
       <div class="cols">
         <div class="stack" style="gap:22px">
           <span class="eyebrow">Krok 4 · Nauka</span>
-          <div class="dymek"><div class="awatar">M</div><div class="chmurka">${msg}</div></div>
+          <div class="dymek"><div class="awatar"><img src="assets/img/mentorka.jpg" alt="Twoja mentorka"></div><div class="chmurka">${msg}</div></div>
           <div class="card"><div class="row between"><h2>Twoja ścieżka na dziś</h2><span class="badge">${fData(t, true)}</span></div>
             ${zad ? `<div class="sciezka">${zad}</div>` : '<p class="muted">Brak zadań na dziś.</p>'}
           </div>
           ${sesjeDzis.length ? duo('startDzis', `Zaczynamy · ${suma} min`, ser.dzisTyp === 'nauka' && !wolnyWTygodniu ? 'wolne' : null, 'Nie dam rady dzisiaj')
             : nastepnaDowolna ? duo('ekstra', 'Mam ochotę na więcej: następna sesja', null) : ''}
           ${wolnyWTygodniu && sesjeDzis.length ? '<span class="tiny muted center">Dzień wolny na żądanie: 1 w tygodniu, już wykorzystany.</span>' : ''}
-          <div class="card"><div class="row between"><h3>Ten tydzień</h3><span class="muted small">🔥 nauka · 🌴 wolne · ⏸ bufor · liczba = minuty w planie</span></div><div class="tydzien">${tydzien}</div></div>
+          <div class="card"><div class="row between"><h3>Ten tydzień</h3><span class="muted small">✓ nauka · × wolne · ‖ bufor · liczba = minuty w planie</span></div><div class="tydzien">${tydzien}</div></div>
           ${kolejne.length ? `<div class="card flat"><h3>Najbliższe dni</h3><div class="lista">${kolejne.map(k => `<div class="poz"><span>${IKONA[k.ss.find(s => s.typ !== 'powtorka') ? k.ss.find(s => s.typ !== 'powtorka').typ : 'powtorka']}</span><span><span class="t">${esc(k.ss.map(nazwaSesji).join(' + '))}</span><br><span class="m">${fKrotko(k.d)} · ${k.ss.reduce((a, s) => a + s.minuty, 0)} min</span></span><span></span></div>`).join('')}</div></div>` : ''}
         </div>
         <div class="stack" style="gap:16px">
-          <div class="card"><div class="seria-big"><span class="ogien">🔥</span><div><div class="n">${ser.dni}</div><div class="muted small">${odmiana(ser.dni, 'dzień', 'dni', 'dni')} z rzędu · rekord ${ser.rekord}</div></div></div>
+          <div class="card"><div class="seria-big"><span class="ogien">${ik('seria')}</span><div><div class="n">${ser.dni}</div><div class="muted small">${odmiana(ser.dni, 'dzień', 'dni', 'dni')} z rzędu · rekord ${ser.rekord}</div></div></div>
             <p class="small muted">${ser.dzisZrobione ? (sesjeDzis.length ? 'Seria na dziś podtrzymana. Dokończ resztę, jeśli masz chwilę.' : 'Dzisiaj zaliczone. Wracaj jutro!') : ser.dzisTyp === 'nauka' && sesjeDzis.length ? 'Zrób dziś choć jedną sesję, żeby utrzymać serię.' : 'Dni wolne, święta i dni buforowe nie przerywają serii.'}</p></div>
           <div class="card"><div class="row between"><h3>Prognoza matury</h3><a class="small" href="#/postepy">Postępy →</a></div>
             <div class="row" style="align-items:flex-end;gap:12px"><span class="liczba">${pg.wynik}%</span><span class="muted">teraz</span><span style="font-weight:800;color:var(--green-ink);font-size:1.4rem">→ ${ps.prognozaPoPlanie}%</span><span class="muted">po planie</span></div>
@@ -683,7 +720,7 @@
     if ($('ekstra')) $('ekstra').onclick = () => startSesji(nastepnaDowolna);
     if ($('wolne')) $('wolne').onclick = () => {
       D.org.blokady.push({ od: t, do: t, nazwa: 'Dzień wolny', zamrozenie: true }); zapisz();
-      toast('Przełożyliśmy dzisiejsze sesje na kolejne dni. Seria zostaje 🧊'); render();
+      toast('Przełożyliśmy dzisiejsze sesje na kolejne dni. Seria zostaje'); render();
     };
   }
   function formularzWydarzenia(el, plan) {
@@ -736,10 +773,10 @@
         <h1>${esc(k.nazwa)}</h1>
         <p class="muted">Twój poziom: <b>${Math.round(st.p * 100)}%</b>${st.pewny ? '' : ' (szacunek)'}${u ? ' · ' + esc(u.powod) : ''}</p>
       </div>
-      ${dost ? `<div class="callout"><span class="ico">🛠️</span><div class="stack" style="gap:6px"><b class="t">Dostosowaliśmy materiał do Ciebie</b>
+      ${dost ? `<div class="callout"><span class="ico"></span><div class="stack" style="gap:6px"><b class="t">Dostosowaliśmy materiał do Ciebie</b>
         <span>${dost.proby ? `Quiz z tego tematu nie wyszedł ${dost.proby === 1 ? 'raz' : dost.proby + ' razy'}.` : 'Wracamy do tematu po wzmocnieniu podstaw.'}${dost.przyczyna ? ` Najczęstszy błąd: <b>${esc(dost.przyczyna)}</b>.` : ''}</span>
         <ul style="margin:0;padding-left:18px">${dost.zmiany.map(z => `<li>${esc(z)}</li>`).join('')}</ul></div></div>` : ''}
-      <div class="callout blue"><span class="ico">🎬</span><span><b>Dziś: ${czesci.length} ${odmiana(czesci.length, 'część', 'części', 'części')}, ok. ${minCz} min.</b> To fragmenty materiałów Maturalnych dobrane do tej umiejętności, a nie cały kurs.
+      <div class="callout blue"><span class="ico"></span><span><b>Dziś: ${czesci.length} ${odmiana(czesci.length, 'część', 'części', 'części')}, ok. ${minCz} min.</b> To fragmenty materiałów Maturalnych dobrane do tej umiejętności, a nie cały kurs.
         Cały temat (${wszystkie.length} części) znajdziesz w <a href="#/materialy/${komp}">Materiałach</a>.</span></div>
       <div id="panelLekcji"></div>
       <div class="cta">${sesja ? `<button class="btn-main xl" id="odhacz">Zrobione! Odhaczam sesję ✓</button>${sesja.data !== t ? `<span class="muted small">Ta sesja jest zaplanowana na ${fKrotko(sesja.data)}. Możesz ją zrobić wcześniej.</span>` : ''}${sesja.czesc === sesja.z ? '<span class="muted small">To ostatnia część. Potem quiz zaliczeniowy (5 min, próg 70%).</span>' : ''}`
@@ -750,7 +787,7 @@
       czesci.forEach(c => { if (!c.kontynuacja) root.Kurs.oznacz(c.id, true); });
       S.oznaczSesje(D.stan, sesja, true, t); zapisz();
       const po = seria().dni;
-      toast((po > przed ? `🔥 Seria: ${dniSl(po)}! ` : 'Sesja odhaczona ✓ ') + (sesja.czesc === sesja.z ? 'Teraz quiz zaliczeniowy.' : 'Kolejna część jest już w planie.'));
+      toast((po > przed ? `Seria: ${dniSl(po)}! ` : 'Sesja odhaczona ✓ ') + (sesja.czesc === sesja.z ? 'Teraz quiz zaliczeniowy.' : 'Kolejna część jest już w planie.'));
       go('dzis');
     };
   }
@@ -758,36 +795,36 @@
   // ═════════════ WYNIK QUIZU / POWTÓRKI ═════════════
   function widokQuizWynik() {
     if (!W || W.typ === 'diagnoza') { go(D ? 'dzis' : ''); return; }
-    let ik, tyt, tresc = '', zmiany = '';
+    let ikW, tyt, tresc = '', zmiany = '';
     if (W.typ === 'jednostka') {
       if (W.zaliczona) {
-        ik = '🎉'; tyt = W.sprawdzenie ? 'Umiesz to!' : 'Zaliczone!';
+        ikW = IKONA.quiz; tyt = W.sprawdzenie ? 'Umiesz to!' : 'Zaliczone!';
         tresc = `<p class="lead">${esc(W.komunikat)} <b>${W.procent}%</b> (próg 70%).</p>
-          <div class="callout green"><span class="ico">🔁</span><span>Następna powtórka za <b>${dniSl(W.powtorkaZa)}</b>. ${W.procent >= 90 ? 'Poszło świetnie, więc odstęp jest dłuższy.' : W.procent < 80 ? 'Było blisko progu, więc powtórzymy szybciej.' : 'Im lepiej Ci idzie, tym rzadziej powtarzamy.'}</span></div>
+          <div class="callout green"><span class="ico"></span><span>Następna powtórka za <b>${dniSl(W.powtorkaZa)}</b>. ${W.procent >= 90 ? 'Poszło świetnie, więc odstęp jest dłuższy.' : W.procent < 80 ? 'Było blisko progu, więc powtórzymy szybciej.' : 'Im lepiej Ci idzie, tym rzadziej powtarzamy.'}</span></div>
           ${W.sprawdzenie ? '<p class="muted">Temat odhaczony bez nauki. Ten czas plan przeznaczy na Twoje luki.</p>' : ''}`;
       } else if (W.sprawdzenie) {
-        ik = '📘'; tyt = 'Dobrze, że sprawdziliśmy';
+        ikW = IKONA.nauka; tyt = 'Dobrze, że sprawdziliśmy';
         tresc = `<p class="lead">${esc(W.komunikat)}</p><p class="muted">To nie porażka. Właśnie po to są szybkie sprawdzenia: nie uczysz się tego, co umiesz, i nie pomijasz tego, czego nie umiesz.</p>`;
       } else if (W.cofniecieDo) {
-        ik = '🧱'; tyt = 'Wracamy do podstaw';
+        ikW = IKONA.diagnoza; tyt = 'Wracamy do podstaw';
         tresc = `<p class="lead">${esc(W.komunikat)}</p>
-          ${W.cofniecieDo.length ? `<div class="card flat"><h3>Najpierw te podstawy</h3><div class="lista">${W.cofniecieDo.map(c => `<div class="poz"><span>🧩</span><span class="t">${esc(c.nazwa)}</span><span class="badge yellow">w planie od jutra</span></div>`).join('')}</div></div>` : ''}
-          <div class="callout"><span class="ico">🛠️</span><div class="stack" style="gap:4px"><b class="t">Materiał automatycznie dostosowany</b><span>Najpierw wyjaśnienie krok po kroku, potem zadania. Na start rozgrzewka z podstawy. Quiz z nowym zestawem pytań.</span></div></div>
+          ${W.cofniecieDo.length ? `<div class="card flat"><h3>Najpierw te podstawy</h3><div class="lista">${W.cofniecieDo.map(c => `<div class="poz"><span></span><span class="t">${esc(c.nazwa)}</span><span class="badge yellow">w planie od jutra</span></div>`).join('')}</div></div>` : ''}
+          <div class="callout"><span class="ico"></span><div class="stack" style="gap:4px"><b class="t">Materiał automatycznie dostosowany</b><span>Najpierw wyjaśnienie krok po kroku, potem zadania. Na start rozgrzewka z podstawy. Quiz z nowym zestawem pytań.</span></div></div>
           ${W.doAnalizyAI ? '<div id="aiPorazka"></div>' : ''}`;
       } else {
-        ik = '💪'; tyt = 'Jeszcze nie tym razem';
+        ikW = IKONA.powtorka; tyt = 'Jeszcze nie tym razem';
         tresc = `<p class="lead">${esc(W.komunikat)}</p>
           <div class="card flat"><h3>Co zmieniamy</h3><ul style="margin:0;padding-left:18px"><li>Temat wraca na najbliższy wolny termin</li><li>Najpierw wyjaśnienie (schemat), dopiero potem zadania</li><li>Quiz z innym zestawem pytań</li><li>Jeśli znowu nie wyjdzie, cofniemy się do podstaw</li></ul></div>`;
       }
       zmiany = W.komp ? `<button class="btn-ghost" id="lek">Zobacz ${W.zaliczona ? 'temat' : 'dostosowaną lekcję'}: ${esc(W.nazwa)}</button>` : '';
     } else if (W.typ === 'powtorka') {
-      ik = '🔁'; tyt = 'Powtórka zrobiona';
+      ikW = IKONA.powtorka; tyt = 'Powtórka zrobiona';
       tresc = `<p class="lead">${esc(W.komunikat)}</p>
         <div class="lista">${(W.zmiany || []).map(z => `<div class="poz ${z.dobrze ? 'ok' : ''}"><span class="box">${z.dobrze ? '✓' : z.wraca ? '↩' : '!'}</span><span class="t">${esc(z.nazwa)}</span>
           <span class="badge ${z.dobrze ? 'green' : z.wraca ? 'red' : 'yellow'}">${z.dobrze ? 'następna za ' + dniSl(z.za) : z.wraca ? 'wraca do planu' : 'jutro jeszcze raz'}</span></div>`).join('') || '<p class="muted">Brak tematów do powtórki.</p>'}</div>
         <p class="muted small">Powtórki są adaptacyjne: pamiętasz, to odstęp rośnie (2 > 5 > 12 > 30 dni). Zapominasz, to wracamy szybciej.</p>`;
     }
-    app.innerHTML = `<div class="q-head"><span style="font-size:4rem;line-height:1">${ik}</span><h1>${tyt}</h1>${W.seriaWzrosla ? `<span class="pill-fire" style="font-size:1.1rem">🔥 Seria: ${dniSl(W.seriaWzrosla)}!</span>` : ''}</div>
+    app.innerHTML = `<div class="q-head"><span class="duza-ikona">${ikW}</span><h1>${tyt}</h1>${W.seriaWzrosla ? `<span class="pill-fire" style="font-size:1.1rem">${ik('seria')} Seria: ${dniSl(W.seriaWzrosla)}!</span>` : ''}</div>
       <div class="stack">${tresc}</div>
       <div class="cta"><button class="btn-main xl arrow" id="dalej">Wracam do planu</button>${zmiany}</div>`;
     $('dalej').onclick = () => go('dzis');
@@ -830,7 +867,7 @@
           <div class="card flat"><h3>Dni nauki</h3><div class="dni-tyg" style="justify-content:flex-start">${KOLEJNOSC_DNI.map(d => `<button class="dzien" data-dz="${d}" aria-pressed="${D.org.dniTygodnia.includes(d)}">${DNI[d]}</button>`).join('')}</div></div>
           <div class="card flat"><h3>Dni bez nauki</h3>
             <p class="small muted">Święta, Sylwester i Wielkanoc są wolne automatycznie. Co 5. dzień nauki jest buforowy.</p>
-            <div class="lista">${wlasne.map(x => `<div class="poz"><span>🌴</span><span><span class="t">${esc(x.b.nazwa)}</span><br><span class="m">${fKrotko(x.b.od)}${x.b.do !== x.b.od ? ' - ' + fKrotko(x.b.do) : ''}</span></span><button class="btn-small alt" data-usun="${x.i}" aria-label="Usuń">✕</button></div>`).join('') || '<p class="muted small">Brak własnych dni wolnych.</p>'}</div>
+            <div class="lista">${wlasne.map(x => `<div class="poz"><span></span><span><span class="t">${esc(x.b.nazwa)}</span><br><span class="m">${fKrotko(x.b.od)}${x.b.do !== x.b.od ? ' - ' + fKrotko(x.b.do) : ''}</span></span><button class="btn-small alt" data-usun="${x.i}" aria-label="Usuń">✕</button></div>`).join('') || '<p class="muted small">Brak własnych dni wolnych.</p>'}</div>
             <button class="btn-ghost" id="dodaj">+ Coś mi wypadło: dodaj dni bez nauki</button><div id="formWyp" hidden></div></div>
         </div></details>
       </div>
@@ -881,15 +918,15 @@
     const pg = S.prognoza(st);
     app.innerHTML = `
       <div class="stack" style="gap:6px"><h1>Twoje postępy</h1><p class="muted">Monitorujemy realizację planu, poziom każdej umiejętności i przyczyny błędów. Wszystko to od razu zmienia plan.</p></div>
-      <div class="staty"><div class="stat"><b style="color:var(--fire)">🔥 ${ser.dni}</b><span>seria (rekord ${ser.rekord})</span></div><div class="stat"><b>${Object.keys(st.zaliczone).length}</b><span>zaliczone tematy</span></div>
+      <div class="staty"><div class="stat"><b style="color:var(--fire)">${ser.dni}</b><span>seria (rekord ${ser.rekord})</span></div><div class="stat"><b>${Object.keys(st.zaliczone).length}</b><span>zaliczone tematy</span></div>
         <div class="stat"><b>${minut}</b><span>minut nauki</span></div><div class="stat"><b>${pg.wynik}%</b><span>prognoza matury</span></div></div>
       <div class="cols">
         <div class="card"><div class="row between"><h3>Prognoza matury w czasie</h3><button class="btn-small" id="pelna">Diagnoza pełna teraz</button></div>
           ${wykresProg(st.prognozy, pg.cel)}
           <p class="small muted">Kropka to prognoza z diagnozy, niebieskie pole to przedział niepewności. ${plan && plan.terminyDiagnoz[0] ? 'Następna diagnoza pełna w planie: ' + fData(plan.terminyDiagnoz[0], true) + ' (co ok. ' + plan.podsumowanie.coIleDniDiagnoza + ' dni).' : ''}</p></div>
         <div class="card"><div class="row between"><h3>Najczęstsze przyczyny błędów</h3><span class="tag-new">Nowość</span></div>
-          ${top.length ? `<div class="lista">${top.map(g => `<div class="poz"><span>🔎</span><span><span class="t">${esc(g.opis)}</span><br><span class="m">${esc(Array.from(g.tematy).slice(0, 2).join(', '))}</span></span><span class="badge red">${g.n}×</span></div>`).join('')}</div>` : '<p class="muted">Jeszcze brak danych.</p>'}
-          ${st.przyczyny.some(x => x.zrodlo === 'AI') ? `<p class="small muted">✨ ${st.przyczyny.filter(x => x.zrodlo === 'AI').length} z tych przyczyn wskazała AI na podstawie Twoich rozwiązań.</p>` : ''}</div>
+          ${top.length ? `<div class="lista">${top.map(g => `<div class="poz"><span></span><span><span class="t">${esc(g.opis)}</span><br><span class="m">${esc(Array.from(g.tematy).slice(0, 2).join(', '))}</span></span><span class="badge red">${g.n}×</span></div>`).join('')}</div>` : '<p class="muted">Jeszcze brak danych.</p>'}
+          ${st.przyczyny.some(x => x.zrodlo === 'AI') ? `<p class="small muted">${st.przyczyny.filter(x => x.zrodlo === 'AI').length} z tych przyczyn wskazała AI na podstawie Twoich rozwiązań.</p>` : ''}</div>
       </div>
       <div class="card"><div class="row between"><h3>Mapa mikrokompetencji</h3>${LEGENDA}</div>${mapaHtml(S.podsumujWiedze(st))}</div>`;
     $('pelna').onclick = () => startTest('diagnoza', { pelna: true }, 'wynik');
@@ -903,16 +940,16 @@
     const dz = plan.sesje.filter(s => s.data === t && s.typ !== 'bufor');
     const nauka = dz.find(s => s.typ === 'nauka' || s.typ === 'quiz') || plan.sesje.find(s => s.data > t && (s.typ === 'nauka' || s.typ === 'quiz'));
     const L = [];
-    if (pw.codzienne !== false) L.push({ kiedy: godz, tyt: `Hej${imie()}! 👋`, tekst: nauka ? ` Dzisiaj robimy: ${esc(nazwaSesji(nauka))}. ${dz.reduce((a, s) => a + s.minuty, 0) || nauka.minuty} min i masz to z głowy.` : ' Dziś luz. Jutro wracamy do nauki!' });
+    if (pw.codzienne !== false) L.push({ kiedy: godz, tyt: `Hej${imie()}!`, tekst: nauka ? ` Dzisiaj robimy: ${esc(nazwaSesji(nauka))}. ${dz.reduce((a, s) => a + s.minuty, 0) || nauka.minuty} min i masz to z głowy.` : ' Dziś luz. Jutro wracamy do nauki!' });
     const pow = plan.sesje.find(s => s.typ === 'powtorka' && s.data >= t);
-    if (pw.powtorki !== false && pow) L.push({ kiedy: pow.data === t ? godz : fKrotko(pow.data), tyt: '🔁 5 minut powtórki', tekst: ` ${esc(pow.komps.map(id => S.kompetencja(id).nazwa).join(', '))}. Sprawdźmy, czy jeszcze pamiętasz!` });
-    if (pw.seria !== false) L.push({ kiedy: '21:00', tyt: `🔥 Seria ${dniSl(Math.max(ser.dni, 1))} w niebezpieczeństwie`, tekst: ' Zostały 3 godziny. Wystarczy jedna sesja, żeby ją utrzymać.' });
+    if (pw.powtorki !== false && pow) L.push({ kiedy: pow.data === t ? godz : fKrotko(pow.data), tyt: '5 minut powtórki', tekst: ` ${esc(pow.komps.map(id => S.kompetencja(id).nazwa).join(', '))}. Sprawdźmy, czy jeszcze pamiętasz!` });
+    if (pw.seria !== false) L.push({ kiedy: '21:00', tyt: `Seria ${dniSl(Math.max(ser.dni, 1))} w niebezpieczeństwie`, tekst: ' Zostały 3 godziny. Wystarczy jedna sesja, żeby ją utrzymać.' });
     const tr = plan.jednostki.find(u => u.dostosowanie);
-    if (tr) L.push({ kiedy: fKrotko(tr.start), tyt: '💪 Nie poddajemy się', tekst: ` ${esc(tr.nazwa)} wraca z prostszym materiałem. Najpierw wyjaśnienie, potem zadania.` });
-    if (pw.diagnozy !== false && plan.terminyDiagnoz[0]) L.push({ kiedy: fKrotko(M.dodajDni(plan.terminyDiagnoz[0], -1)), tyt: '🎯 Jutro diagnoza pełna', tekst: ' 30 minut i zobaczysz, ile masz dziś na maturze.' });
+    if (tr) L.push({ kiedy: fKrotko(tr.start), tyt: 'Nie poddajemy się', tekst: ` ${esc(tr.nazwa)} wraca z prostszym materiałem. Najpierw wyjaśnienie, potem zadania.` });
+    if (pw.diagnozy !== false && plan.terminyDiagnoz[0]) L.push({ kiedy: fKrotko(M.dodajDni(plan.terminyDiagnoz[0], -1)), tyt: 'Jutro diagnoza pełna', tekst: ' 30 minut i zobaczysz, ile masz dziś na maturze.' });
     const z = Object.keys(D.stan.zaliczone).sort((a, b) => D.stan.zaliczone[b] < D.stan.zaliczone[a] ? -1 : 1)[0];
-    if (z) { const p = D.stan.powtorki.find(x => x.komp === z); L.push({ kiedy: fKrotko(D.stan.zaliczone[z]), tyt: '🎉 Zaliczone!', tekst: ` ${esc(S.kompetencja(z).nazwa)}.${p ? ' Kolejna powtórka ' + fKrotko(p.data) + '.' : ''}` }); }
-    else L.push({ kiedy: 'po quizie', tyt: '🎉 Zaliczone!', tekst: ' Tak będzie wyglądać gratulacja po pierwszym zaliczonym temacie.' });
+    if (z) { const p = D.stan.powtorki.find(x => x.komp === z); L.push({ kiedy: fKrotko(D.stan.zaliczone[z]), tyt: 'Zaliczone!', tekst: ` ${esc(S.kompetencja(z).nazwa)}.${p ? ' Kolejna powtórka ' + fKrotko(p.data) + '.' : ''}` }); }
+    else L.push({ kiedy: 'po quizie', tyt: 'Zaliczone!', tekst: ' Tak będzie wyglądać gratulacja po pierwszym zaliczonym temacie.' });
     return L;
   }
   function widokPowiadomienia() {
@@ -970,13 +1007,13 @@
     app.innerHTML = `
       <div class="stack" style="gap:6px"><h1>Twój plan w Google Calendar</h1><p class="muted">Google Calendar to Twój główny kalendarz: widzisz w nim, <b>co</b> i <b>kiedy</b> robisz. Uczysz się w aplikacji, bo tu plan sam się przelicza po każdym quizie.</p></div>
       <div class="grid3">
-        <div class="card flat"><span style="font-size:1.6rem">🗓️</span><h3>Co i kiedy</h3><p class="small muted">Wydarzenie: temat, część, minuty i lista dzisiejszych części (wideo, notatka, zadania).</p></div>
-        <div class="card flat"><span style="font-size:1.6rem">🔗</span><h3>Link do lekcji</h3><p class="small muted">Jedno kliknięcie w wydarzeniu otwiera dzisiejszą lekcję w aplikacji, z materiałami Maturalnych w środku.</p></div>
-        <div class="card flat"><span style="font-size:1.6rem">🛟</span><h3>Link zapasowy</h3><p class="small muted">W opisie jest też bezpośredni link do materiału na platformie Maturalnych, gdyby aplikacja była niedostępna.</p></div>
+        <div class="card flat"><span style="font-size:1.6rem"></span><h3>Co i kiedy</h3><p class="small muted">Wydarzenie: temat, część, minuty i lista dzisiejszych części (wideo, notatka, zadania).</p></div>
+        <div class="card flat"><span style="font-size:1.6rem"></span><h3>Link do lekcji</h3><p class="small muted">Jedno kliknięcie w wydarzeniu otwiera dzisiejszą lekcję w aplikacji, z materiałami Maturalnych w środku.</p></div>
+        <div class="card flat"><span style="font-size:1.6rem"></span><h3>Link zapasowy</h3><p class="small muted">W opisie jest też bezpośredni link do materiału na platformie Maturalnych, gdyby aplikacja była niedostępna.</p></div>
       </div>
       <div class="cols">
         <div class="card"><h3>1. Cały plan naraz (${ile} sesji)</h3>
-          <button class="btn-main" id="ics">⬇ Pobierz plan (.ics)</button>
+          <button class="btn-main" id="ics">Pobierz plan (.ics)</button>
           <div class="lista">${[
             ['Utwórz osobny kalendarz', 'Google Calendar na komputerze: przy „Inne kalendarze” kliknij <b>+</b>, potem <b>Utwórz nowy kalendarz</b>, nazwij go „Matura”.'],
             ['Otwórz import', 'Ustawienia (ikona koła zębatego) > <b>Importowanie i eksportowanie</b>.'],
@@ -987,7 +1024,7 @@
         <div class="card"><h3>2. Pojedyncza sesja jednym kliknięciem</h3><p class="small muted">Otwiera Google Calendar z gotowym wydarzeniem. Bez importu.</p>
           <div class="lista">${sesje.map(s => `<div class="poz"><span>${IKONA[s.typ]}</span><span><span class="t">${esc(nazwaSesji(s))}</span><br><span class="m">${fKrotko(s.data)} · ${s.start}-${s.koniec}</span></span><a class="btn-small alt" href="${S.linkGoogle(s, { adres: adresAplikacji() })}" target="_blank" rel="noopener">Dodaj ↗</a></div>`).join('')}</div></div>
       </div>
-      <div class="callout blue"><span class="ico">🔄</span><span><b>W kolejnej iteracji:</b> połączenie z kontem Google (Google Calendar API), żeby plan sam aktualizował się w kalendarzu po każdej zmianie.</span></div>`;
+      <div class="callout blue"><span class="ico"></span><span><b>W kolejnej iteracji:</b> połączenie z kontem Google (Google Calendar API), żeby plan sam aktualizował się w kalendarzu po każdej zmianie.</span></div>`;
     $('ics').onclick = pobierzIcs;
   }
 
@@ -1052,40 +1089,40 @@
 
   // ═════════════ MAPA STRONY ═════════════
   function widokMapa() {
-    const lk = (h, ik, t, o, cls) => `<a class="lk ${cls || ''}" href="${h}"><b>${ik} ${t}</b><span>${o}</span></a>`;
+    const lk = (h, _ik, t, o, cls) => `<a class="lk ${cls || ''}" href="${h}"><b>${t}</b><span>${o}</span></a>`;
     const ma = !!D;
     app.innerHTML = `
       <div class="stack" style="gap:6px"><span class="eyebrow">Dla jury i Maturalnych</span><h1>Opis, wszystkie ekrany i demo</h1>
         <p class="muted">Uczeń widzi tylko 4 kroki: Diagnoza, Test, Plan, Nauka. Tu są wszystkie ekrany, opis algorytmu i narzędzia do pokazu. ${ma ? '' : 'Ekrany planu wymagają testu albo wczytania ucznia demo (na dole).'}</p></div>
       <div class="card"><h3>Ścieżka ucznia</h3><div class="linki">
-        ${lk('#/', '🏠', 'Start', 'Strona główna i wyróżniki')}
-        ${lk('#/kalibracja/1', '🎚️', 'Kalibracja', '3 pytania: cel, czas, trudne działy')}
-        ${lk('#/szybka', '⚡', 'Szybka ścieżka', 'Wiem, co chcę poprawić')}
-        ${lk('#/test', '🧭', 'Test diagnostyczny', 'Adaptacyjny, ok. 15 min')}
-        <button class="lk" id="calosc"><b>🎯 Diagnoza całościowa</b><span>Symulacja matury: cała matematyka, 20 pytań</span></button>
-        ${lk('#/wynik', '📊', 'Wynik diagnozy', 'Prognoza, przyczyny błędów, mapa')}
-        ${lk('#/dzis', '🔥', 'Dziś', 'Komunikat dnia, seria, ścieżka na dziś')}
-        ${lk('#/plan', '✅', 'Lista do matury', 'Wszystkie tematy, minuty, dni wolne')}
-        ${lk('#/materialy', '🎬', 'Materiały', 'Wideo, notatki i zadania Maturalnych per umiejętność')}
-        ${lk('#/postepy', '📈', 'Postępy', 'Prognoza w czasie, przyczyny błędów')}
-        ${lk('#/powiadomienia', '🔔', 'Powiadomienia', 'Ekran push i ustawienia')}
-        ${lk('#/kalendarz', '🗓️', 'Kalendarz', 'Plik .ics i Google Calendar')}
+        ${lk('#/', '', 'Start', 'Strona główna i wyróżniki')}
+        ${lk('#/kalibracja/1', '', 'Kalibracja', '3 pytania: cel, czas, trudne działy')}
+        ${lk('#/szybka', '', 'Szybka ścieżka', 'Wiem, co chcę poprawić')}
+        ${lk('#/test', '', 'Test diagnostyczny', 'Adaptacyjny, ok. 15 min')}
+        <button class="lk" id="calosc"><b>Diagnoza całościowa</b><span>Symulacja matury: cała matematyka, 20 pytań</span></button>
+        ${lk('#/wynik', '', 'Wynik diagnozy', 'Prognoza, przyczyny błędów, mapa')}
+        ${lk('#/dzis', '', 'Dziś', 'Komunikat dnia, seria, ścieżka na dziś')}
+        ${lk('#/plan', '', 'Lista do matury', 'Wszystkie tematy, minuty, dni wolne')}
+        ${lk('#/materialy', '', 'Materiały', 'Wideo, notatki i zadania Maturalnych per umiejętność')}
+        ${lk('#/postepy', '', 'Postępy', 'Prognoza w czasie, przyczyny błędów')}
+        ${lk('#/powiadomienia', '', 'Powiadomienia', 'Ekran push i ustawienia')}
+        ${lk('#/kalendarz', '', 'Kalendarz', 'Plik .ics i Google Calendar')}
       </div></div>
       <div class="card"><h3>Doradztwo i informacje</h3><div class="linki">
-        ${lk('#/kompas', '🧑‍🎓', 'Kompas', 'Diagnoza osobowości i predyspozycji')}
-        ${lk('#/przedmioty', '📚', 'Przedmioty maturalne', 'Wybór przedmiotu do diagnozy')}
-        ${lk('#/jak-to-dziala', '💡', 'Jak to działa', 'Wyróżniki, algorytm, wartość dla Maturalnych')}
-        ${lk('#/matryca', '🧩', 'Matryca mikrokompetencji', '67 umiejętności z wymagań CKE')}
-        ${lk('#/import', '🔄', 'Import materiałów', 'Lekcje z API Maturalnych > mikrokompetencje')}
+        ${lk('#/kompas', '', 'Kompas', 'Diagnoza osobowości i predyspozycji')}
+        ${lk('#/przedmioty', '', 'Przedmioty maturalne', 'Wybór przedmiotu do diagnozy')}
+        ${lk('#/jak-to-dziala', '', 'Jak to działa', 'Wyróżniki, algorytm, wartość dla Maturalnych')}
+        ${lk('#/matryca', '', 'Matryca mikrokompetencji', '67 umiejętności z wymagań CKE')}
+        ${lk('#/import', '', 'Import materiałów', 'Lekcje z API Maturalnych > mikrokompetencje')}
       </div></div>
       <div class="card yellow"><div class="row between"><h3>Narzędzia demo (dla jury)</h3><span class="badge">data w aplikacji: ${fData(dzis(), true)}</span></div>
         <div class="linki">
-          <button class="lk demo" id="d1"><b>👩 Wczytaj ucznia demo</b><span>Ola: cel 80%, słaba z trygonometrii, 15 min dziennie. Diagnoza zrobi się sama.</span></button>
-          <button class="lk demo" id="d2" ${ma ? '' : 'disabled'}><b>📆 Symuluj 7 dni nauki</b><span>Uczeń robi codziennie plan: seria, zaliczenia, powtórki, czasem porażka.</span></button>
-          <button class="lk demo" id="d3" ${ma ? '' : 'disabled'}><b>😓 Scenariusz: temat nie idzie</b><span>2 nieudane quizy: cofnięcie w matrycy i automatycznie dostosowany materiał.</span></button>
-          <button class="lk demo" id="d4" ${ma ? '' : 'disabled'}><b>⏭️ Przewiń o 1 dzień bez nauki</b><span>Zobacz, jak plan przelicza zaległość, a seria się przerywa.</span></button>
-          <button class="lk demo" id="d5" ${ma && D.demoDzis ? '' : 'disabled'}><b>↩️ Wróć do dzisiejszej daty</b><span>Wyłącza przewijanie czasu.</span></button>
-          <button class="lk demo" id="d6"><b>🗑️ Wyczyść dane</b><span>Usuwa plan i odpowiedzi z tej przeglądarki.</span></button>
+          <button class="lk demo" id="d1"><b>Wczytaj ucznia demo</b><span>Ola: cel 80%, słaba z trygonometrii, 15 min dziennie. Diagnoza zrobi się sama.</span></button>
+          <button class="lk demo" id="d2" ${ma ? '' : 'disabled'}><b>Symuluj 7 dni nauki</b><span>Uczeń robi codziennie plan: seria, zaliczenia, powtórki, czasem porażka.</span></button>
+          <button class="lk demo" id="d3" ${ma ? '' : 'disabled'}><b>Scenariusz: temat nie idzie</b><span>2 nieudane quizy: cofnięcie w matrycy i automatycznie dostosowany materiał.</span></button>
+          <button class="lk demo" id="d4" ${ma ? '' : 'disabled'}><b>Przewiń o 1 dzień bez nauki</b><span>Zobacz, jak plan przelicza zaległość, a seria się przerywa.</span></button>
+          <button class="lk demo" id="d5" ${ma && D.demoDzis ? '' : 'disabled'}><b>↩ Wróć do dzisiejszej daty</b><span>Wyłącza przewijanie czasu.</span></button>
+          <button class="lk demo" id="d6"><b>Wyczyść dane</b><span>Usuwa plan i odpowiedzi z tej przeglądarki.</span></button>
           <div class="lk demo" id="d6p" hidden><b>Na pewno usunąć wszystko?</b><span class="row"><button class="btn-small" id="d6t">Tak, usuń</button><button class="btn-small alt" id="d6n">Nie</button></span></div>
         </div></div>`;
     $('calosc').onclick = () => { if (D) startTest('diagnoza', { pelna: true }, 'wynik'); else startKalibracji(false); };
@@ -1194,6 +1231,6 @@
 
   root.Nauka = {
     rejestruj: rejestruj, render: render, go: go, trasa: trasa, start: render, startPrzedmiot: startPrzedmiot, zacheta: zacheta, silnik: S, duo: duo,
-    pomoc: { S: S, esc: esc, dane: () => D, zapisz: zapisz, dzis: dzis, planTeraz: planTeraz, toast: toast, go: go, render: render, fData: fData, fKrotko: fKrotko, odmiana: odmiana, startTest: startTest }
+    pomoc: { S: S, esc: esc, ik: ik, dane: () => D, zapisz: zapisz, dzis: dzis, planTeraz: planTeraz, toast: toast, go: go, render: render, fData: fData, fKrotko: fKrotko, odmiana: odmiana, startTest: startTest }
   };
 })(window);

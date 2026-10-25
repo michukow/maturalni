@@ -9,7 +9,7 @@
 <meta name="claude:viewport-fit-sides" content="cover">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Manrope:wght@600;700;800&display=swap">
 <link rel="stylesheet" href="style.css">
 </head>
 <body>
@@ -341,10 +341,12 @@ function viewStart(){
   const resume = n>0 && n<Q.length, done = n===Q.length;
   const glowny = done?"Zobacz swój wynik":resume?`Kontynuuj (pytanie ${n+1} z ${Q.length})`:"Zaczynamy";
   app.innerHTML=`
-  <span class="eyebrow">Krok 1 · Diagnoza</span>
-  <h1>Nie wiesz, od czego zacząć? Namierzmy Twój cel.</h1>
-  <p class="lead">22 szybkie pytania i kilka suwaków, ok. 5 minut. Dopasujemy do Ciebie kierunki studiów i podpowiemy, które przedmioty warto zdawać.</p>
-  <p class="note">Bez stresu: to tylko podpowiedź na start, a nie decyzja na całe życie.</p>
+  <div class="podzial"><div class="stack" style="gap:18px;justify-content:center">
+  <span class="eyebrow">01 / Diagnoza</span>
+  <h1>Nie wybieraj w ciemno. Wybierz swój <span style="color:var(--brand-blue)">kierunek.</span></h1>
+  <p class="lead">22 krótkie pytania i kilka suwaków, ok. 5 minut. Sprawdź, które przedmioty i kierunki studiów naprawdę pasują do Ciebie.</p>
+  <p class="note">Bez stresu: to tylko podpowiedź na start, a nie decyzja na całe życie.</p></div>
+  <div class="foto jasne"><img src="assets/img/uczennica.jpg" alt=""><span class="na mono" style="left:18px;bottom:16px">diagnoza / 01</span></div></div>
   ${Nauka.duo('go', glowny, n?'reset':'skip', n?'↺ Zacznij test od nowa':'Wiem już, co zdaję: pomiń doradztwo i przejdź do testów')}
   ${n?'<button class="btn link" id="skip2" style="align-self:center">Wiem już, co zdaję: pomiń doradztwo i przejdź do testów →</button>':''}`;
   $("go").onclick=startTest;
@@ -415,7 +417,7 @@ function planCard(p,t,ai){
   <div class="card" id="plan-panel" role="tabpanel">
     <p class="muted">${P.opis}</p>
     ${(()=>{const k=Nauka.preferencjeKonflikty?Nauka.preferencjeKonflikty(P.key):[];return k.length?`<p class="note">Ta ścieżka zwykle wymaga przedmiotu: ${k.join(", ")}, a zaznaczyłeś(-aś), że chcesz go używać tylko w minimalnym stopniu. Warto to przemyśleć albo porównać z drugim planem.</p>`:""})()}
-    ${ai&&ai.dlaczego?`<div class="ai-dlaczego">✨ ${esc(ai.dlaczego)}</div>`:""}
+    ${ai&&ai.dlaczego?`<div class="ai-dlaczego">${esc(ai.dlaczego)}</div>`:""}
     <div class="stack" style="gap:8px">
       <h3>Rola, która do Ciebie pasuje</h3>
       <div class="role"><b>${top.n}</b><span class="muted small">${iAI>=0?"Wskazała AI na podstawie Twoich odpowiedzi. ":""}${why(top.why)}</span></div>
@@ -454,9 +456,10 @@ function viewResult(){
   const topInt=ORDER.slice().sort((x,y)=>r[y]-r[x]).slice(0,2);
 
   app.innerHTML=`
-  <span class="eyebrow">${isSample?"Przykładowy wynik":"Krok 1 · Twój wynik"}</span>
+  <div class="foto naglowek-foto"><img src="assets/img/grupa.jpg" alt="">
+  <span class="eyebrow">${isSample?"Przykładowy wynik":"01 / Twój wynik"}</span>
   <h1>Pasuje do Ciebie ścieżka ${P0.name.toLowerCase()}</h1>
-  <p>Najbardziej ciekawi Cię ${FRIENDLY[topInt[0]]} oraz ${FRIENDLY[topInt[1]]}. Masz dwa plany do porównania.</p>
+  <p>Najbardziej ciekawi Cię ${FRIENDLY[topInt[0]]} oraz ${FRIENDLY[topInt[1]]}. Masz dwa plany do porównania.</p></div>
   ${ai?KompasAI.kartaHtml(ai,id=>PATHS[id]?PATHS[id].name.toLowerCase():id):(!isSample&&window.KompasAI?KompasAI.zachetaHtml(a.join("")):"")}
   ${Math.max(...Object.values(r))<=5?'<p class="note">Twoje odpowiedzi o zainteresowaniach wyszły dość niskie, więc wynik jest mniej pewny. Warto wrócić do testu za jakiś czas.</p>':""}
 
@@ -481,7 +484,7 @@ function viewResult(){
 
   <section class="card">
     <h2>Twoje przedmioty maturalne</h2>
-    <div class="chips">${SUBJECTS.filter(x=>rec.includes(x.id)).map(x=>{const lv=Nauka.preferencjePoziom?Nauka.preferencjePoziom(x.id):null;return `<span class="chip req">${x.n}${x.active?" · test gotowy":""}${lv!=null&&lv>=2?" · chcesz rozwijać":""}</span>`}).join("")}</div>
+    <div class="chips">${SUBJECTS.filter(x=>rec.includes(x.id)).map(x=>{const lv=Nauka.preferencjePoziom?Nauka.preferencjePoziom(x.id):null;return `<span class="chip req">${x.n}${lv!=null&&lv>=2?" · chcesz rozwijać":""}</span>`}).join("")}</div>
     <p class="small muted">Test diagnozujący sprawdza, jak stoisz z przedmiotem, i daje prognozę wyniku oraz plan nauki. Zaczynamy od matematyki, kolejne przedmioty już wkrótce.</p>
   </section>
 

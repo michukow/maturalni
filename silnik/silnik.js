@@ -934,7 +934,7 @@
     function czasIcs(data, godz) { return data.replace(/-/g, '') + 'T' + godz.replace(':', '') + '00'; }
 
     // Opis wydarzenia w kalendarzu: CO i KIEDY + link do lekcji w aplikacji + zapasowy link do materiału.
-    const IKONY = { wideo: '▶', tekst: '📄', trening: '✏️', arkusz: '📝' };
+    const IKONY = { wideo: 'Wideo:', tekst: 'Notatka:', trening: 'Trening:', arkusz: 'Zadania:' };
     function opisWydarzenia(s, adres) {
       const L = [];
       if (s.typ === 'nauka') {

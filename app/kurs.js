@@ -10,7 +10,7 @@
   const M = root.Mikro, N = root.Nauka, P = N.pomoc;
   const S = P.S, esc = P.esc, $ = id => document.getElementById(id);
   const KLUCZ_CZ = 'maturalni-czesci-v1';
-  const IK = { wideo: '▶', tekst: '📄', trening: '✏️', arkusz: '📝' };
+  const IK = { wideo: P.ik('wideo'), tekst: P.ik('tekst'), trening: P.ik('trening'), arkusz: P.ik('arkusz') };
   const TYP = { wideo: 'wideo', tekst: 'notatka', trening: 'trening', arkusz: 'zadania z arkusza' };
   const POZIOM = ['', 'łatwe', 'średnie', 'trudne'];
   const czas = s => M.czasWideo ? M.czasWideo(Math.max(0, Math.round(s))) : Math.round(s / 60) + ' min';
@@ -52,16 +52,16 @@
     const czesc = i.wszystkichWApi && i.liczba < i.wszystkichWApi ? ` z ${i.wszystkichWApi}` : '';
     const n = i.wszystkichWApi && i.liczba < i.wszystkichWApi ? i.wszystkichWApi : i.liczba;
     const pr = n === 1 ? 'produkt' : (n % 10 >= 2 && n % 10 <= 4 && (n % 100 < 12 || n % 100 > 14)) ? 'produkty' : 'produktów';
-    if (i.stan === 'na-zywo') return { kl: 'green', ico: '🟢', t: `Katalog Maturalnych na żywo z API: ${i.liczba}${czesc} ${pr}, ${kiedy}` };
-    if (i.stan === 'pamiec') return { kl: 'green', ico: '🟢', t: `Katalog Maturalnych z API, pobrany ${kiedy}: ${i.liczba}${czesc} ${pr}` };
-    return { kl: '', ico: '🟡', t: `Katalog Maturalnych: zapis z API z ${kiedy}${i.blad ? ' (API teraz nie odpowiada)' : ''}` };
+    if (i.stan === 'na-zywo') return { kl: 'green', ico: '●', t: `Katalog Maturalnych na żywo z API: ${i.liczba}${czesc} ${pr}, ${kiedy}` };
+    if (i.stan === 'pamiec') return { kl: 'green', ico: '●', t: `Katalog Maturalnych z API, pobrany ${kiedy}: ${i.liczba}${czesc} ${pr}` };
+    return { kl: '', ico: '○', t: `Katalog Maturalnych: zapis z API z ${kiedy}${i.blad ? ' (API teraz nie odpowiada)' : ''}` };
   }
   function zrodloHtml(c, tekstLinku) {
     if (!c.produkt) return '';
-    const okl = c.okladka ? `<img class="okl" src="${esc(c.okladka)}" alt="" onerror="this.outerHTML='<span class=&quot;okl&quot;>${IK[c.typ] || '📘'}</span>'">` : `<span class="okl">${IK[c.typ] || '📘'}</span>`;
+    const okl = c.okladka ? `<img class="okl" src="${esc(c.okladka)}" alt="" onerror="this.outerHTML='<span class=&quot;okl&quot;></span>'">` : `<span class="okl">${IK[c.typ] || ''}</span>`;
     const st = statusKatalogu();
     const znaczki = c.produktId ? (c.niedostepny ? '<span class="badge red">brak w katalogu Maturalnych</span>'
-      : `<span class="badge ${st.kl}" title="${esc(st.t)}">${st.ico} z API Maturalnych</span>${c.premium ? `<span class="badge yellow" title="Wymagany poziom Premium: ${esc(c.premium)}">🔒 w Premium</span>` : ''}${c.cena ? `<span class="badge">${esc(M.cenaZl(c.cena))}</span>` : ''}`) : '';
+      : `<span class="badge ${st.kl}" title="${esc(st.t)}">${st.ico} z API Maturalnych</span>${c.premium ? `<span class="badge yellow" title="Wymagany poziom Premium: ${esc(c.premium)}">w Premium</span>` : ''}${c.cena ? `<span class="badge">${esc(M.cenaZl(c.cena))}</span>` : ''}`) : '';
     return `<div class="zrodlo">${okl}<div class="stack" style="gap:4px"><span class="tiny muted">Materiał Maturalnych</span><b>${esc(c.produkt)}</b><span class="small">${esc(c.fragment || '')}</span>
       ${znaczki ? `<div class="row" style="gap:6px">${znaczki}</div>` : ''}
       ${c.url ? `<a class="small" href="${esc(c.url)}" target="_blank" rel="noopener">${tekstLinku || 'Otwórz oryginał w nowej karcie (zapas)'} ↗</a>` : ''}</div></div>`;
@@ -72,7 +72,7 @@
       if (b.t === 'wzor') return `<div class="wz">${esc(b.x)}</div>`;
       if (b.t === 'lista') return `<ul>${b.x.map(x => `<li>${esc(x)}</li>`).join('')}</ul>`;
       if (b.t === 'przyklad') return `<div class="prz"><b>Przykład</b><ol>${b.x.map(x => `<li>${esc(x)}</li>`).join('')}</ol></div>`;
-      if (b.t === 'uwaga') return `<div class="uw"><b>⚠️ Uważaj:</b> ${esc(b.x)}</div>`;
+      if (b.t === 'uwaga') return `<div class="uw"><b>Uważaj:</b> ${esc(b.x)}</div>`;
       if (b.t === 'tabela') return `<table><thead><tr>${b.x.naglowki.map(h => `<th>${esc(h)}</th>`).join('')}</tr></thead><tbody>${b.x.wiersze.map(w => `<tr>${w.map(x => `<td>${esc(x)}</td>`).join('')}</tr>`).join('')}</tbody></table>`;
       return '';
     }).join('')}</div>`;
@@ -99,15 +99,15 @@
         ${c.przyklad ? '<p class="tiny muted">Podgląd demo: w wersji produkcyjnej odtwarza się tu fragment lekcji z serwera wideo Maturalnych (Vimeo) od wskazanej sekundy. Po imporcie lekcji z API pojawi się prawdziwy odtwarzacz.</p>' : ''}`;
     }
     if (c.typ === 'tekst') {
-      const osadzone = c.osadz && c.url && !c.niedostepny ? `<div class="stack"><button class="btn-small alt" id="pokaz">📖 Otwórz ${c.zaimportowane ? 'materiał' : 'Bank schematów'} tutaj</button><div id="ramka"></div></div>` : '';
+      const osadzone = c.osadz && c.url && !c.niedostepny ? `<div class="stack"><button class="btn-small alt" id="pokaz">Otwórz ${c.zaimportowane ? 'materiał' : 'Bank schematów'} tutaj</button><div id="ramka"></div></div>` : '';
       return `${c.notatka ? notatkaHtml(c.notatka) : ''}${zrodloHtml(c)}${osadzone}
         ${c.przyklad ? '<p class="tiny muted">Notatka powyżej to skrót aplikacji (z wymagań CKE i banku pytań). Pełny schemat jest w Banku schematów Maturalnych.</p>' : ''}`;
     }
     if (c.typ === 'trening') return '<div id="tr"></div>';
     if (c.typ === 'arkusz') {
       return `${zrodloHtml(c, 'Otwórz arkusz w nowej karcie')}
-        <div class="callout"><span class="ico">📝</span><span>Rozwiąż zadania na kartce, potem sprawdź odpowiedzi w kluczu na końcu arkusza. Zaznacz „Zrobione”, gdy skończysz.</span></div>
-        ${c.url && !c.niedostepny ? '<div class="stack"><button class="btn-small" id="pokaz">📝 Otwórz arkusz tutaj</button><div id="ramka"></div></div>' : ''}`;
+        <div class="callout"><span class="ico"></span><span>Rozwiąż zadania na kartce, potem sprawdź odpowiedzi w kluczu na końcu arkusza. Zaznacz „Zrobione”, gdy skończysz.</span></div>
+        ${c.url && !c.niedostepny ? '<div class="stack"><button class="btn-small" id="pokaz">Otwórz arkusz tutaj</button><div id="ramka"></div></div>' : ''}`;
     }
     return '';
   }
@@ -194,7 +194,7 @@
       if (o.naZmianeAktywnej) o.naZmianeAktywnej(a);
     };
     const odswiezListe = () => {
-      el.querySelectorAll('.lc').forEach(b => { const x = czesci[+b.dataset.i]; b.classList.toggle('zrobione', zrobione(x.id)); b.querySelector('.ik').textContent = zrobione(x.id) ? '✓' : IK[x.typ]; });
+      el.querySelectorAll('.lc').forEach(b => { const x = czesci[+b.dataset.i]; b.classList.toggle('zrobione', zrobione(x.id)); b.querySelector('.ik').innerHTML = zrobione(x.id) ? '✓' : IK[x.typ]; });
       const z = $('zr'); if (z) { z.textContent = '✓ Zrobione (cofnij)'; z.classList.add('alt'); }
     };
     rysuj();
@@ -230,7 +230,7 @@
     const info = M.importInfo;
     app.innerHTML = `
       <div class="row between"><div class="stack" style="gap:4px"><h1>Materiały</h1><p class="muted">Lekcje Maturalnych pocięte na krótkie części: osobno dla każdej z ${S.kompetencje().length} umiejętności. Wideo, notatka, trening i zadania w jednym miejscu.</p></div>
-        <a class="btn-ghost" href="#/import">${info ? '🔄 Import: ' + info.lekcji + ' lekcji' : '⬇ Integracja z API Maturalnych'}</a></div>
+        <a class="btn-ghost" href="#/import">${info ? 'Import: ' + info.lekcji + ' lekcji' : 'Integracja z API Maturalnych'}</a></div>
       <a href="#/import" class="small" id="katalogStatus" style="margin-top:-8px">${statusKatalogu().ico} ${esc(statusKatalogu().t)}</a>
       <div class="kurs">
         <nav class="kurs-menu" aria-label="Działy i umiejętności"><input type="search" id="szukaj" placeholder="Szukaj tematu…" aria-label="Szukaj tematu">
@@ -247,8 +247,8 @@
               ${st[komp] ? `<span class="badge">Twój poziom: ${st[komp].opanowanie}%${st[komp].pewny ? '' : ' (szac.)'}</span>` : ''}
               ${D && D.stan.zaliczone[komp] ? '<span class="badge green">zaliczone</span>' : u ? `<span class="badge blue">w planie: ${P.fKrotko(u.start)}${u.koniec !== u.start ? ' - ' + P.fKrotko(u.koniec) : ''}</span>` : ''}</div>
             ${k.wymaga.length ? `<p class="small muted">Podstawy: ${k.wymaga.map(x => `<a href="#/materialy/${x}">${esc(S.kompetencja(x).nazwa)}</a>`).join(', ')}</p>` : ''}</div>
-          ${u && u.dostosowanie ? `<div class="callout"><span class="ico">🛠️</span><div class="stack" style="gap:4px"><b class="t">Kolejność części dostosowana do Ciebie</b><span>${esc(u.dostosowanie.zmiany.join(' · '))}</span></div></div>`
-            : u && czesci !== wszystkie ? `<div class="callout blue"><span class="ico">🎯</span><span>Pokazujemy części w kolejności dopasowanej do Twojego stylu nauki${czesci.length < wszystkie.length ? ' i poziomu (utrwalenie: bez wideo)' : ''}.</span></div>` : ''}
+          ${u && u.dostosowanie ? `<div class="callout"><span class="ico"></span><div class="stack" style="gap:4px"><b class="t">Kolejność części dostosowana do Ciebie</b><span>${esc(u.dostosowanie.zmiany.join(' · '))}</span></div></div>`
+            : u && czesci !== wszystkie ? `<div class="callout blue"><span class="ico"></span><span>Pokazujemy części w kolejności dopasowanej do Twojego stylu nauki${czesci.length < wszystkie.length ? ' i poziomu (utrwalenie: bez wideo)' : ''}.</span></div>` : ''}
           <div id="panel"></div>
           <div class="row">${D ? `<button class="btn-small" id="quiz">Quiz zaliczeniowy (5 min, próg 70%)</button>` : `<button class="btn-small" id="kal">Zrób kalibrację, żeby dostać plan</button>`}
             <a class="btn-ghost" href="#/matryca">Cała matryca umiejętności</a></div>
@@ -403,7 +403,7 @@
         <p class="muted">Pobieramy lekcje z API Maturalnych, przypisujemy je do mikrokompetencji i od razu pokazujemy uczniom w Materiałach i w lekcji dnia.</p></div>
       <div id="katalog"></div>
       <h2 style="margin-top:8px">Lekcje wideo (lesson-plans)</h2>
-      <div class="callout ${info ? 'green' : 'blue'}"><span class="ico">${info ? '✅' : 'ℹ️'}</span><span>${info ? `Aktywny import (${esc(info.zrodlo)}, ${esc(info.data)}): ${info.lekcji} lekcji, ${info.przypisanych} przypisanych do ${info.tematow} tematów.` : 'Endpoint products nie zawiera lekcji wideo z matematyki, więc wideo w Materiałach to kurs demo (struktura jak w API). Gdy dostaniecie dostęp do lekcji (lesson-plans / chapters), zaimportujcie je tutaj: aplikacja sama przypisze je do mikrokompetencji.'}</span></div>
+      <div class="callout ${info ? 'green' : 'blue'}"><span class="ico">${info ? '' : ''}</span><span>${info ? `Aktywny import (${esc(info.zrodlo)}, ${esc(info.data)}): ${info.lekcji} lekcji, ${info.przypisanych} przypisanych do ${info.tematow} tematów.` : 'Endpoint products nie zawiera lekcji wideo z matematyki, więc wideo w Materiałach to kurs demo (struktura jak w API). Gdy dostaniecie dostęp do lekcji (lesson-plans / chapters), zaimportujcie je tutaj: aplikacja sama przypisze je do mikrokompetencji.'}</span></div>
       <div class="grid3">
         <div class="card"><h3>1. Pobierz z API</h3><p class="small muted">Przez bramkę na serwerze Cloudflare (bez CORS, token nie trafia do przeglądarki).</p>
           <label class="pole">Ścieżka<input id="sc" value="lesson-plans/"></label><label class="pole">Parametry<input id="pa" value="perPage=100"></label>
@@ -427,13 +427,13 @@
       const lista = M.produktyMatematyka ? M.produktyMatematyka() : [];
       k.innerHTML = `<div class="card"><div class="row between"><div class="stack" style="gap:4px"><h3>Katalog Maturalnych: endpoint products</h3>
           <span class="small">${st.ico} ${esc(st.t)}${(M.produktyInfo || {}).param === null && (M.produktyInfo || {}).stron > 1 && (M.produktyInfo || {}).stan === 'na-zywo' ? '. API zwraca tylko 1. stronę, ale są na niej wszystkie produkty do matematyki.' : ''}</span></div>
-          <button class="btn-small alt" id="odswiez">🔄 Odśwież z API</button></div>
+          <button class="btn-small alt" id="odswiez">Odśwież z API</button></div>
         <p class="small muted">Publiczny endpoint, bez tokenu. Aplikacja pobiera go przy starcie (przez bramkę Cloudflare), a gdy API nie odpowiada, używa ostatniego zapisu. Stąd biorą się tytuły, okładki, linki do materiałów, cena i poziom Premium.</p>
         <div class="produkty">${lista.map(p => {
           const r = p.learningResources[0] || {}, ile = Object.keys(uzycie[p.id] || {}).length;
           const okl = r.thumbnailUrl || p.thumbnailUrl;
-          return `<div class="produkt ${ile ? 'uzyty' : ''}">${okl ? `<img src="${esc(okl)}" alt="" loading="lazy" onerror="this.outerHTML='<span class=&quot;okl&quot;>📘</span>'">` : '<span class="okl">📘</span>'}
-            <div class="stack" style="gap:4px"><b>${esc(p.title)}</b><span class="tiny muted">${p.examType === 'matura' ? 'Matura' : 'Egzamin ósmoklasisty'} · ${esc(M.cenaZl(p.grossPrice))}${r.minimumRequiredPremiumStatus ? ' · 🔒 Premium' : ''}</span>
+          return `<div class="produkt ${ile ? 'uzyty' : ''}">${okl ? `<img src="${esc(okl)}" alt="" loading="lazy" onerror="this.outerHTML='<span class=&quot;okl&quot;></span>'">` : '<span class="okl"></span>'}
+            <div class="stack" style="gap:4px"><b>${esc(p.title)}</b><span class="tiny muted">${p.examType === 'matura' ? 'Matura' : 'Egzamin ósmoklasisty'} · ${esc(M.cenaZl(p.grossPrice))}${r.minimumRequiredPremiumStatus ? ' · Premium' : ''}</span>
               ${ile ? `<span class="badge green">używany w ${ile} mikrokompetencjach</span>` : '<span class="badge">nie dotyczy matury z matematyki</span>'}
               ${r.url ? `<a class="tiny" href="${esc(r.url)}" target="_blank" rel="noopener">${esc(r.url.replace('https://', ''))} ↗</a>` : ''}</div></div>`;
         }).join('')}</div></div>`;
@@ -446,9 +446,9 @@
       const a = analiza;
       const przyp = a.lekcje.filter(l => l.komp).length;
       w.innerHTML = `<div class="card"><div class="row between"><h3>Wynik analizy: ${esc(a.zrodlo)}</h3><span class="badge blue">${a.lekcje.length} lekcji/materiałów · ${przyp} przypisanych</span></div>
-        ${a.tylkoId.length ? `<div class="callout"><span class="ico">🔗</span><span>${a.tylkoId.map(t => `„${esc(t.w)}”: ${t.ile} ${t.klucz === 'chapters' ? 'rozdziałów' : 'lekcji'} tylko jako identyfikatory${t.lekcji ? ' (' + t.lekcji + ' lekcji w kursie)' : ''}`).join('; ')}. Treść trzeba pobrać osobnym zapytaniem (np. <span class="kod">chapters/ID</span>).</span></div>` : ''}
+        ${a.tylkoId.length ? `<div class="callout"><span class="ico"></span><span>${a.tylkoId.map(t => `„${esc(t.w)}”: ${t.ile} ${t.klucz === 'chapters' ? 'rozdziałów' : 'lekcji'} tylko jako identyfikatory${t.lekcji ? ' (' + t.lekcji + ' lekcji w kursie)' : ''}`).join('; ')}. Treść trzeba pobrać osobnym zapytaniem (np. <span class="kod">chapters/ID</span>).</span></div>` : ''}
         ${a.lekcje.length ? `<div style="overflow-x:auto"><table class="import-tab"><thead><tr><th>Lekcja / materiał</th><th>Typ</th><th>Min</th><th>Mikrokompetencja</th><th>Dopasowanie</th></tr></thead><tbody>
-          ${a.lekcje.map((l, i) => `<tr><td><b>${esc(l.tytul)}</b><br><span class="tiny muted">${esc(l.kontekst || '')}</span></td><td>${/vimeo|youtu|video/i.test(l.url) ? '▶ wideo' : l.url ? '📄 tekst' : '▶ wideo'}</td><td>${l.minuty ? Math.round(l.minuty) : '-'}</td>
+          ${a.lekcje.map((l, i) => `<tr><td><b>${esc(l.tytul)}</b><br><span class="tiny muted">${esc(l.kontekst || '')}</span></td><td>${/vimeo|youtu|video/i.test(l.url) ? 'wideo' : l.url ? 'tekst' : 'wideo'}</td><td>${l.minuty ? Math.round(l.minuty) : '-'}</td>
             <td><select data-i="${i}">${opcjeKomp(l.komp)}</select></td><td><span class="badge ${l.pewnosc === 'wysoka' ? 'green' : l.pewnosc === 'niska' ? 'yellow' : ''}">${l.pewnosc === 'brak' ? 'do przypisania' : l.pewnosc}</span></td></tr>`).join('')}</tbody></table></div>
           <div class="row"><button class="btn-small" id="zapisz">Zapisz i użyj w aplikacji</button><button class="btn-small alt" id="plik">Pobierz plik do repo</button>${info ? '<button class="btn-small alt" id="czysc">Usuń import z tej przeglądarki</button>' : ''}</div>`
           : '<p class="muted">Nie znaleziono lekcji ani materiałów z linkiem lub czasem trwania.</p>'}</div>`;

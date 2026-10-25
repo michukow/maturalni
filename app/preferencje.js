@@ -39,10 +39,9 @@
   function widok() {
     const p = wczytaj() || domyslne();
     app.innerHTML = `
-      <span class="eyebrow">Krok 1 · Ostatnie pytanie testu</span>
-      <h1 class="pref-h">Przedmioty szkolne</h1>
+      <div class="foto naglowek-foto jasne" style="min-height:200px"><img src="assets/img/uczennica.jpg" alt="" style="object-position:70% 30%">
+        <span class="eyebrow">01 / Diagnoza · ostatni krok testu</span><h1 class="pref-h" style="color:#fff">Przedmioty szkolne</h1></div>
       <p>Z którymi przedmiotami szkolnymi wiążesz swoją przyszłość zawodową, a które chcesz wykorzystywać jedynie w minimalnym stopniu? <b>Zaznacz na poniższych suwakach swoje preferencje.</b></p>
-      <div class="pref-ill" aria-hidden="true"><span class="b b1">🧪</span><span class="b b2">π</span><span class="b b3">⚡</span><span class="b b4">📚</span><span class="kto">🧑‍🎓</span></div>
       <details class="pref-info"><summary><span class="i">i</span>Co oznaczają poszczególne poziomy przedmiotów?</summary>
         <ul>${POZIOMY.map((n, i) => `<li><b>${n}:</b> ${OPIS_POZIOMOW[i]}</li>`).join('')}</ul></details>
       <div class="pref-lista">${PRZEDMIOTY.map(([id, n]) => `<div class="pref-wiersz">

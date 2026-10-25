@@ -56,7 +56,7 @@
     if (!s) { s = { klucz: profil.klucz, pytania: null, zrodlo: null, odpowiedzi: ['', ''] }; zapisz(s); }
     if (!s.pytania) {
       app.innerHTML = `<span class="eyebrow">Krok 1 · Jeszcze 2 pytania</span><h1>Układam pytania specjalnie dla Ciebie</h1>
-        <div class="ai-box"><div class="ai-glowa"><span class="ai-ik">✨</span><b>AI czyta Twoje odpowiedzi z testu</b><span class="ai-kropki"><i></i><i></i><i></i></span></div>
+        <div class="ai-box"><div class="ai-glowa"><span class="ai-ik"></span><b>Analizujemy Twoje odpowiedzi z testu</b><span class="ai-kropki"><i></i><i></i><i></i></span></div>
         <p class="small muted">Szuka tego, czego test zamknięty nie rozstrzygnął.</p></div>`;
       wyslij({ etap: 'pytania', profil: profil }).then(odp => {
         const x = stan(profil.klucz) || s;
@@ -67,10 +67,10 @@
       });
       return;
     }
-    app.innerHTML = `<span class="eyebrow">Krok 1 · Jeszcze 2 pytania</span>
+    app.innerHTML = `<span class="eyebrow">01 / Diagnoza · jeszcze 2 pytania</span>
       <h1>Opowiedz swoimi słowami</h1>
+      <div class="mentor"><img src="assets/img/mentorka.jpg" alt=""><div class="stack" style="gap:2px"><span class="mono">Twój mentor</span><b>Dwa pytania tylko dla Ciebie</b><span>Ułożone na podstawie Twoich odpowiedzi z testu.</span></div></div>
       <p class="lead">Test zamknięty nie wszystko wyłapie. Odpowiedz w 1-3 zdaniach: co robisz, co lubisz, co Cię zniechęca. Możesz pominąć.</p>
-      ${s.zrodlo === 'ai' ? '<p class="small muted">✨ Pytania ułożyła AI na podstawie Twoich odpowiedzi z testu.</p>' : ''}
       ${s.pytania.map((p, i) => `<div class="card otwarte"><label for="o${i}"><span class="eyebrow">Pytanie ${i + 1} z 2</span><b class="q">${esc(p.tresc)}</b></label>
         <textarea id="o${i}" rows="4" maxlength="800" placeholder="${esc(p.przyklad ? (p.przyklad.indexOf('np.') === 0 ? p.przyklad : 'np. ' + p.przyklad) : 'Napisz kilka zdań…')}">${esc(s.odpowiedzi[i] || '')}</textarea>
         <span class="tiny muted licznik" id="l${i}"></span></div>`).join('')}
@@ -89,7 +89,7 @@
       if (!odp.some(v => v.length >= 3)) { P.toast('Napisz choć kilka słów albo kliknij „Pomiń”.'); return; }
       x.odpowiedzi = odp; x.pominiete = false; zapisz(x);
       app.innerHTML = `<span class="eyebrow">Krok 1 · Twój wynik</span><h1>Łączę test z Twoimi odpowiedziami</h1>
-        <div class="ai-box"><div class="ai-glowa"><span class="ai-ik">✨</span><b>AI pogłębia wynik testu</b><span class="ai-kropki"><i></i><i></i><i></i></span></div></div>`;
+        <div class="ai-box"><div class="ai-glowa"><span class="ai-ik"></span><b>AI pogłębia wynik testu</b><span class="ai-kropki"><i></i><i></i><i></i></span></div></div>`;
       wyslij({
         etap: 'wynik', profil: profil, sciezkiDostepne: N.kompasSciezki(),
         pytaniaOtwarte: x.pytania.map((p, i) => ({ pytanie: p.tresc, odpowiedz: odp[i] }))
@@ -112,12 +112,12 @@
   function kartaHtml(ai, nazwa) {
     const zmiana = ai.przyjete;
     return `<section class="ai-box ai-kompas">
-      <div class="ai-glowa"><span class="ai-ik">✨</span><b>Wynik pogłębiony przez AI</b></div>
+      <div class="ai-glowa"><span class="ai-ik"></span><b>Wynik pogłębiony przez AI</b></div>
       ${ai.podsumowanie ? `<p>${esc(ai.podsumowanie)}</p>` : ''}
       ${ai.niuanse && ai.niuanse.length ? `<div class="stack" style="gap:4px"><b class="small">Czego nie pokazał sam test:</b><ul class="small" style="margin:0;padding-left:18px">${ai.niuanse.map(n => `<li>${esc(n)}</li>`).join('')}</ul></div>` : ''}
-      ${zmiana ? `<p class="small">🔀 Na podstawie Twoich odpowiedzi ${ai.wniosek === 'nowa_sciezka' ? 'AI dodała ścieżkę, której nie wskazał test' : 'AI zamieniła kolejność planów'}. Sam test wskazał: A ${esc(nazwa(ai.alg[0]))}, B ${esc(nazwa(ai.alg[1]))}.</p>`
+      ${zmiana ? `<p class="small">Na podstawie Twoich odpowiedzi ${ai.wniosek === 'nowa_sciezka' ? 'AI dodała ścieżkę, której nie wskazał test' : 'AI zamieniła kolejność planów'}. Sam test wskazał: A ${esc(nazwa(ai.alg[0]))}, B ${esc(nazwa(ai.alg[1]))}.</p>`
         : ''}
-      ${ai.nastepny_krok ? `<div class="ai-rada">👣 W tym tygodniu: ${esc(ai.nastepny_krok)}</div>` : ''}
+      ${ai.nastepny_krok ? `<div class="ai-rada">W tym tygodniu: ${esc(ai.nastepny_krok)}</div>` : ''}
       <details class="ai-dopisz"><summary>Twoje odpowiedzi</summary>${(ai.pytania || []).map((p, i) => `<p class="small"><b>${esc(p.tresc)}</b><br>${esc((ai.odpowiedzi || [])[i] || '(bez odpowiedzi)')}</p>`).join('')}
         <a class="small" href="#/kompas-ai">Zmień odpowiedzi</a></details>
     </section>`;
@@ -125,7 +125,7 @@
   function zachetaHtml(klucz) {
     const s = stan(klucz);
     const blad = s && s.bladWyniku;
-    return `<div class="ai-box"><div class="ai-glowa"><span class="ai-ik">✨</span><b>${blad ? 'AI była niedostępna' : 'Pogłęb wynik: 2 pytania swoimi słowami'}</b></div>
+    return `<div class="ai-box"><div class="ai-glowa"><span class="ai-ik"></span><b>${blad ? 'AI była niedostępna' : 'Pogłęb wynik: 2 pytania swoimi słowami'}</b></div>
       <p class="small">${blad ? 'Pokazujemy wynik z testu. Możesz spróbować jeszcze raz.' : 'AI zada 2 pytania o to, czego test nie rozstrzygnął, i dopasuje wynik do Ciebie. Ok. 2 minuty.'}</p>
       <a class="btn-small alt" href="#/kompas-ai" style="align-self:flex-start">${blad ? 'Spróbuj jeszcze raz' : 'Odpowiedz na 2 pytania'}</a></div>`;
   }
