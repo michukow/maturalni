@@ -553,3 +553,29 @@ body.powitanie .stopka{border-top:0}
 .card.otwarte textarea { width: 100%; font: inherit; border: 1.5px solid var(--line); border-radius: 12px; padding: 10px 12px; resize: vertical; }
 .card.otwarte textarea:focus { outline: none; border-color: #7C3AED; box-shadow: 0 0 0 3px #EDE9FE; }
 .licznik { align-self: flex-end; }
+
+/* Preferencje (suwaki jak w kalibracji Maturalnych) */
+.pref-h { color: #1E1B4B; }
+h2.pref-h { margin-top: 18px; }
+.pref-ill { position: relative; height: 170px; margin: 4px auto 0; width: 260px; background: radial-gradient(ellipse at 55% 55%, #B9FBF2 0 58%, transparent 59%); }
+.pref-ill .b { position: absolute; width: 52px; height: 52px; border-radius: 50%; background: #fff; border: 2px solid #1E1B4B; display: grid; place-items: center; font-size: 1.4rem; font-weight: 800; color: #00C9A7; }
+.pref-ill .b1 { left: 18px; top: 8px; } .pref-ill .b2 { left: 34px; top: 66px; } .pref-ill .b3 { left: 6px; top: 118px; width: 40px; height: 40px; font-size: 1.1rem; } .pref-ill .b4 { right: 18px; top: 20px; width: 40px; height: 40px; font-size: 1.1rem; }
+.pref-ill .kto { position: absolute; left: 50%; top: 50%; transform: translate(-30%, -45%); font-size: 4.6rem; }
+.pref-info { align-self: center; text-align: center; }
+.pref-info summary { cursor: pointer; font-weight: 600; display: inline-flex; gap: 8px; align-items: center; list-style: none; }
+.pref-info summary::-webkit-details-marker { display: none; }
+.pref-info .i { width: 20px; height: 20px; border-radius: 50%; background: #111; color: #fff; font-size: .78rem; font-weight: 800; display: grid; place-items: center; font-style: italic; }
+.pref-info ul { text-align: left; margin: 10px 0 0; padding-left: 18px; font-size: .92rem; }
+.pref-lista { display: flex; flex-direction: column; gap: 22px; margin-top: 8px; }
+.pref-wiersz { display: flex; flex-direction: column; gap: 8px; }
+.pref-nazwa { display: flex; justify-content: space-between; align-items: baseline; gap: 10px; }
+.pref-nazwa b { color: #1E1B4B; }
+.pref-wart { font-size: .85rem; font-weight: 700; color: #0F766E; }
+.pref-konce { display: flex; justify-content: space-between; gap: 10px; }
+.pref-konce span { background: #7A7A7A; color: #fff; font-size: .78rem; padding: 3px 8px; border-radius: 4px; max-width: 48%; }
+.pref-konce span:last-child { text-align: right; }
+.pref-suwak { -webkit-appearance: none; appearance: none; width: 100%; height: 22px; border-radius: 99px; margin: 6px 0; cursor: pointer;
+  background: radial-gradient(circle at 33.33% 50%, #1E3A4C 0 3px, transparent 3.5px), radial-gradient(circle at 66.66% 50%, #1E3A4C 0 3px, transparent 3.5px), #4BE8D6; }
+.pref-suwak::-webkit-slider-thumb { -webkit-appearance: none; width: 36px; height: 36px; border-radius: 50%; background: #00E5C0; border: 3px solid #fff; box-shadow: 0 2px 6px rgba(0,0,0,.18); }
+.pref-suwak::-moz-range-thumb { width: 32px; height: 32px; border-radius: 50%; background: #00E5C0; border: 3px solid #fff; box-shadow: 0 2px 6px rgba(0,0,0,.18); }
+.pref-suwak:focus-visible { outline: 3px solid #1E1B4B; outline-offset: 4px; }

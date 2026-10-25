@@ -149,7 +149,7 @@
     bar.style.gridTemplateColumns = `repeat(${zakladki.length}, minmax(0, 1fr))`;
     bar.innerHTML = zakladki.map(([h, ik, t]) => `<a href="#/${h}" ${grupa(h) ? 'aria-current="page"' : ''}><span aria-hidden="true">${ik}</span>${t}</a>`).join('');
     // W trakcie testu, Kompasu i kalibracji chowamy pasek, żeby nic nie rozpraszało i nie dało się przypadkiem wyjść.
-    bar.hidden = n === 'quiz' || n === 'kompas-test' || n === 'kalibracja' || document.body.classList.contains('powitanie');
+    bar.hidden = n === 'quiz' || n === 'kompas-test' || n === 'kompas-preferencje' || n === 'kompas-ai' || n === 'kalibracja' || document.body.classList.contains('powitanie');
     document.body.classList.toggle('bez-dolu', bar.hidden);
   }
   function rysujStopke() {
@@ -226,10 +226,11 @@
     app.innerHTML = `
       <section class="powitanie-box">
         <div class="maskotka" aria-hidden="true">M</div>
-        <h1>Matura bez zgadywania.</h1>
-        <p class="lead">Sprawdzimy, kim jesteś i jak stoisz z przedmiotem. Potem dostaniesz plan na każdy dzień do matury.</p>
-        ${duo('start', 'Zaczynamy', 'mat', 'Wiem, co zdaję: od razu test')}
-        <p class="small muted">Bez logowania · ok. 20 minut na start</p>
+        <h1>Nie wiesz, od czego zacząć? Namierzmy Twój cel.</h1>
+        <p class="lead">22 szybkie pytania i kilka suwaków, ok. 5 minut. Dopasujemy do Ciebie kierunki studiów i podpowiemy, które przedmioty warto zdawać.</p>
+        <p class="small muted">Bez stresu: to tylko podpowiedź na start, a nie decyzja na całe życie.</p>
+        ${duo('start', 'Zaczynamy', 'mat', 'Znam już swój cel: od razu test z przedmiotu')}
+        <p class="small muted">Bez logowania</p>
       </section>`;
     $('start').onclick = () => (root.Nauka.kompasStart ? root.Nauka.kompasStart() : go('kompas'));
     $('mat').onclick = () => startKalibracji(false);
@@ -248,8 +249,10 @@
     return [p, p + 1, p + 2, p + 3, p + 4];
   }
   function nowaKal(szybka, dzialy) {
-    return { szybka: !!szybka, szybkaDzialy: dzialy || [], rok: lataMatury()[0], skala: 60, poMaturze: null, cel: 70, celRuszony: false,
-      klopot: [], nieWiemDzialy: false, styl: null, minut: 15, dni: [1, 2, 3, 4, 5, 6, 0], godzina: '18:00', imie: '', dysleksja: false, dyskalkulia: false, studniowka: '' };
+    // startowy cel i minuty z suwaków Diagnozy (ambicja, ile chcesz pracować), jeśli uczeń je przeszedł
+    const z = root.Nauka && root.Nauka.preferencjeKalibracja ? root.Nauka.preferencjeKalibracja() : null;
+    return { szybka: !!szybka, szybkaDzialy: dzialy || [], rok: lataMatury()[0], skala: 60, poMaturze: null, cel: z ? z.cel : 70, celRuszony: false, zPreferencji: !!z,
+      klopot: [], nieWiemDzialy: false, styl: null, minut: z ? z.minut : 15, dni: [1, 2, 3, 4, 5, 6, 0], godzina: '18:00', imie: '', dysleksja: false, dyskalkulia: false, studniowka: '' };
   }
   function startKalibracji(szybka, dzialy) { kal = nowaKal(szybka, dzialy); zapiszKal(); go('kalibracja', 1); }
   function startPrzedmiot(id) { if (id !== 'mat') return; if (D) go('dzis'); else startKalibracji(false); }
@@ -286,7 +289,8 @@
   // Kalibracja skrócona do 3 kroków. Rok matury jest domyślny (zmiana w kroku 1),
   // a dysleksję i dni wolne (np. studniówkę) ustawia się później w Planie.
   // Kroki 'rok', 'skala', 'po-maturze', 'styl', 'warunki', 'przypomnienia' zostają w kodzie, ale nie są używane.
-  const KROKI_PELNE = ['wynik', 'czas', 'dzialy'];
+  // Krok 'dzialy' (Co w matmie sprawia Ci kłopot?) usunięty: test adaptacyjny sam znajduje luki.
+  const KROKI_PELNE = ['wynik', 'czas'];
   const KROKI_SZYBKIE = ['wynik', 'czas'];
   const KROK = {
     rok() {
@@ -324,7 +328,7 @@
     },
     wynik() {
       return {
-        html: `<div class="q-head"><h1>Ile procent chcesz mieć z matmy?</h1><p class="sub">Przesuń suwak. Nie musisz być pewien, to punkt startowy.</p></div>
+        html: `<div class="q-head"><h1>Ile procent chcesz mieć z matmy?</h1><p class="sub">${kal.zPreferencji && !kal.celRuszony ? 'Ustawiliśmy start według Twojej ambicji z Diagnozy. Przesuń suwak, jeśli chcesz inaczej.' : 'Przesuń suwak. Nie musisz być pewien(-na), to punkt startowy.'}</p></div>
           <div class="cel-box"><div class="cel-ikona">📐</div><div class="stack"><span class="naz">Matematyka podstawowa <b id="celv">${kal.cel}%</b></span>
           <input type="range" class="suwak zielony" id="cel" min="30" max="100" step="5" value="${kal.cel}" style="--p:${(kal.cel - 30) / 70 * 100}%" aria-label="Cel z matematyki w procentach"></div></div>`,
         fb: `<b>OK, mamy cel.</b><span class="muted" id="celfb">${fbCelu(kal.cel)}</span>
@@ -366,8 +370,9 @@
         html: `<div class="q-head"><h1>Ile czasu dziennie dasz radę?</h1><p class="sub">Lepiej mniej, a regularnie. Plan dopasuje się do Ciebie, nie odwrotnie.</p></div>
           <div class="chipy">${[10, 15, 20, 30, 45, 60].map(m => `<button class="chip-sel" data-m="${m}" aria-pressed="${kal.minut === m}">${m} min</button>`).join('')}</div>
           <div class="stack" style="align-items:center"><b>W które dni?</b><div class="dni-tyg">${KOLEJNOSC_DNI.map(d => `<button class="dzien" data-dz="${d}" aria-pressed="${kal.dni.includes(d)}">${DNI[d]}</button>`).join('')}</div></div>`,
-        fb: kal.dni.length ? `<b>Przy ${kal.minut} min to ok. ${godzinNauki()} h nauki do matury.</b><span class="muted">Policzymy, co się w tym zmieści. Co 5. dzień zostawiamy wolny na zaległości, żeby plan się nie sypał.</span>` : '<b>Wybierz co najmniej jeden dzień.</b>',
-        ok: kal.dni.length > 0, cta: 'Dalej',
+        fb: kal.dni.length ? `<b>Przy ${kal.minut} min to ok. ${godzinNauki()} h nauki do matury.</b><span class="muted">Policzymy, co się w tym zmieści. Co 5. dzień zostawiamy wolny na zaległości, żeby plan się nie sypał.</span>
+            <span class="muted small">Następnie test, ok. 15 minut. Sam znajdzie Twoje luki. Jeśli czegoś nie wiesz, kliknij „Nie wiem”, nie zgaduj.</span>` : '<b>Wybierz co najmniej jeden dzień.</b>',
+        ok: kal.dni.length > 0, cta: 'Zaczynam test',
         bind() {
           app.querySelectorAll('[data-m]').forEach(b => b.onclick = () => { kal.minut = +b.dataset.m; odswiez(); });
           app.querySelectorAll('[data-dz]').forEach(b => b.onclick = () => { const d = +b.dataset.dz; kal.dni = kal.dni.includes(d) ? kal.dni.filter(x => x !== d) : kal.dni.concat(d); odswiez(); });

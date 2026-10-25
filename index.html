@@ -28,6 +28,7 @@
 <script src="app/kurs.js"></script>
 <script src="app/ai.js"></script>
 <script src="app/kompas-ai.js"></script>
+<script src="app/preferencje.js"></script>
 
 <script>
 /* ===================== DANE ===================== */
@@ -340,12 +341,14 @@ function viewStart(){
   const glowny = done?"Zobacz swój wynik":resume?`Kontynuuj (pytanie ${n+1} z ${Q.length})`:"Zaczynamy";
   app.innerHTML=`
   <span class="eyebrow">Krok 1 · Diagnoza</span>
-  <h1>Kto Ty jesteś i dokąd chcesz iść?</h1>
-  <p class="lead">22 krótkie pytania o Ciebie, ok. 5 minut. Dostajesz pasujące kierunki studiów i przedmioty do zdawania na maturze.</p>
-  <p class="note">Nie ma dobrych ani złych odpowiedzi. Wynik to podpowiedź na start, nie wyrok.</p>
-  ${Nauka.duo('go', glowny, n?'reset':'skip', n?'Zacznij od nowa':'Pomiń, przejdź do testu diagnozującego')}`;
+  <h1>Nie wiesz, od czego zacząć? Namierzmy Twój cel.</h1>
+  <p class="lead">22 szybkie pytania i kilka suwaków, ok. 5 minut. Dopasujemy do Ciebie kierunki studiów i podpowiemy, które przedmioty warto zdawać.</p>
+  <p class="note">Bez stresu: to tylko podpowiedź na start, a nie decyzja na całe życie.</p>
+  ${Nauka.duo('go', glowny, n?'reset':'skip', n?'Zacznij od nowa':'Znam już swój cel: od razu test z przedmiotu')}
+  ${n?'<button class="btn link" id="skip2" style="align-self:center">Znam już swój cel: przejdź od razu do testu z przedmiotu →</button>':''}`;
   $("go").onclick=startTest;
   if($("skip"))$("skip").onclick=()=>Nauka.startPrzedmiot("mat");
+  if($("skip2"))$("skip2").onclick=()=>Nauka.startPrzedmiot("mat");
   if($("reset"))$("reset").onclick=()=>{answers=Array(Q.length).fill(null);save();startTest()};
 }
 
@@ -376,7 +379,7 @@ function answer(v){
   app.querySelectorAll(".ans").forEach(b=>b.setAttribute("aria-checked",+b.dataset.v===v));
   setTimeout(()=>{busy=false;
     if(idx<Q.length-1){idx++;render();const h=$("qt");h.setAttribute("tabindex","-1");h.focus({preventScroll:true})}
-    else{isSample=false;plan=0;window.KompasAI?Nauka.go("kompas-ai"):go("result")}
+    else{isSample=false;plan=0;Nauka.preferencje?Nauka.go("kompas-preferencje"):window.KompasAI?Nauka.go("kompas-ai"):go("result")}
   },180);
 }
 function back(){if(idx===0)go("start");else{idx--;render()}}
@@ -406,6 +409,7 @@ function planCard(p,t,ai){
   return `
   <div class="card" id="plan-panel" role="tabpanel">
     <p class="muted">${P.opis}</p>
+    ${(()=>{const k=Nauka.preferencjeKonflikty?Nauka.preferencjeKonflikty(P.key):[];return k.length?`<p class="note">Ta ścieżka zwykle wymaga przedmiotu: ${k.join(", ")}, a zaznaczyłeś(-aś), że chcesz go używać tylko w minimalnym stopniu. Warto to przemyśleć albo porównać z drugim planem.</p>`:""})()}
     ${ai&&ai.dlaczego?`<div class="ai-dlaczego">✨ ${esc(ai.dlaczego)}</div>`:""}
     <div class="stack" style="gap:8px">
       <h3>Rola, która do Ciebie pasuje</h3>
@@ -472,7 +476,7 @@ function viewResult(){
 
   <section class="card">
     <h2>Twoje przedmioty maturalne</h2>
-    <div class="chips">${SUBJECTS.filter(x=>rec.includes(x.id)).map(x=>`<span class="chip req">${x.n}${x.active?" · test gotowy":""}</span>`).join("")}</div>
+    <div class="chips">${SUBJECTS.filter(x=>rec.includes(x.id)).map(x=>{const lv=Nauka.preferencjePoziom?Nauka.preferencjePoziom(x.id):null;return `<span class="chip req">${x.n}${x.active?" · test gotowy":""}${lv!=null&&lv>=2?" · chcesz rozwijać":""}</span>`}).join("")}</div>
     <p class="small muted">Test diagnozujący sprawdza, jak stoisz z przedmiotem, i daje prognozę wyniku oraz plan nauki. Zaczynamy od matematyki, kolejne przedmioty już wkrótce.</p>
   </section>
 
@@ -541,7 +545,8 @@ Nauka.kompasProfil=()=>{
     cechy:Object.keys(TRAITS).map(k=>({id:k,nazwa:TRAITS[k].name,wynik:t[k],poziom:LVL[lvlIdx(t[k])]})),
     zainteresowania:ORDER.map(k=>({id:k,nazwa:RIASEC[k].name,opis:FRIENDLY[k],wynik:r[k]})).sort((x,y)=>y.wynik-x.wynik),
     plany:paths.map((p,i)=>({plan:i?"B":"A",id:p.id,nazwa:PATHS[p.id].name,rolaAlgorytmu:rankRoles(PATHS[p.id],t)[0].n})),
-    odpowiedzi:Q.map((q,i)=>({pytanie:i<10?q.t:"Chętnie bym: "+q.t,odpowiedz:ANSWERS[answers[i]-1]}))
+    odpowiedzi:Q.map((q,i)=>({pytanie:i<10?q.t:"Chętnie bym: "+q.t,odpowiedz:ANSWERS[answers[i]-1]})),
+    preferencje:Nauka.preferencjeOpis?Nauka.preferencjeOpis():null
   };
 };
 Nauka.kompasSciezki=()=>Object.keys(PATHS).map(id=>({id,nazwa:PATHS[id].name,opis:PATHS[id].opis,role:PATHS[id].roles.map(x=>x.n)}));
