@@ -345,7 +345,7 @@ function viewStart(){
     <button class="btn wide" id="go">${done?"Zobacz swój wynik":resume?`Kontynuuj (pytanie ${n+1} z ${Q.length})`:"Zaczynam"}</button>
     <div class="row" style="justify-content:space-between">
       <button class="btn link" id="sample">Pokaż przykładowy wynik</button>
-      <button class="btn link" id="skip">Pomiń, przejdź do testu z matematyki</button>
+      <button class="btn link" id="skip">Pomiń, przejdź do testu diagnozującego</button>
     </div>
     ${n?'<button class="btn link" id="reset" style="align-self:flex-start">Zacznij od nowa</button>':""}
   </div>
@@ -471,7 +471,7 @@ function viewResult(){
     <span class="eyebrow">Krok 2</span>
     <h2>Sprawdź swoją wiedzę z matury</h2>
     <p class="muted">Test sprawdza, jak stoisz z przedmiotem maturalnym, i daje prognozę wyniku oraz plan nauki. Zaczynamy od matematyki: 3 pytania i test, ok. 15 min.</p>
-    <button class="btn wide" id="toMat">Dalej: krok 2, test z matematyki</button>
+    <button class="btn wide" id="toMat">Dalej: Krok 2 | Test diagnozujący</button>
     <p class="small muted">Kolejne przedmioty już wkrótce:</p>
     <span class="legend"><i></i> rekomendowane dla Twoich planów</span>
     ${subjectGrid(rec)}
@@ -512,7 +512,7 @@ function viewSubjects(){
   app.innerHTML=`
   <span class="eyebrow">Krok 2</span>
   <h1>Sprawdź swoją wiedzę z matury</h1>
-  <p>Wybierz przedmiot. Na razie dostępna jest matematyka, kolejne dodamy wkrótce.</p>
+  <p>Przejdź do testu poziomującego</p>
   ${subjectGrid([])}
   <div class="stack">
     <button class="btn ghost wide" id="toTest">Jednak zrób test predyspozycji</button>
