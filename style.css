@@ -545,3 +545,11 @@ body:not(.bez-dolu) .toast{bottom:calc(88px + env(safe-area-inset-bottom,0px))}
   font-size:3rem;font-weight:800;box-shadow:0 6px 0 var(--blue-600)}
 body.powitanie .stopka{border-top:0}
 @media (prefers-reduced-motion:reduce){.btn-duo,.btn-main{transition:none}}
+.ai-kompas { margin: 4px 0 8px; }
+.ai-dlaczego { background: #F5F3FF; border: 1px solid #DDD6FE; border-radius: 10px; padding: 8px 12px; font-size: .95rem; }
+.card.otwarte { display: flex; flex-direction: column; gap: 10px; }
+.card.otwarte label { display: flex; flex-direction: column; gap: 6px; }
+.card.otwarte .q { font-size: 1.12rem; line-height: 1.35; }
+.card.otwarte textarea { width: 100%; font: inherit; border: 1.5px solid var(--line); border-radius: 12px; padding: 10px 12px; resize: vertical; }
+.card.otwarte textarea:focus { outline: none; border-color: #7C3AED; box-shadow: 0 0 0 3px #EDE9FE; }
+.licznik { align-self: flex-end; }

@@ -49,6 +49,19 @@ Szczegóły kroku 4: quiz zaliczeniowy (próg 70%), powtórki adaptacyjne (2 > 5
 
 ## AI i jakość
 
+**3 prompty systemowe, OpenRouter w dwóch miejscach:**
+
+| # | Gdzie | AI dostaje | AI zwraca | Kto decyduje | Plik |
+|---|---|---|---|---|---|
+| 1 | Kompas, po 22 pytaniach zamkniętych | wynik algorytmu (cechy, zainteresowania, plan A i B, odpowiedzi) | 2 pytania otwarte o to, czego test nie rozstrzygnął | AI (bez AI: 2 pytania standardowe) | `functions/api/ai/kompas.js` |
+| 2 | Kompas, po odpowiedziach swoimi słowami | wynik algorytmu, lista ścieżek i ról, odpowiedzi ucznia | opis, niuanse, rola, następny krok, kolejność planów z pewnością | aplikacja: zmiana planów od 60% pewności, nowa ścieżka od 70% (`KompasAI.przyjmij`) | `functions/api/ai/kompas.js` |
+| 3 | Matematyka, po złej odpowiedzi i po 2 nieudanych quizach | zadanie, odpowiedź, opis ucznia, temat i podstawy | brakująca mikrokompetencja z pewnością, opis, wskazówka | silnik: tylko id z listy, od 70% (`silnik.zastosujAI`) | `functions/api/ai/analiza.js` |
+
+- **Kompas**: test zamknięty liczy algorytm (RIASEC i Wielka Piątka). Po ostatnim pytaniu ekran `#/kompas-ai` pokazuje 2 pytania od AI, potem wynik Kompasu ma kartę „Wynik pogłębiony przez AI”, powód przy każdym planie i rolę wskazaną przez AI. Uczeń zawsze widzi, co wskazał sam test. Kod ekranu: `app/kompas-ai.js`, dane dla AI: `Nauka.kompasProfil()` w `index.html`.
+- **Testy Kompasu** (`#/ai`): 7 przypadków z kryteriami (prompt 1: 2 pytania, bez tak/nie i żargonu; prompt 2: zgodne odpowiedzi nie zmieniają planu, mocny dowód zmienia, puste odpowiedzi i manipulacja nic nie zmieniają).
+
+**Matematyka (prompt 3):**
+
 - **Rola AI**: szuka przyczyny błędu ucznia. Po złej odpowiedzi w teście lub quizie wskazuje brakującą mikrokompetencję i daje wskazówkę. W teście adaptacyjnym następne pytanie od razu sprawdza wskazaną podstawę. Po 2 nieudanych quizach AI czyta wszystkie błędy z tematu i wskazuje podstawę do powtórki, a plan i lekcja (rozgrzewka, wskazówka) zmieniają się automatycznie. Uczeń może dopisać, jak liczył.
 - **Czego AI nie robi**: plan, daty, powtórki, prognoza i próg zaliczenia liczy algorytm (dokładnie, szybko, bez kosztów).
 - **AI proponuje, silnik decyduje**: AI może wskazać tylko temat albo jego podstawę (do 2 poziomów w dół, `silnik.kandydaciAI`). Silnik przyjmuje propozycję od pewności 70% (`KONFIG.progPewnosciAI`). Niżej, przy błędzie albo braku odpowiedzi decyduje klucz odpowiedzi z banku pytań.

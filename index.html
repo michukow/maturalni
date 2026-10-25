@@ -27,6 +27,7 @@
 <script src="app/nauka.js"></script>
 <script src="app/kurs.js"></script>
 <script src="app/ai.js"></script>
+<script src="app/kompas-ai.js"></script>
 
 <script>
 /* ===================== DANE ===================== */
@@ -375,7 +376,7 @@ function answer(v){
   app.querySelectorAll(".ans").forEach(b=>b.setAttribute("aria-checked",+b.dataset.v===v));
   setTimeout(()=>{busy=false;
     if(idx<Q.length-1){idx++;render();const h=$("qt");h.setAttribute("tabindex","-1");h.focus({preventScroll:true})}
-    else{isSample=false;plan=0;go("result")}
+    else{isSample=false;plan=0;window.KompasAI?Nauka.go("kompas-ai"):go("result")}
   },180);
 }
 function back(){if(idx===0)go("start");else{idx--;render()}}
@@ -395,15 +396,20 @@ function subjectGrid(rec){
 }
 function bindSubjects(){app.querySelectorAll(".subj.on").forEach(b=>b.onclick=()=>{subject=b.dataset.id;Nauka.startPrzedmiot(subject)})}
 
-function planCard(p,t){
-  const P=PATHS[p.id], roles=rankRoles(P,t), top=roles[0], alt=roles[1];
+function planCard(p,t,ai){
+  const P=PATHS[p.id], roles=rankRoles(P,t);
+  /* AI może wskazać rolę z listy tej ścieżki na podstawie odpowiedzi otwartych */
+  const iAI = ai&&ai.rola ? roles.findIndex(x=>x.n===ai.rola) : -1;
+  if(iAI>0) roles.unshift(roles.splice(iAI,1)[0]);
+  const top=roles[0], alt=roles[1];
   const why=w=>w.length?"Pasuje do Twojego profilu: "+w.join(", ")+".":"Najbliższe dopasowanie przy Twoim profilu.";
   return `
   <div class="card" id="plan-panel" role="tabpanel">
     <p class="muted">${P.opis}</p>
+    ${ai&&ai.dlaczego?`<div class="ai-dlaczego">✨ ${esc(ai.dlaczego)}</div>`:""}
     <div class="stack" style="gap:8px">
       <h3>Rola, która do Ciebie pasuje</h3>
-      <div class="role"><b>${top.n}</b><span class="muted small">${why(top.why)}</span></div>
+      <div class="role"><b>${top.n}</b><span class="muted small">${iAI>=0?"Wskazała AI na podstawie Twoich odpowiedzi. ":""}${why(top.why)}</span></div>
       <p class="small muted">Inna opcja: <b style="color:var(--ink)">${alt.n}</b></p>
     </div>
     <div class="stack" style="gap:8px">
@@ -429,7 +435,11 @@ function planCard(p,t){
 function viewResult(){
   const a=isSample?SAMPLE:answers;
   const {t,r}=score(a);
-  const {paths,topLetters}=pickPaths(r);
+  const alg=pickPaths(r), topLetters=alg.topLetters;
+  /* AI (app/kompas-ai.js) może zmienić kolejność planów, jeśli odpowiedzi otwarte dają mocny dowód */
+  const ai=!isSample&&window.KompasAI?KompasAI.wynik(a.join("")):null;
+  const paths=ai&&ai.przyjete?ai.sciezki.map(x=>({id:x.id,code:""})):alg.paths;
+  const aiPlan=i=>ai?KompasAI.dlaPlanu(ai,paths[i].id,i):null;
   const P0=PATHS[paths[0].id];
   const rec=[...new Set(paths.flatMap(p=>PATHS[p.id].key))];
   const topInt=ORDER.slice().sort((x,y)=>r[y]-r[x]).slice(0,2);
@@ -438,12 +448,13 @@ function viewResult(){
   <span class="eyebrow">${isSample?"Przykładowy wynik":"Krok 1 · Twój wynik"}</span>
   <h1>Pasuje do Ciebie ścieżka ${P0.name.toLowerCase()}</h1>
   <p>Najbardziej ciekawi Cię ${FRIENDLY[topInt[0]]} oraz ${FRIENDLY[topInt[1]]}. Masz dwa plany do porównania.</p>
+  ${ai?KompasAI.kartaHtml(ai,id=>PATHS[id]?PATHS[id].name.toLowerCase():id):(!isSample&&window.KompasAI?KompasAI.zachetaHtml(a.join("")):"")}
   ${Math.max(...Object.values(r))<=5?'<p class="note">Twoje odpowiedzi o zainteresowaniach wyszły dość niskie, więc wynik jest mniej pewny. Warto wrócić do testu za jakiś czas.</p>':""}
 
   <div class="tabs" role="tablist" aria-label="Plany">
     ${paths.map((p,i)=>`<button class="tab" role="tab" id="tab${i}" aria-selected="${plan===i}" aria-controls="plan-panel"><small>Plan ${i?"B":"A"}</small><span>${PATHS[p.id].name}</span></button>`).join("")}
   </div>
-  <div id="plan">${planCard(paths[plan],t)}</div>
+  <div id="plan">${planCard(paths[plan],t,aiPlan(plan))}</div>
 
   <section class="card">
     <h2>Twój profil</h2>
@@ -481,12 +492,12 @@ function viewResult(){
     </div>
   </details>`;
 
-  paths.forEach((p,i)=>$("tab"+i).onclick=()=>{plan=i;app.querySelectorAll(".tab").forEach((b,j)=>b.setAttribute("aria-selected",j===i));$("plan").innerHTML=planCard(paths[i],t)});
+  paths.forEach((p,i)=>$("tab"+i).onclick=()=>{plan=i;app.querySelectorAll(".tab").forEach((b,j)=>b.setAttribute("aria-selected",j===i));$("plan").innerHTML=planCard(paths[i],t,aiPlan(i))});
   bindSubjects();
   $("toMat").onclick=()=>Nauka.startPrzedmiot("mat");
   $("again").onclick=()=>{answers=Array(Q.length).fill(null);save();startTest()};
   $("copy").onclick=()=>{
-    const txt=summary(t,r,paths,topLetters.slice(0,3).join("")), msg=$("copymsg");
+    const txt=summary(t,r,paths,topLetters.slice(0,3).join(""))+(ai&&ai.podsumowanie?"\n\nAI: "+ai.podsumowanie:""), msg=$("copymsg");
     const fb=()=>{$("fallback").innerHTML=`<textarea class="copyfallback" id="fbt" readonly>${esc(txt)}</textarea>`;$("fbt").focus();$("fbt").select();msg.textContent="Zaznaczono tekst, skopiuj go skrótem klawiszowym."};
     try{navigator.clipboard.writeText(txt).then(()=>{msg.textContent="Skopiowano"},fb)}catch(e){fb()}
   };
@@ -521,6 +532,19 @@ function summary(t,r,paths,code){
 }
 Nauka.rejestruj({kompas:viewStart, "kompas-test":viewQuiz, "kompas-wynik":viewResult, przedmioty:viewSubjects}, ["kompas","kompas-test","kompas-wynik","przedmioty"]);
 Nauka.kompasStart=startTest;
+/* Dane dla AI w Kompasie (app/kompas-ai.js): wynik algorytmu i lista ścieżek z rolami */
+Nauka.kompasProfil=()=>{
+  if(answers.includes(null))return null;
+  const {t,r}=score(answers), {paths}=pickPaths(r);
+  return {
+    klucz:answers.join(""),
+    cechy:Object.keys(TRAITS).map(k=>({id:k,nazwa:TRAITS[k].name,wynik:t[k],poziom:LVL[lvlIdx(t[k])]})),
+    zainteresowania:ORDER.map(k=>({id:k,nazwa:RIASEC[k].name,opis:FRIENDLY[k],wynik:r[k]})).sort((x,y)=>y.wynik-x.wynik),
+    plany:paths.map((p,i)=>({plan:i?"B":"A",id:p.id,nazwa:PATHS[p.id].name,rolaAlgorytmu:rankRoles(PATHS[p.id],t)[0].n})),
+    odpowiedzi:Q.map((q,i)=>({pytanie:i<10?q.t:"Chętnie bym: "+q.t,odpowiedz:ANSWERS[answers[i]-1]}))
+  };
+};
+Nauka.kompasSciezki=()=>Object.keys(PATHS).map(id=>({id,nazwa:PATHS[id].name,opis:PATHS[id].opis,role:PATHS[id].roles.map(x=>x.n)}));
 Nauka.kompasPrzyklad=()=>{isSample=true;plan=0;go("result")};
 Nauka.start();
 </script>
