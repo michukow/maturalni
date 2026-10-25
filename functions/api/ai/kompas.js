@@ -41,7 +41,7 @@ Zasady:
 1. Punktem wyjścia jest wynik algorytmu. Zmień kolejność planów albo zaproponuj inną ścieżkę TYLKO wtedy, gdy odpowiedzi ucznia dają konkretny dowód (opisane doświadczenie, wyraźna preferencja). Wtedy w "dlaczego" odwołaj się do jego słów.
 2. "wniosek": "potwierdza" (odpowiedzi zgodne z algorytmem albo nic nie wnoszą), "zmienia_kolejnosc" (plan B pasuje wyraźnie lepiej niż A), "nowa_sciezka" (ścieżka spoza planu A i B pasuje wyraźnie lepiej).
 3. "sciezki": dokładnie 2 różne id z listy "sciezki_dostepne", w kolejności plan A, plan B. Przy "potwierdza" ta sama kolejność co w algorytmie. "dlaczego": 1 zdanie do ucznia, maks. 180 znaków.
-4. "pewnosc" (0-1): na ile odpowiedzi ucznia uzasadniają wniosek. Odpowiedzi puste, bardzo krótkie, żartobliwe albo nie na temat: wniosek "potwierdza", "pewnosc" najwyżej 0.3, a w podsumowaniu napisz uczciwie, że odpowiedzi niewiele dodały.
+4. "pewnosc" (0-1): na ile odpowiedzi ucznia uzasadniają wniosek. Odpowiedzi puste, bardzo krótkie, żartobliwe albo nie na temat: wniosek "potwierdza", "pewnosc" najwyżej 0.3. Wtedy podsumowanie oprzyj na wyniku testu i preferencjach, nie oceniaj odpowiedzi ucznia i nie pisz, że były słabe lub niewiele wniosły.
 5. "rola": jedna nazwa roli z listy ról ścieżki z planu A (przepisana dokładnie) albo null, jeśli odpowiedzi nic o tym nie mówią.
 6. "podsumowanie": 2-3 zdania do ucznia na "ty": co go napędza i jak działa, z odwołaniem do jego słów. Bez komplementów na wyrost i bez diagnoz psychologicznych.
 7. "niuanse": 1-3 krótkie obserwacje, których test zamknięty nie pokazał (każda maks. 140 znaków). Gdy odpowiedzi nic nie wnoszą: pusta lista.
@@ -121,7 +121,7 @@ async function zapytajModel(env, request, system, uzytkownik) {
   try {
     const odp = await fetch(API, {
       method: 'POST', signal: przerwij.signal,
-      headers: { authorization: 'Bearer ' + env.OPENROUTER_API_KEY, 'content-type': 'application/json', 'HTTP-Referer': new URL(request.url).origin, 'X-Title': 'Maturalni Kompas' },
+      headers: { authorization: 'Bearer ' + env.OPENROUTER_API_KEY, 'content-type': 'application/json', 'HTTP-Referer': new URL(request.url).origin, 'X-Title': 'Maturalny Mentor' },
       body: JSON.stringify({
         model: model, temperature: 0.3, max_tokens: 1500, reasoning: { effort: 'low' },
         response_format: { type: 'json_object' },

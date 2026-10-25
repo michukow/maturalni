@@ -70,16 +70,18 @@
     app.innerHTML = `<span class="eyebrow">Krok 1 · Jeszcze 2 pytania</span>
       <h1>Opowiedz swoimi słowami</h1>
       <p class="lead">Test zamknięty nie wszystko wyłapie. Odpowiedz w 1-3 zdaniach: co robisz, co lubisz, co Cię zniechęca. Możesz pominąć.</p>
-      ${s.zrodlo === 'ai' ? '<p class="small muted">✨ Pytania ułożyła AI na podstawie Twoich odpowiedzi z testu.</p>' : `<p class="small muted">AI jest teraz niedostępna, więc to pytania standardowe${s.bladPytan ? ' (' + esc(s.bladPytan) + ')' : ''}.</p>`}
+      ${s.zrodlo === 'ai' ? '<p class="small muted">✨ Pytania ułożyła AI na podstawie Twoich odpowiedzi z testu.</p>' : ''}
       ${s.pytania.map((p, i) => `<div class="card otwarte"><label for="o${i}"><span class="eyebrow">Pytanie ${i + 1} z 2</span><b class="q">${esc(p.tresc)}</b></label>
         <textarea id="o${i}" rows="4" maxlength="800" placeholder="${esc(p.przyklad ? (p.przyklad.indexOf('np.') === 0 ? p.przyklad : 'np. ' + p.przyklad) : 'Napisz kilka zdań…')}">${esc(s.odpowiedzi[i] || '')}</textarea>
         <span class="tiny muted licznik" id="l${i}"></span></div>`).join('')}
-      ${N.duo('dalejK', 'Pokaż mój wynik', 'pominK', 'Pomiń, pokaż wynik z testu')}`;
+      ${N.duo('dalejK', 'Pokaż mój wynik', 'pominK', 'Pomiń, pokaż wynik z testu')}
+      <button class="btn link" id="odNowaK" style="align-self:center">↺ Zacznij test od nowa</button>`;
     [0, 1].forEach(i => {
       const t = $('o' + i), l = $('l' + i);
       const upd = () => { l.textContent = t.value.length ? t.value.length + '/800' : ''; const x = stan(profil.klucz); if (x) { x.odpowiedzi[i] = t.value; zapisz(x); } };
       t.oninput = upd; upd();
     });
+    $('odNowaK').onclick = () => N.kompasOdNowa && N.kompasOdNowa();
     $('pominK').onclick = () => { const x = stan(profil.klucz); if (x) { x.pominiete = true; x.wynik = null; zapisz(x); } N.go('kompas-wynik'); };
     $('dalejK').onclick = () => {
       const x = stan(profil.klucz);
@@ -109,14 +111,12 @@
   }
   function kartaHtml(ai, nazwa) {
     const zmiana = ai.przyjete;
-    const odrzucona = !ai.przyjete && ai.wniosek !== 'potwierdza';
     return `<section class="ai-box ai-kompas">
-      <div class="ai-glowa"><span class="ai-ik">✨</span><b>Wynik pogłębiony przez AI</b>
-        <span class="badge ${ai.pewnosc >= PROG.zmiana ? 'green' : 'yellow'}">${ai.pewnosc >= PROG.zmiana ? 'odpowiedzi wiele wniosły' : 'odpowiedzi wniosły niewiele'}</span></div>
+      <div class="ai-glowa"><span class="ai-ik">✨</span><b>Wynik pogłębiony przez AI</b></div>
       ${ai.podsumowanie ? `<p>${esc(ai.podsumowanie)}</p>` : ''}
       ${ai.niuanse && ai.niuanse.length ? `<div class="stack" style="gap:4px"><b class="small">Czego nie pokazał sam test:</b><ul class="small" style="margin:0;padding-left:18px">${ai.niuanse.map(n => `<li>${esc(n)}</li>`).join('')}</ul></div>` : ''}
       ${zmiana ? `<p class="small">🔀 Na podstawie Twoich odpowiedzi ${ai.wniosek === 'nowa_sciezka' ? 'AI dodała ścieżkę, której nie wskazał test' : 'AI zamieniła kolejność planów'}. Sam test wskazał: A ${esc(nazwa(ai.alg[0]))}, B ${esc(nazwa(ai.alg[1]))}.</p>`
-        : odrzucona ? `<p class="small muted">AI widziała też inną kolejność planów, ale dowody były za słabe (pewność ${proc(ai.pewnosc)}%), więc zostawiamy wynik testu.</p>` : ''}
+        : ''}
       ${ai.nastepny_krok ? `<div class="ai-rada">👣 W tym tygodniu: ${esc(ai.nastepny_krok)}</div>` : ''}
       <details class="ai-dopisz"><summary>Twoje odpowiedzi</summary>${(ai.pytania || []).map((p, i) => `<p class="small"><b>${esc(p.tresc)}</b><br>${esc((ai.odpowiedzi || [])[i] || '(bez odpowiedzi)')}</p>`).join('')}
         <a class="small" href="#/kompas-ai">Zmień odpowiedzi</a></details>

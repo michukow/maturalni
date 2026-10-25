@@ -118,7 +118,7 @@
     // Ekran powitalny nowego ucznia: bez pasków, tylko dwa przyciski (jak w Duolingo).
     const powitanie = !D && !TRASY[n] || (!D && n === '');
     document.body.classList.toggle('powitanie', powitanie);
-    $('topbar').innerHTML = `<div class="in"><a class="logo" href="#/"><i>M</i>Maturalni Plus</a><span style="flex:1"></span>
+    $('topbar').innerHTML = `<div class="in"><a class="logo" href="#/"><img src="assets/logo.svg" alt="" width="30" height="27">Maturalny Mentor</a><span style="flex:1"></span>
       ${s ? `<a class="pill-fire ${s.dni ? '' : 'off'}" href="#/dzis" title="Seria: dni nauki z rzędu">🔥 ${s.dni}</a>` : ''}</div>
       ${powitanie ? '' : `<nav class="sciezka-krokow" aria-label="Twoja ścieżka">${KROKI.map(k => {
         const zr = krokZrobiony(k.nr), otw = krokOtwarty(k.nr);
@@ -169,7 +169,7 @@
       <div class="bar" role="progressbar" aria-valuemin="0" aria-valuemax="${n}" aria-valuenow="${i}"><i style="width:${i / n * 100}%"></i></div></div>`;
   }
   function pushHtml(tyt, tekst, kiedy) {
-    return `<div class="push"><div class="app">M</div><div class="tr"><div class="hd"><b>Maturalni</b><span>${esc(kiedy || 'teraz')}</span></div><div class="msg"><b>${tyt}</b>${tekst}</div></div></div>`;
+    return `<div class="push"><div class="app"><img src="assets/logo.svg" alt=""></div><div class="tr"><div class="hd"><b>Maturalny Mentor</b><span>${esc(kiedy || 'teraz')}</span></div><div class="msg"><b>${tyt}</b>${tekst}</div></div></div>`;
   }
   function progBar(p, poPlanie) {
     const blisko = p.cel && poPlanie && Math.abs(p.cel - poPlanie) < 14;
@@ -225,11 +225,11 @@
     }
     app.innerHTML = `
       <section class="powitanie-box">
-        <div class="maskotka" aria-hidden="true">M</div>
+        <div class="maskotka logo-duze" aria-hidden="true"><img src="assets/logo.svg" alt=""></div>
         <h1>Nie wiesz, od czego zacząć? Namierzmy Twój cel.</h1>
         <p class="lead">22 szybkie pytania i kilka suwaków, ok. 5 minut. Dopasujemy do Ciebie kierunki studiów i podpowiemy, które przedmioty warto zdawać.</p>
         <p class="small muted">Bez stresu: to tylko podpowiedź na start, a nie decyzja na całe życie.</p>
-        ${duo('start', 'Zaczynamy', 'mat', 'Znam już swój cel: od razu test z przedmiotu')}
+        ${duo('start', 'Zaczynamy', 'mat', 'Wiem już, co zdaję: pomiń doradztwo i przejdź do testów')}
         <p class="small muted">Bez logowania</p>
       </section>`;
     $('start').onclick = () => (root.Nauka.kompasStart ? root.Nauka.kompasStart() : go('kompas'));
@@ -515,11 +515,17 @@
         return `<button class="odp ${cls}" data-idx="${a.idx}" ${o ? 'disabled' : ''}><span class="lit">${'ABCD'[n]}</span>${esc(a.tekst)}</button>`;
       }).join('')}</div>
       ${o ? kom + `<div class="cta"><button class="btn-main xl arrow" id="dalej">${q.numer >= q.z ? 'Zobacz wynik' : 'Dalej'}</button></div>`
-          : '<div class="center"><button class="btn-ghost" id="nw">Nie wiem 🤷</button></div><p class="hint">Na komputerze: klawisze 1-4, a potem Enter.</p>'}`;
+          : '<div class="center"><button class="btn-ghost" id="nw">Nie wiem 🤷</button></div><p class="hint">Na komputerze: klawisze 1-4, a potem Enter.</p>'}
+      ${T.typ === 'diagnoza' && !T.opcje.pelna && kal && q.numer > 1 ? '<div class="center"><button class="btn link" id="testOdNowa">↺ Zacznij test od nowa</button></div>' : ''}`;
     app.querySelectorAll('.odp:not([disabled])').forEach(b => b.onclick = () => odpowiedzQuiz(+b.dataset.idx));
     if ($('nw')) $('nw').onclick = () => odpowiedzQuiz(-1);
     if ($('dalej')) { $('dalej').onclick = dalejQuiz; $('dalej').focus({ preventScroll: true }); }
     if (o && root.AIUI) root.AIUI.poBledzie(T, q, o);
+    if ($('testOdNowa')) $('testOdNowa').onclick = () => {
+      // pierwsza diagnoza od nowa: świeży stan wiedzy z tej samej kalibracji (odpowiedzi z przerwanego testu nie liczą się)
+      const opcje = T.opcje, po = T.po;
+      zbudujProfil(); startTest('diagnoza', opcje, po); toast('Zaczynamy test od nowa.');
+    };
   }
   function odpowiedzQuiz(idx) {
     if (!T || T.odp) return;
@@ -937,7 +943,7 @@
       let zgoda = Notification.permission;
       if (zgoda === 'default') { try { zgoda = await Notification.requestPermission(); } catch (e) { zgoda = 'denied'; } }
       if (zgoda !== 'granted') return toast('Powiadomienia są zablokowane w przeglądarce. Podgląd obok pokazuje, jak wyglądają.');
-      const n = L[0] || { tyt: 'Maturalni', tekst: 'Test powiadomienia' };
+      const n = L[0] || { tyt: 'Maturalny Mentor', tekst: 'Test powiadomienia' };
       try { new Notification('Maturalni: ' + n.tyt.replace(/<[^>]+>/g, ''), { body: n.tekst.replace(/<[^>]+>/g, '').replace(/&#39;/g, "'").trim() }); toast('Wysłano. Sprawdź powiadomienia systemu.'); }
       catch (e) { toast('Na tym urządzeniu przeglądarka wymaga zainstalowania aplikacji, żeby pokazać powiadomienie.'); }
     };

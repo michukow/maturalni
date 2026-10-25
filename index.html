@@ -3,7 +3,8 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>Maturalni Plus</title>
+<title>Maturalny Mentor</title>
+<link rel="icon" href="assets/logo.svg" type="image/svg+xml">
 <meta name="description" content="Diagnoza, test oraz plan. W trosce o Twoją przyszłość!">
 <meta name="claude:viewport-fit-sides" content="cover">
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -69,7 +70,7 @@ const Q = [
   {t:"uczyć innych lub pomagać im w problemach",k:"S"},
   {t:"pracować z ludźmi, np. w szpitalu, szkole lub ośrodku",k:"S"},
   {t:"przekonywać innych do swoich pomysłów lub sprzedawać produkt",k:"E"},
-  {t:"kierować zespołem lub prowadzić własną firmę",k:"E"},
+  {t:"kierować zespołem lub rozkręcać własne projekty",k:"E"},
   {t:"porządkować dane, tabele i budżety oraz pilnować szczegółów",k:"C"},
   {t:"pracować według jasnych zasad i procedur",k:"C"}
 ];
@@ -344,27 +345,28 @@ function viewStart(){
   <h1>Nie wiesz, od czego zacząć? Namierzmy Twój cel.</h1>
   <p class="lead">22 szybkie pytania i kilka suwaków, ok. 5 minut. Dopasujemy do Ciebie kierunki studiów i podpowiemy, które przedmioty warto zdawać.</p>
   <p class="note">Bez stresu: to tylko podpowiedź na start, a nie decyzja na całe życie.</p>
-  ${Nauka.duo('go', glowny, n?'reset':'skip', n?'Zacznij od nowa':'Znam już swój cel: od razu test z przedmiotu')}
-  ${n?'<button class="btn link" id="skip2" style="align-self:center">Znam już swój cel: przejdź od razu do testu z przedmiotu →</button>':''}`;
+  ${Nauka.duo('go', glowny, n?'reset':'skip', n?'↺ Zacznij test od nowa':'Wiem już, co zdaję: pomiń doradztwo i przejdź do testów')}
+  ${n?'<button class="btn link" id="skip2" style="align-self:center">Wiem już, co zdaję: pomiń doradztwo i przejdź do testów →</button>':''}`;
   $("go").onclick=startTest;
   if($("skip"))$("skip").onclick=()=>Nauka.startPrzedmiot("mat");
   if($("skip2"))$("skip2").onclick=()=>Nauka.startPrzedmiot("mat");
-  if($("reset"))$("reset").onclick=()=>{answers=Array(Q.length).fill(null);save();startTest()};
+  if($("reset"))$("reset").onclick=kompasOdNowa;
 }
 
 /* ---------- pytania ---------- */
 function viewQuiz(){
   const q=Q[idx], partA=idx<10;
-  const text = partA ? q.t : q.t.charAt(0).toUpperCase()+q.t.slice(1)+".";
+  const text = partA ? q.t : "Lubię "+q.t+".";
   app.innerHTML=`
   <div class="stack" style="gap:8px">
     <div class="qtop">
       <button class="qback" id="back">← ${idx===0?"Start":"Wstecz"}</button>
       <span class="qcount">Pytanie ${idx+1} z ${Q.length} · <b style="color:var(--ink)">${Nauka.zacheta(idx,Q.length)}</b></span>
+      ${idx>0?'<button class="qback" id="odNowa">↺ Od nowa</button>':''}
     </div>
     <div class="track" role="progressbar" aria-valuemin="0" aria-valuemax="${Q.length}" aria-valuenow="${idx}" aria-label="Postęp testu"><i style="width:${idx/Q.length*100}%"></i></div>
   </div>
-  <span class="eyebrow">${partA?"O Tobie":"Czy to coś dla Ciebie?"}</span>
+  <span class="eyebrow">${partA?"O Tobie":"Co lubisz?"}</span>
   <h2 class="qtext" id="qt">${esc(text)}</h2>
   <div class="answers" role="radiogroup" aria-labelledby="qt">
     ${ANSWERS.map((l,i)=>`<button class="ans" role="radio" id="a${i+1}" data-v="${i+1}" aria-checked="${answers[idx]===i+1}"><span class="dot"></span>${l}</button>`).join("")}
@@ -372,7 +374,10 @@ function viewQuiz(){
   <p class="hint">Na komputerze możesz odpowiadać klawiszami 1–5.</p>`;
   app.querySelectorAll(".ans").forEach(b=>b.onclick=()=>answer(+b.dataset.v));
   $("back").onclick=back;
+  if($("odNowa"))$("odNowa").onclick=kompasOdNowa;
 }
+/* Zacznij test od nowa: czyści odpowiedzi Diagnozy (preferencje i pytania AI odświeżą się po nowym teście) */
+function kompasOdNowa(){answers=Array(Q.length).fill(null);save();isSample=false;plan=0;idx=0;go("quiz")}
 function answer(v){
   if(busy)return;busy=true;
   answers[idx]=v;save();
@@ -481,6 +486,7 @@ function viewResult(){
   </section>
 
   ${Nauka.duo('toMat', 'Dalej: test diagnozujący z matematyki', 'copy', 'Kopiuj wynik')}
+  ${isSample?'':'<button class="btn link" id="again2" style="align-self:center">↺ Zacznij test od nowa</button>'}
   <span id="copymsg" class="muted small center" role="status"></span>
   <div id="fallback"></div>
 
@@ -499,7 +505,8 @@ function viewResult(){
   paths.forEach((p,i)=>$("tab"+i).onclick=()=>{plan=i;app.querySelectorAll(".tab").forEach((b,j)=>b.setAttribute("aria-selected",j===i));$("plan").innerHTML=planCard(paths[i],t,aiPlan(i))});
   bindSubjects();
   $("toMat").onclick=()=>Nauka.startPrzedmiot("mat");
-  $("again").onclick=()=>{answers=Array(Q.length).fill(null);save();startTest()};
+  $("again").onclick=kompasOdNowa;
+  if($("again2"))$("again2").onclick=kompasOdNowa;
   $("copy").onclick=()=>{
     const txt=summary(t,r,paths,topLetters.slice(0,3).join(""))+(ai&&ai.podsumowanie?"\n\nAI: "+ai.podsumowanie:""), msg=$("copymsg");
     const fb=()=>{$("fallback").innerHTML=`<textarea class="copyfallback" id="fbt" readonly>${esc(txt)}</textarea>`;$("fbt").focus();$("fbt").select();msg.textContent="Zaznaczono tekst, skopiuj go skrótem klawiszowym."};
@@ -536,6 +543,7 @@ function summary(t,r,paths,code){
 }
 Nauka.rejestruj({kompas:viewStart, "kompas-test":viewQuiz, "kompas-wynik":viewResult, przedmioty:viewSubjects}, ["kompas","kompas-test","kompas-wynik","przedmioty"]);
 Nauka.kompasStart=startTest;
+Nauka.kompasOdNowa=kompasOdNowa;
 /* Dane dla AI w Kompasie (app/kompas-ai.js): wynik algorytmu i lista ścieżek z rolami */
 Nauka.kompasProfil=()=>{
   if(answers.includes(null))return null;
@@ -545,7 +553,7 @@ Nauka.kompasProfil=()=>{
     cechy:Object.keys(TRAITS).map(k=>({id:k,nazwa:TRAITS[k].name,wynik:t[k],poziom:LVL[lvlIdx(t[k])]})),
     zainteresowania:ORDER.map(k=>({id:k,nazwa:RIASEC[k].name,opis:FRIENDLY[k],wynik:r[k]})).sort((x,y)=>y.wynik-x.wynik),
     plany:paths.map((p,i)=>({plan:i?"B":"A",id:p.id,nazwa:PATHS[p.id].name,rolaAlgorytmu:rankRoles(PATHS[p.id],t)[0].n})),
-    odpowiedzi:Q.map((q,i)=>({pytanie:i<10?q.t:"Chętnie bym: "+q.t,odpowiedz:ANSWERS[answers[i]-1]})),
+    odpowiedzi:Q.map((q,i)=>({pytanie:i<10?q.t:"Lubię "+q.t,odpowiedz:ANSWERS[answers[i]-1]})),
     preferencje:Nauka.preferencjeOpis?Nauka.preferencjeOpis():null
   };
 };

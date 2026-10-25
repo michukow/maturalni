@@ -952,7 +952,7 @@
     function doIcs(plan, opcje) {
       opcje = opcje || {};
       const stamp = new Date().toISOString().replace(/[-:]/g, '').slice(0, 15) + 'Z';
-      const linie = ['BEGIN:VCALENDAR', 'VERSION:2.0', 'PRODID:-//Maturalni//Plan nauki//PL', 'CALSCALE:GREGORIAN', 'METHOD:PUBLISH', 'X-WR-CALNAME:Matura: plan nauki'];
+      const linie = ['BEGIN:VCALENDAR', 'VERSION:2.0', 'PRODID:-//Maturalny Mentor//Plan nauki//PL', 'CALSCALE:GREGORIAN', 'METHOD:PUBLISH', 'X-WR-CALNAME:Matura: plan nauki'];
       plan.sesje.forEach((s, i) => {
         if (!s.minuty) return;
         linie.push('BEGIN:VEVENT', 'UID:maturalni-' + s.data + '-' + i + '@plan', 'DTSTAMP:' + stamp,

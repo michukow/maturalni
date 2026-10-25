@@ -117,7 +117,7 @@ export async function onRequestPost({ request, env }) {
         authorization: 'Bearer ' + env.OPENROUTER_API_KEY,
         'content-type': 'application/json',
         'HTTP-Referer': new URL(request.url).origin,
-        'X-Title': 'Maturalni plan matury'
+        'X-Title': 'Maturalny Mentor'
       },
       body: JSON.stringify({
         model: model,

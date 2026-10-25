@@ -579,3 +579,11 @@ h2.pref-h { margin-top: 18px; }
 .pref-suwak::-webkit-slider-thumb { -webkit-appearance: none; width: 36px; height: 36px; border-radius: 50%; background: #00E5C0; border: 3px solid #fff; box-shadow: 0 2px 6px rgba(0,0,0,.18); }
 .pref-suwak::-moz-range-thumb { width: 32px; height: 32px; border-radius: 50%; background: #00E5C0; border: 3px solid #fff; box-shadow: 0 2px 6px rgba(0,0,0,.18); }
 .pref-suwak:focus-visible { outline: 3px solid #1E1B4B; outline-offset: 4px; }
+
+/* Logo Maturalny Mentor */
+.logo img{width:30px;height:auto;display:block}
+.maskotka.logo-duze{background:#fff;box-shadow:0 6px 0 #DCE6FF;border:2px solid #E5ECFF}
+.maskotka.logo-duze img{width:62px;height:auto}
+.push .app{background:#fff;border:1px solid #E5ECFF}
+.push .app img{width:24px;height:auto}
+.qtop{gap:8px}

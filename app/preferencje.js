@@ -55,7 +55,8 @@
           <div class="pref-nazwa"><b>${esc(x.t)}</b><span class="pref-wart" id="w-${x.id}">${esc(x.poz[p[x.id]])}</span></div>
           ${suwak('s-' + x.id, p[x.id], x.t + ' ' + x.poz[p[x.id]])}
           <div class="pref-konce"><span>${esc(x.od)}</span><span>${esc(x.do)}</span></div></div>`).join('')}</div>
-      ${N.duo('dalejP', 'Dalej', 'wsteczP', '← Wstecz')}`;
+      ${N.duo('dalejP', 'Dalej', 'wsteczP', '← Wstecz')}
+      <button class="btn link" id="odNowaP" style="align-self:center">↺ Zacznij test od nowa</button>`;
     const ustaw = (id, v, tekst) => { const s = $('s-' + id); s.style.setProperty('--p', (v / 3 * 100) + '%'); s.setAttribute('aria-valuetext', tekst); $('w-' + id).textContent = tekst; };
     PRZEDMIOTY.forEach(([id]) => {
       ustaw(id, p.przedmioty[id], POZIOMY[p.przedmioty[id]]);
@@ -67,6 +68,7 @@
     });
     $('dalejP').onclick = () => { p.zapisane = true; zapisz(p); N.go(root.KompasAI ? 'kompas-ai' : 'kompas-wynik'); };
     $('wsteczP').onclick = () => N.go('kompas-test');
+    $('odNowaP').onclick = () => N.kompasOdNowa && N.kompasOdNowa();
   }
 
   // dla wyniku Kompasu, AI i kalibracji
