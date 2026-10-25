@@ -192,13 +192,11 @@ Prywatnych kluczy nie ma w repozytorium. Sekrety trzymamy wyłącznie w ustawien
 
 ## Najbliższe kroki wdrożeniowe
 
-1. Pilotaż z uczniami Maturalnych: zestaw testowy AI z 200+ prawdziwych rozwiązań ocenionych przez egzaminatora i pomiar trafności Kompasu.
+1. Pilotaż z uczniami od Maturalnych: zestaw testowy AI z 200+ prawdziwymi rozwiązaniami ocenionymi przez egzaminatora i pomiar trafności Kompasu.
 2. Prawdziwe lekcje wideo z `lesson-plans` (bramka i import są gotowe, potrzebny dostęp) oraz konta uczniów z synchronizacją postępu między urządzeniami.
 3. Kolejne przedmioty maturalne (najpierw polski i angielski), weryfikacja wag działów na arkuszach CKE, powiadomienia push i Google Calendar API.
 
 ## Wersja oceniana
-
-- **Tag wersji ocenianej:** `submission-T06`
 - **Link do wersji oznaczonej tym tagiem:** https://github.com/michukow/maturalni/tree/submission-T06
 
 ## Demonstracja
