@@ -1,8 +1,7 @@
 # T06 – Maturalny Mentor
 
 > Aplikacja, która pomaga maturzyście wybrać kierunek (predyspozycje, przedmioty maturalne, studia), a potem codziennie, w krótkich sesjach, przygotowuje go do matury pod ten wybór.
-
-Demo: **https://maturalni-4l1.pages.dev** · Dokumentacja techniczna: [`DOKUMENTACJA.md`](DOKUMENTACJA.md)
+Dokumentacja techniczna: [`DOKUMENTACJA.md`](DOKUMENTACJA.md)
 
 ## Zespół i wyzwanie
 
@@ -206,6 +205,5 @@ Prywatnych kluczy nie ma w repozytorium. Sekrety trzymamy wyłącznie w ustawien
 
 ## Demonstracja
 
-- **Adres działającego demo:** https://maturalni-4l1.pages.dev (widok dla jury: `#/mapa`)
 - **Slajdy:** https://canva.link/kydkpyqzkto1ca2
 - **Nagrania:** https://youtu.be/TCWZdzhh59A
