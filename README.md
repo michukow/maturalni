@@ -55,7 +55,7 @@ Aplikacja to statyczna strona (HTML, CSS, czysty JavaScript, bez frameworka i be
    ```
 3. **Konfiguracja:**
    - Bez AI: nic nie trzeba konfigurować.
-   - Z AI lokalnie: utwórz w katalogu głównym repozytorium plik `.dev.vars` (jest w `.gitignore`):
+   - Z AI lokalnie: utwórz w katalogu głównym repozytorium plik `..vars` (jest w `.gitignore`):
      ```
      OPENROUTER_API_KEY=sk-or-v1-...
      # opcjonalnie:
@@ -68,7 +68,7 @@ Aplikacja to statyczna strona (HTML, CSS, czysty JavaScript, bez frameworka i be
    - **Wariant A, najprostszy (bez AI):** otwórz plik `index.html` w przeglądarce. Działa cały scenariusz; w miejscu AI aplikacja używa pytań standardowych i reguł z klucza odpowiedzi.
    - **Wariant B, pełny (z AI i bramką API), w katalogu głównym repozytorium:**
      ```bash
-     npx wrangler pages dev .
+     npx wrangler pages  .
      ```
    - **Test silnika bez przeglądarki:**
      ```bash
@@ -76,18 +76,18 @@ Aplikacja to statyczna strona (HTML, CSS, czysty JavaScript, bez frameworka i be
      node sprawdz.js
      ```
      Na końcu wyjścia ma się pojawić „GOTOWE: silnik działa end-to-end.”
-6. **Adres aplikacji po uruchomieniu:** wariant A: `index.html` otwarty z dysku; wariant B: `http://localhost:8788`; wersja wdrożona: **https://maturalni-4l1.pages.dev**.
+6. **Adres aplikacji po uruchomieniu:** wariant A: `index.html` otwarty z dysku; wariant B: `http://localhost:8788`; wersja wdrożona: .
 
 ### Konfiguracja i wymagane dostępy
 
 | Usługa lub zasób | Do czego służy | Wymagana konfiguracja i uprawnienia | Jak uzyskać dostęp |
 | :---- | :---- | :---- | :---- |
-| OpenRouter | wywołania modelu AI (Kompas i analiza błędów) | `OPENROUTER_API_KEY` jako Secret w Cloudflare albo w `.dev.vars`; opcjonalnie `AI_MODEL` | konto na openrouter.ai > Keys; klucz drużyny przekazujemy organizatorowi osobno |
+| OpenRouter | wywołania modelu AI (Kompas i analiza błędów) | `OPENROUTER_API_KEY` jako Secret w Cloudflare albo w `..vars`; opcjonalnie `AI_MODEL` | konto na openrouter.ai > Keys; klucz drużyny przekazujemy organizatorowi osobno |
 | Cloudflare Pages | hosting strony i funkcji `functions/api/*` | projekt połączony z repozytorium, wdrożenie po pushu na `main` | konto Cloudflare (darmowy plan wystarcza) |
 | API Maturalnych (`backend.maturalni.com`) | katalog produktów i lekcje do importu | `products/` działa bez tokenu; do `lesson-plans` ewentualnie `MATURALNI_TOKEN` (Secret) i `MATURALNI_NAGLOWEK` | od partnera wyzwania (Maturalni) |
 | Google Fonts | kroje Manrope i Inter | brak | publiczne |
 
-Prywatnych kluczy nie ma w repozytorium. Sekrety trzymamy wyłącznie w ustawieniach Cloudflare albo w lokalnym `.dev.vars` (wykluczonym z wersjonowania). **Potrzebne dane logowania i klucze przekazujemy organizatorowi osobno.**
+Prywatnych kluczy nie ma w repozytorium. Sekrety trzymamy wyłącznie w ustawieniach Cloudflare albo w lokalnym `..vars` (wykluczonym z wersjonowania). **Potrzebne dane logowania i klucze przekazujemy organizatorowi osobno.**
 
 ## Jak sprawdzić główny scenariusz
 
@@ -96,7 +96,7 @@ Prywatnych kluczy nie ma w repozytorium. Sekrety trzymamy wyłącznie w ustawien
 
 | Krok | Co zrobić | Oczekiwany rezultat |
 | :---- | :---- | :---- |
-| 1 | Wejdź na https://maturalni-4l1.pages.dev i kliknij „Rozpocznij diagnozę” | otwiera się Diagnoza z pierwszym z 22 pytań |
+| 1 | Wejdź na stronę i kliknij „Rozpocznij diagnozę” | otwiera się Diagnoza z pierwszym z 22 pytań |
 | 2 | Odpowiedz na 22 pytania (skala 1–5), ustaw suwaki preferencji i kliknij „Dalej” | ekran z 2 pytaniami otwartymi od AI (gdy AI chwilowo nie odpowiada: 2 pytania standardowe; gdy AI jest wyłączone: od razu wynik) |
 | 3 | Odpowiedz swoimi słowami, np. „W szkole najlepiej szło mi rozwiązywanie zadań z fizyki na olimpiadzie” | wynik Kompasu: plan A i B z powodem, rola, kierunki, uczelnie, przedmioty maturalne, karta „Wynik pogłębiony przez AI” |
 | 4 | Kliknij „Dalej: test diagnozujący z matematyki”, odpowiedz na 2 pytania kalibracyjne i rozwiąż test (20 pytań); celowo zaznacz kilka złych odpowiedzi | po złej odpowiedzi: przyczyna błędu i wskazówka; następne pytanie sprawdza wskazaną podstawę |
@@ -165,7 +165,7 @@ Prywatnych kluczy nie ma w repozytorium. Sekrety trzymamy wyłącznie w ustawien
 | Co sprawdzono i na jakich danych | Oczekiwany wynik | Uzyskany wynik | Status |
 | :---- | :---- | :---- | :---- |
 | Silnik end-to-end: `node silnik/sprawdz.js` (diagnoza, prognoza, plan, powtórki, seria, kalendarz, szybka ścieżka „tylko trygonometria”) | komunikat „GOTOWE” | „GOTOWE: silnik działa end-to-end.”, 271 wydarzeń w .ics, powtórki 3 > 5 > 12 > 30 dni | działa |
-| Główny scenariusz ręcznie na https://maturalni-4l1.pages.dev (kroki 1–7 powyżej) | przejście od Kompasu do pierwszej lekcji | `DO_UZUPELNIENIA` | `DO_UZUPELNIENIA` |
+| Główny scenariusz ręcznie na https://maturalni-4l1.pages. (kroki 1–7 powyżej) | przejście od Kompasu do pierwszej lekcji | `DO_UZUPELNIENIA` | `DO_UZUPELNIENIA` |
 | Działanie bez klucza AI | pytania standardowe i reguły zamiast AI | `DO_UZUPELNIENIA` | `DO_UZUPELNIENIA` |
 | Testy jakości AI w `#/testy-ai` (27 + 7 przypadków) | patrz sekcja AI | `DO_UZUPELNIENIA` | `DO_UZUPELNIENIA` |
 | Katalog produktów z API Maturalnych i zapis zapasowy | produkty z API, przy braku API zapis z 24.10.2026 | `DO_UZUPELNIENIA` | `DO_UZUPELNIENIA` |
@@ -183,7 +183,7 @@ Prywatnych kluczy nie ma w repozytorium. Sekrety trzymamy wyłącznie w ustawien
 | Gemini 3.6 Flash | Google, przez https://openrouter.ai | `google/gemini-3.6-flash` | warunki OpenRouter i Google | model AI w 3 promptach |
 | OpenRouter API | https://openrouter.ai | v1 | warunki korzystania OpenRouter, płatność za tokeny | dostęp do modelu |
 | Cloudflare Pages i Pages Functions | https://pages.cloudflare.com | – | warunki Cloudflare, darmowy plan | hosting, funkcje serwerowe |
-| Wrangler | https://developers.cloudflare.com/workers/wrangler/ | aktualna przez `npx` | MIT / Apache 2.0 | uruchomienie lokalne z funkcjami |
+| Wrangler | https://elopers.cloudflare.com/workers/wrangler/ | aktualna przez `npx` | MIT / Apache 2.0 | uruchomienie lokalne z funkcjami |
 | Kroje Manrope i Inter | Google Fonts | – | SIL Open Font License 1.1 | typografia |
 | Zdjęcia w `assets/img/` (grupa, mentorka, studenci, uczennica) | `DO_UZUPELNIENIA` – źródło zdjęć | – | `DO_UZUPELNIENIA` – licencja | ilustracje na ekranach startowych i wynikach |
 | API i materiały Maturalnych (Bank schematów, Arkusz CKE, katalog produktów) | https://backend.maturalni.com, FlippingBook | stan z 24.10.2026 | materiały partnera wyzwania, użyte za jego zgodą w ramach wyzwania | katalog, linki i podgląd materiałów |
